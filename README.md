@@ -23,33 +23,124 @@ This configuration is generated from your actual code — not templates. The `/b
 
 ---
 
-## Install
+## Getting Started
 
-### Claude Code Plugin (recommended)
+Pick your tool and follow the steps.
 
-In Claude Code, run:
+### Claude Code
+
+**Option A — Plugin (recommended):**
 
 ```
 /plugin marketplace add selcukyucel/north-starr
 /plugin install north-starr
 ```
 
-Skills are available immediately across all your projects. Use as `/north-starr:bootstrap`, `/north-starr:invert`, etc.
+Skills are available immediately across all your projects. Run `/north-starr:bootstrap` to generate configuration.
 
-### Homebrew (alternative)
-
-If you prefer the CLI for per-project setup:
+**Option B — Homebrew:**
 
 ```bash
 brew tap selcukyucel/north-starr https://github.com/selcukyucel/north-starr.git && brew install north-starr
-```
-
-Then initialize each project:
-
-```bash
 cd your-project
 north-starr init
 ```
+
+Then run `/bootstrap` in Claude Code to generate configuration.
+
+### VS Code Copilot
+
+```bash
+brew tap selcukyucel/north-starr https://github.com/selcukyucel/north-starr.git && brew install north-starr
+cd your-project
+north-starr init
+```
+
+This installs skills to `.github/skills/` and creates `AGENTS.md`. Open Copilot Chat and run `/bootstrap` to generate configuration.
+
+### Cursor
+
+```bash
+brew tap selcukyucel/north-starr https://github.com/selcukyucel/north-starr.git && brew install north-starr
+cd your-project
+north-starr init
+```
+
+This creates `AGENTS.md` and installs skills. Run `/bootstrap` from Cursor's chat to generate `.cursor/rules/` and other configuration.
+
+### Any other AI tool
+
+```bash
+brew tap selcukyucel/north-starr https://github.com/selcukyucel/north-starr.git && brew install north-starr
+cd your-project
+north-starr init
+```
+
+This creates `AGENTS.md` — the universal project context file that works with any AI tool that supports it.
+
+---
+
+## What gets generated
+
+### After `north-starr init`
+
+Skills and starter context are installed for your tools:
+
+```
+your-project/
+├── AGENTS.md                          # Universal — works with any AI tool
+├── CLAUDE.md                          # Claude Code starter
+├── .claude/skills/                    # Claude Code skills
+│   ├── bootstrap/
+│   ├── invert/
+│   ├── document/
+│   ├── learn/
+│   ├── commit-message-generator/
+│   └── refactoring-analyzer/
+└── .github/skills/                    # VS Code Copilot skills (same content)
+    └── ...
+```
+
+### After `/bootstrap`
+
+The bootstrap skill explores your codebase and generates tool-native config:
+
+```
+your-project/
+├── AGENTS.md                          # Universal project context
+├── CLAUDE.md                          # Claude Code context
+├── src/
+│   ├── payments/CLAUDE.md             # Module-level warnings
+│   └── auth/CLAUDE.md                 # Module-level context
+├── .claude/
+│   ├── rules/                         # Claude Code path-scoped rules
+│   └── agents/                        # Claude Code agents
+├── .github/
+│   ├── copilot-instructions.md        # VS Code Copilot context
+│   ├── instructions/                  # VS Code Copilot path-scoped rules
+│   └── agents/                        # VS Code Copilot agents
+└── .cursor/
+    └── rules/                         # Cursor path-scoped rules
+```
+
+After bootstrap, your AI tool auto-loads this configuration. Rules fire when touching matching files. Module context files appear when working in those directories. No ceremony needed.
+
+---
+
+## Skills
+
+| Skill | When to use |
+|-------|-------------|
+| `/bootstrap` | First time in a project — generates rules, agents, and context files from your code |
+| `/invert` | Before complex tasks — structured risk analysis (what could go wrong?) |
+| `/document` | When a module needs a context file — generates one from actual code |
+| `/learn` | After completing work — updates rules, agents, or context files from experience |
+
+> **Plugin users:** prefix with `north-starr:` — e.g. `/north-starr:bootstrap`
+
+---
+
+## Update & Uninstall
 
 ### Update
 
@@ -78,72 +169,7 @@ brew uninstall north-starr && brew untap selcukyucel/north-starr
 
 ---
 
-## Usage
-
-### Initialize a project
-
-```bash
-cd your-project
-north-starr init
-```
-
-This installs skills and starter context for multiple AI tools:
-
-```
-your-project/
-├── AGENTS.md                          # Universal — works with any AI tool
-├── CLAUDE.md                          # Claude Code starter
-├── .claude/skills/                    # Claude Code skills
-│   ├── bootstrap/
-│   ├── invert/
-│   ├── document/
-│   ├── learn/
-│   ├── commit-message-generator/
-│   └── refactoring-analyzer/
-└── .github/skills/                    # VS Code Copilot skills (same content)
-    └── ...
-```
-
-### Bootstrap your project
-
-Open your AI tool and run:
-
-```
-/bootstrap
-```
-
-This explores your codebase and generates config for all supported tools:
-
-```
-your-project/
-├── AGENTS.md                          # Universal project context
-├── CLAUDE.md                          # Claude Code context
-├── src/
-│   ├── payments/CLAUDE.md             # Module-level warnings
-│   └── auth/CLAUDE.md                 # Module-level context
-├── .claude/
-│   ├── rules/                         # Claude Code path-scoped rules
-│   └── agents/                        # Claude Code agents
-├── .github/
-│   ├── copilot-instructions.md        # VS Code Copilot context
-│   ├── instructions/                  # VS Code Copilot path-scoped rules
-│   └── agents/                        # VS Code Copilot agents
-└── .cursor/
-    └── rules/                         # Cursor path-scoped rules
-```
-
-After bootstrap, your AI tool auto-loads this configuration. Rules fire when touching matching files. Module context files appear when working in those directories. No ceremony needed.
-
-### Available skills
-
-| Plugin | Homebrew | When to use |
-|--------|----------|-------------|
-| `/north-starr:bootstrap` | `/bootstrap` | First time in a project — generates rules, agents, and CLAUDE.md from your code |
-| `/north-starr:invert` | `/invert` | Before complex tasks — structured risk analysis (what could go wrong?) |
-| `/north-starr:document` | `/document` | When a module needs a CLAUDE.md — generates one from actual code |
-| `/north-starr:learn` | `/learn` | After completing work — updates rules, agents, or CLAUDE.md from experience |
-
-### CLI commands
+## CLI commands
 
 ```bash
 north-starr init            # Install skills in a project
