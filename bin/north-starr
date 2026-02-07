@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-VERSION="1.0.2"
+VERSION="1.0.3"
 NORTH_STARR_HOME="${NORTH_STARR_HOME:-}"
 
 # Resolve where templates live
@@ -30,12 +30,6 @@ resolve_template_dir() {
   # Apple Silicon Homebrew
   if [[ -d "/opt/homebrew/share/north-starr/templates" ]]; then
     echo "/opt/homebrew/share/north-starr/templates"
-    return
-  fi
-
-  # User local install
-  if [[ -d "$HOME/.north-starr/templates" ]]; then
-    echo "$HOME/.north-starr/templates"
     return
   fi
 

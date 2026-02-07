@@ -73,29 +73,6 @@ Janelle Arty Starr explains the Idea Flow methodology:
 
 ## Install
 
-### Quick install (recommended)
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/selcukyucel/north-starr/main/install.sh | bash
-```
-
-### Manual install
-
-```bash
-git clone https://github.com/selcukyucel/north-starr.git ~/.north-starr
-chmod +x ~/.north-starr/bin/north-starr
-ln -s ~/.north-starr/bin/north-starr ~/.local/bin/north-starr
-```
-
-Make sure `~/.local/bin` is in your `PATH`:
-
-```bash
-# Add to ~/.zshrc or ~/.bashrc
-export PATH="$HOME/.local/bin:$PATH"
-```
-
-### Homebrew
-
 ```bash
 brew tap selcukyucel/north-starr https://github.com/selcukyucel/north-starr.git
 brew install north-starr
@@ -104,13 +81,6 @@ brew install north-starr
 ### Update
 
 ```bash
-# If installed via curl
-curl -fsSL https://raw.githubusercontent.com/selcukyucel/north-starr/main/install.sh | bash
-
-# If installed via manual clone
-cd ~/.north-starr && git pull
-
-# If installed via Homebrew
 brew update && brew upgrade north-starr
 ```
 
@@ -125,10 +95,6 @@ north-starr update
 Remove north-starr from your system:
 
 ```bash
-# If installed via curl or manual clone
-rm -rf ~/.north-starr ~/.local/bin/north-starr
-
-# If installed via Homebrew
 brew uninstall north-starr && brew untap selcukyucel/north-starr
 ```
 
