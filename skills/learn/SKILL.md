@@ -1,14 +1,14 @@
 ---
 name: learn
-description: After completing a task, capture learnings by updating native Claude Code configuration. Creates or updates rules, agents, and CLAUDE.md files based on what was discovered. Use after any task where something surprised you, went wrong, or produced a reusable insight.
+description: After completing a task, capture learnings by updating AI tool configuration. Creates or updates rules, agents, and context files based on what was discovered — in the native format for each tool (Claude Code, VS Code Copilot, Cursor, AGENTS.md). Use after any task where something surprised you, went wrong, or produced a reusable insight.
 argument-hint: [optional: brief description of what was learned]
 ---
 
-# Learn — Update Claude Code Configuration From Experience
+# Learn — Update AI Tool Configuration From Experience
 
 ## Purpose
 
-After completing a task, turn what you learned into native Claude Code artifacts so the next task benefits automatically. The output is always a rule, agent update, or CLAUDE.md update — never a log file or template.
+After completing a task, turn what you learned into native artifacts for all configured AI tools so the next task benefits automatically. The output is always a rule, agent update, or context file update — never a log file or template.
 
 ## When to Use
 
@@ -53,8 +53,9 @@ For each learning, create or update the appropriate file:
 
 #### New Rule
 
-When a convention or constraint was discovered:
+When a convention or constraint was discovered, create in all applicable formats:
 
+**Claude Code** — `.claude/rules/*.md`:
 ```markdown
 ---
 paths: ["glob/pattern/**"]
@@ -63,10 +64,29 @@ paths: ["glob/pattern/**"]
 [What to do or not do, and why]
 ```
 
+**VS Code Copilot** — `.github/instructions/*.instructions.md`:
+```markdown
+---
+applyTo: "glob/pattern/**"
+---
+
+[Same instruction content]
+```
+
+**Cursor** — `.cursor/rules/*.mdc`:
+```markdown
+---
+globs: glob/pattern/**
+---
+
+[Same instruction content]
+```
+
 - Scope the glob as narrowly as possible
 - State the rule as a clear instruction, not a description
-- Include the "why" — it helps Claude Code apply the rule correctly
+- Include the "why" — it helps AI tools apply the rule correctly
 - Name the file after the concern: `api-error-handling.md`, `state-mutation-rules.md`
+- The content is the same across tools — only the frontmatter format differs
 
 #### Module CLAUDE.md Update
 
@@ -76,17 +96,26 @@ When a danger zone or module-specific pattern was found:
 - If one exists, add to the relevant section (Caution, Patterns)
 - Keep it concise — only what someone working in this module needs to know
 
-#### Root CLAUDE.md Update
+#### Root Context File Update
 
-When project-level understanding changed:
+When project-level understanding changed, update all root context files that exist:
 
+- `CLAUDE.md` — Claude Code
+- `AGENTS.md` — Universal
+- `.github/copilot-instructions.md` — VS Code Copilot
+
+For each:
 - Update the specific section (Architecture, Grain, Module Map, Vocabulary)
 - Don't rewrite sections that haven't changed
 
 #### Agent Update
 
-When the explorer agent's prompt should include new knowledge:
+When the explorer agent's prompt should include new knowledge, update all applicable formats:
 
+- `.claude/agents/*.md` — Claude Code
+- `.github/agents/*.agent.md` — VS Code Copilot
+
+For each:
 - Add to the agent's context about architecture, danger zones, or module relationships
 - Keep the agent prompt focused — it's context, not a manual
 
@@ -107,7 +136,7 @@ When the explorer agent's prompt should include new knowledge:
 ## Notes
 
 - This skill is language-agnostic — works for any project type
-- Every output must be a native Claude Code artifact (rule, agent, CLAUDE.md) — not a log or template file
+- Every output must be a native artifact for the AI tools in use (rules, agents, context files) — not a log or template file
 - Read existing files before updating — build on what's there, don't duplicate
 - Keep rules and CLAUDE.md content concise — verbose documentation goes stale and wastes context
 - Not every task produces learnings — it's fine to run this and conclude "nothing to update"

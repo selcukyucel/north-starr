@@ -93,6 +93,7 @@ your-project/
 ├── .claude/skills/                    # Claude Code skills
 │   ├── bootstrap/
 │   ├── invert/
+│   ├── plan/
 │   ├── document/
 │   ├── learn/
 │   ├── commit-message-generator/
@@ -133,6 +134,7 @@ After bootstrap, your AI tool auto-loads this configuration. Rules fire when tou
 |-------|-------------|
 | `/bootstrap` | First time in a project — generates rules, agents, and context files from your code |
 | `/invert` | Before complex tasks — structured risk analysis (what could go wrong?) |
+| `/plan` | For multi-session work — persistent implementation plans with progress tracking |
 | `/document` | When a module needs a context file — generates one from actual code |
 | `/learn` | After completing work — updates rules, agents, or context files from experience |
 

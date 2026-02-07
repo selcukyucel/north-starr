@@ -1,18 +1,18 @@
 ---
 name: document
-description: Generate a CLAUDE.md file for a module or feature by analyzing its actual code. Produces documentation that Claude Code auto-loads when working in that area. Use when a module has no CLAUDE.md, or when existing documentation is outdated.
+description: Generate a context file for a module or feature by analyzing its actual code. Produces a CLAUDE.md that AI tools use when working in that area. Use when a module has no context file, or when existing documentation is outdated.
 argument-hint: <module path or name>
 ---
 
-# Document — Generate Module CLAUDE.md
+# Document — Generate Module Context File
 
 ## Purpose
 
-Analyze a module's actual code and produce a `CLAUDE.md` file that Claude Code auto-loads when working in that directory. The goal is practical context — not comprehensive documentation, but what someone (or an AI) needs to work here effectively.
+Analyze a module's actual code and produce a `CLAUDE.md` context file for that directory. Claude Code auto-loads these when working in the directory; other AI tools benefit from them as readable documentation. The goal is practical context — not comprehensive documentation, but what someone (or an AI) needs to work here effectively.
 
 ## When to Use
 
-- A module has no `CLAUDE.md` and you're about to work in it
+- A module has no context file and you're about to work in it
 - After `/learn` identifies a documentation gap
 - When existing documentation is outdated after significant changes
 - When onboarding to an unfamiliar area of the codebase
@@ -83,6 +83,16 @@ Generate the `CLAUDE.md` at the module root. Adapt the structure to what's actua
 - Check that file paths and names referenced in the doc actually exist
 - Keep it concise: 100-300 lines for most modules, up to 500 for complex ones
 
+### Step 5: Update Root Context (if needed)
+
+If documenting the module revealed new project-level insights (architecture patterns, vocabulary, module relationships), update the root context files that exist:
+
+- `CLAUDE.md` — Claude Code
+- `AGENTS.md` — Universal
+- `.github/copilot-instructions.md` — VS Code Copilot
+
+Only update sections that are affected (Module Map, Vocabulary, Architecture). Don't rewrite unchanged sections.
+
 ## Output Summary
 
 ```
@@ -92,6 +102,7 @@ Generate the `CLAUDE.md` at the module root. Adapt the structure to what's actua
 **File:** [path to CLAUDE.md]
 **Sections:** [list of sections included]
 **Lines:** [count]
+**Root context updated:** [yes/no — what changed, if applicable]
 ```
 
 ## Notes

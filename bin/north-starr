@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-VERSION="2.1.0"
+VERSION="2.2.0"
 NORTH_STARR_HOME="${NORTH_STARR_HOME:-}"
 
 # Resolve where templates live
@@ -194,6 +194,7 @@ cmd_init() {
   echo -e "  ${DIM}Available skills:${NC}"
   echo -e "    /bootstrap  — Generate project config (rules, agents, context files)"
   echo -e "    /invert     — Deep risk analysis before complex tasks"
+  echo -e "    /plan       — Break complex tasks into persistent implementation plans"
   echo -e "    /document   — Generate documentation for a module"
   echo -e "    /learn      — Update config from experience"
   echo ""
@@ -421,6 +422,7 @@ cmd_help() {
   echo -e "${BOLD}  After init, use these skills in your AI tool:${NC}"
   echo -e "    /bootstrap  — Generate project config (rules, agents, context files)"
   echo -e "    /invert     — Deep risk analysis before complex tasks"
+  echo -e "    /plan       — Break complex tasks into persistent implementation plans"
   echo -e "    /document   — Generate documentation for a module"
   echo -e "    /learn      — Update config from experience"
   echo ""
