@@ -22,35 +22,55 @@ This configuration is generated from your actual code — not templates. The `/b
 
 ## Install
 
+### Claude Code Plugin (recommended)
+
+In Claude Code, run:
+
+```
+/plugin marketplace add selcukyucel/north-starr
+/plugin install north-starr
+```
+
+Skills are available immediately across all your projects. Use as `/north-starr:bootstrap`, `/north-starr:invert`, etc.
+
+### Homebrew (alternative)
+
+If you prefer the CLI for per-project setup:
+
 ```bash
 brew tap selcukyucel/north-starr https://github.com/selcukyucel/north-starr.git && brew install north-starr
 ```
 
-### Update
+Then initialize each project:
 
 ```bash
-brew update && brew upgrade north-starr
+cd your-project
+north-starr init
 ```
 
-Then update skills in your project (preserves your rules, agents, and CLAUDE.md):
+### Update
 
+**Plugin:**
+```
+/plugin update north-starr
+```
+
+**Homebrew:**
 ```bash
-north-starr update
+brew update && brew upgrade north-starr
+north-starr update    # updates skills in current project
 ```
 
 ### Uninstall
 
-Remove from your system:
-
-```bash
-brew uninstall north-starr
-brew untap selcukyucel/north-starr
+**Plugin:**
+```
+/plugin uninstall north-starr
 ```
 
-Remove from a project:
-
+**Homebrew:**
 ```bash
-rm -rf .claude/skills/bootstrap .claude/skills/invert .claude/skills/document .claude/skills/learn .claude/skills/commit-message-generator .claude/skills/refactoring-analyzer CLAUDE.md
+brew uninstall north-starr && brew untap selcukyucel/north-starr
 ```
 
 ---
@@ -110,12 +130,12 @@ After bootstrap, Claude Code auto-loads this configuration. Rules fire when touc
 
 ### Available skills
 
-| Command | When to use |
-|---------|-------------|
-| `/bootstrap` | First time in a project — generates rules, agents, and CLAUDE.md from your code |
-| `/invert` | Before complex tasks — structured risk analysis (what could go wrong?) |
-| `/document` | When a module needs a CLAUDE.md — generates one from actual code |
-| `/learn` | After completing work — updates rules, agents, or CLAUDE.md from experience |
+| Plugin | Homebrew | When to use |
+|--------|----------|-------------|
+| `/north-starr:bootstrap` | `/bootstrap` | First time in a project — generates rules, agents, and CLAUDE.md from your code |
+| `/north-starr:invert` | `/invert` | Before complex tasks — structured risk analysis (what could go wrong?) |
+| `/north-starr:document` | `/document` | When a module needs a CLAUDE.md — generates one from actual code |
+| `/north-starr:learn` | `/learn` | After completing work — updates rules, agents, or CLAUDE.md from experience |
 
 ### CLI commands
 
