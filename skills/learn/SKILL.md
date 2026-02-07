@@ -47,9 +47,78 @@ Map each learning to the right artifact:
 | The explorer agent needs more context | Agent files — update `.claude/agents/` and/or `.github/agents/` |
 | A recurring task type was identified | Suggest creating a new skill |
 
+### Step 2.5: Detect Conflicts With Existing Configuration
+
+Before generating artifacts, check whether any new learning **contradicts, replaces, or narrows** something already documented. This step prevents silently overwriting rules that still apply to existing code.
+
+**Actions:**
+
+1. For each learning identified in Step 1, read the existing rules, CLAUDE.md files, and context files that cover the same area
+2. Classify the relationship between the new learning and existing content:
+
+| Relationship | Example | Action |
+|---|---|---|
+| **Additive** — no existing content covers this | New rule for a previously undocumented convention | Auto-create. No prompt needed. |
+| **Contradicts** — existing content says the opposite | Old rule says "use library A", new learning says "use library B" | **Prompt user** before changing anything. |
+| **Narrows** — existing content is too broad now | Rule applies to all modules, but only some modules should follow it now | **Prompt user** with scope adjustment proposal. |
+| **Deepens** — existing content is correct but incomplete | Existing CLAUDE.md has Architecture section, new insight adds nuance | Auto-update. Append or refine, don't replace. |
+
+3. For each **Contradicts** or **Narrows** conflict, present the user with the conflict and ask which resolution applies:
+
+**Resolution options:**
+
+| Resolution | When to use | What to do |
+|---|---|---|
+| **Replace** | Old pattern is fully gone, no code uses it anymore | Delete old content, write new content. Add `<!-- [SUPERSEDES] old-rule-name — reason -->` comment to the new artifact for traceability. |
+| **Deprecate** | Old code still exists but new code should follow the new pattern | Keep old rule, add `[DEPRECATED — migrate to X]` marker. Create new rule for the new pattern. |
+| **Scope-split** | Both patterns coexist — some modules use old, some use new | Narrow old rule's path glob to only the modules still using it. Create new rule scoped to the modules using the new pattern. |
+| **Keep existing** | The new learning was wrong or situational | Do not update. Optionally note the exception in the relevant CLAUDE.md. |
+
+**Do not silently replace existing rules.** Old code may still depend on existing guidance. Prompting ensures no working guidance is lost.
+
+#### Tag Conventions
+
+**`[DEPRECATED — migrate to X]`** — Added to rules, CLAUDE.md sections, or context content that still applies to existing code but should not be used for new code.
+
+Format in rules:
+```markdown
+---
+paths: ["src/legacy/**"]
+---
+
+[DEPRECATED — migrate to new-pattern. See `.claude/rules/new-pattern.md`]
+
+Use old-pattern for files in this directory.
+```
+
+Format in CLAUDE.md sections:
+```markdown
+## Error Handling
+
+[DEPRECATED — migrate to centralized error handler. See `Architecture` section.]
+
+This module uses inline try/catch with local error formatting...
+```
+
+**`<!-- [SUPERSEDES] old-name — reason -->`** — Added as a comment to the new artifact that replaced an old one, for traceability.
+
+```markdown
+---
+paths: ["src/**"]
+---
+
+<!-- [SUPERSEDES] old-error-handling — team adopted centralized error handler -->
+
+Use the shared error handler for all error responses.
+```
+
+**Tag lifecycle:**
+- `[DEPRECATED]` tags are reviewed whenever `/learn` runs — if the old code has been fully migrated, the deprecated rule should be deleted
+- `[SUPERSEDES]` comments are permanent traceability — they stay in the file
+
 ### Step 3: Generate the Artifacts
 
-For each learning, create or update the appropriate file:
+For each learning, create or update the appropriate file using the resolution determined in Step 2.5:
 
 #### New Rule
 
@@ -119,6 +188,17 @@ For each:
 - Add to the agent's context about architecture, danger zones, or module relationships
 - Keep the agent prompt focused — it's context, not a manual
 
+### Step 3.5: Clean Up Deprecated Artifacts
+
+After generating new artifacts, check whether any `[DEPRECATED]` tags in the project can be resolved:
+
+1. Scan existing rules and CLAUDE.md files for `[DEPRECATED — migrate to X]` markers
+2. For each deprecated artifact, check whether the old pattern still exists in the codebase (search for actual usage, not just the rule)
+3. If the old pattern is fully gone — delete the deprecated rule and inform the user
+4. If the old pattern still exists — leave the `[DEPRECATED]` tag in place
+
+This keeps the configuration clean over time without losing guidance for code that still needs it.
+
 ### Step 4: Present Summary
 
 ```
@@ -130,14 +210,26 @@ For each:
 - [artifact type]: [file path] — [what was added/changed]
 - [artifact type]: [file path] — [what was added/changed]
 
+**Conflicts Resolved:**
+- [file path] — [resolution: replaced / deprecated / scope-split / kept existing] — [reason]
+
+**Deprecated Rules Cleaned Up:**
+- [file path] — old pattern no longer found in codebase, rule deleted
+
 **Why:** [brief explanation of what triggered these updates]
 ```
+
+Omit the "Conflicts Resolved" and "Deprecated Rules Cleaned Up" sections if there were none.
 
 ## Notes
 
 - This skill is language-agnostic — works for any project type
 - Every output must be a native artifact for the AI tools in use (rules, agents, context files) — not a log or template file
 - Read existing files before updating — build on what's there, don't duplicate
+- **Never silently replace or delete existing rules** — always prompt the user when new knowledge contradicts existing content
+- Auto-update is fine for additive changes and deepening existing content
 - Keep rules and CLAUDE.md content concise — verbose documentation goes stale and wastes context
 - Not every task produces learnings — it's fine to run this and conclude "nothing to update"
 - When unsure whether something deserves a rule vs. a CLAUDE.md note: rules are for constraints that should always be enforced, CLAUDE.md is for context that helps Claude make better decisions
+- `[DEPRECATED]` tags have a lifecycle — they should be cleaned up once the old pattern is fully gone, not left indefinitely
+- When both old and new patterns coexist, prefer **scope-split** over **replace** — old code still needs its rules until it's actually changed
