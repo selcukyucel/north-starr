@@ -1,6 +1,6 @@
 # [Feature Name] - Feature Documentation
 
-**Module**: `Feature/[FeatureName]` or `Domain/[DomainName]`
+**Module**: `[module/package path]`
 **Last Updated**: [Date]
 **Version**: 1.0
 
@@ -8,7 +8,7 @@
 
 ## Overview
 
-[Brief description of what this feature does and its purpose in the app]
+[Brief description of what this feature does and its purpose in the application]
 
 **Key Capabilities**:
 - [Capability 1]
@@ -22,19 +22,19 @@
 ### Flow 1: [Main User Journey]
 
 **Steps**:
-1. User opens [Feature Name] screen
+1. User opens [Feature Name] screen/page
 2. User sees [what they see]
-3. User taps [action]
+3. User interacts with [action]
 4. System [what happens]
 5. User sees [result]
 
 **State Changes**:
-- `uiState`: `.loading` → `.ready(nil)`
-- `items`: `[]` → `[Item(...)]`
+- `uiState`: `loading` → `ready`
+- `items`: `[]` → `[...]`
 
 **Navigation**:
-- From: [PreviousScreen] via [Coordinator method]
-- To: [NextScreen] via [Coordinator method]
+- From: [PreviousScreen/Page] via [routing method]
+- To: [NextScreen/Page] via [routing method]
 
 ### Flow 2: [Secondary User Journey]
 
@@ -42,97 +42,99 @@
 
 ---
 
-## MVVM Architecture
+## Architecture
 
-### Models
+> Adapt this section to your project's architecture pattern (MVC, MVVM, Clean Architecture, Hexagonal, etc.)
+
+### Models / Entities
 
 #### [ModelName]
 
-**Location**: `Foundation/Models/[ModelName].swift`
+**Location**: `[path/to/model file]`
 
 **Properties**:
-- `id: UUID` - Unique identifier
-- `property1: String` - [Description]
-- `property2: Int` - [Description]
+- `id` - Unique identifier
+- `property1` - [Description]
+- `property2` - [Description]
 
 **Purpose**: [What this model represents]
 
-### Repository
+### Data Layer (Repository / Service / Store)
 
 #### [FeatureName]Repository
 
-**Location**: `Domain/[DomainName]/[FeatureName]Repository.swift`
+**Location**: `[path/to/repository file]`
 
 **Dependencies**:
-- `networkClient` - API communication
-- `storage` - Local persistence
+- `networkClient` / `httpClient` - API communication
+- `storage` / `database` - Local persistence
 
 **Key Methods**:
-- `func fetchData() async throws -> [Model]` - [Description]
-- `func saveData(_ data: Model) async throws` - [Description]
+- `fetchData()` - [Description]
+- `saveData(data)` - [Description]
 
-**@Published Properties**:
-- `@Published var items: [Model]` - [Description]
+**Reactive State** (if applicable):
+- `items` - [Description of observable/reactive property]
 
-### ViewModel
+### Business Logic Layer (ViewModel / Controller / UseCase)
 
 #### [FeatureName]ViewModel
 
-**Location**: `Feature/[FeatureName]/[FeatureName]ViewModel.swift`
+**Location**: `[path/to/viewmodel file]`
 
-**@Published State**:
-- `items: [Item]` - [Description]
-- `uiState: UIState` - Loading/ready state
-- `errorMessage: String?` - Error display
-- `searchText: String` - User input (two-way binding)
+**Observable State**:
+- `items` - [Description]
+- `uiState` - Loading/ready/error state
+- `errorMessage` - Error display
+- `searchText` - User input (two-way binding)
 
 **Public Methods**:
-- `func fetchData()` - [Description]
-- `func selectItem(_ item: Item)` - [Description]
-- `func clearError()` - [Description]
+- `fetchData()` - [Description]
+- `selectItem(item)` - [Description]
+- `clearError()` - [Description]
 
-**Combine Subscriptions**:
-- Subscribes to `repository.$items` → updates local items
-- Subscribes to `$searchText` (debounced) → triggers search
+**Reactive Subscriptions** (if applicable):
+- Subscribes to repository items → updates local items
+- Subscribes to search text (debounced) → triggers search
 
 **Dependencies**:
-- `@Dependency(\.repository)` - Data access
-- `@Dependency(\.observability)` - Telemetry
+- Repository / data layer - Data access
+- Logger / telemetry - Observability
 
-### View
+### View / UI Layer
 
 #### [FeatureName]View
 
-**Location**: `Feature/[FeatureName]/[FeatureName]View.swift`
+**Location**: `[path/to/view file]`
 
-**DesignSystem Components**:
-- `AppBackground` - Standard background
-- `ActivityIndicator` - Loading state
-- `ErrorView` - Error display
-- `StandardListItem` - List rows
-- `PrimaryButton` - Actions
+**Design System Components**:
+- [Background component] - Standard background
+- [Loading indicator] - Loading state
+- [Error component] - Error display
+- [List item component] - List rows
+- [Button component] - Actions
 
-**Bindings**:
-- `@ObservedObject var viewModel` - Observes all state
-- `$viewModel.searchText` - Two-way input binding
+**State Bindings**:
+- Observes view model state
+- Two-way binding on user input fields
 
-**Delegate Protocol**: `[FeatureName]Delegate`
-- `func show(item: Item)` - Navigate to detail
-- `func dismiss()` - Close screen
+**Delegate / Callbacks**:
+- `showItem(item)` - Navigate to detail
+- `dismiss()` - Close screen
 
-### Coordinator
+### Navigation (Router / Coordinator / Controller)
 
-#### [FeatureName]Coordinator
+#### [FeatureName]Router
 
-**Location**: `/Sportio/Navigation/[FeatureName]Coordinator.swift`
+**Location**: `[path/to/router file]`
 
 **Navigation Methods**:
-- `func show(item: Item)` - Push detail view
-- `func showCreate()` - Present modal
-- `func dismiss()` - Dismiss modal/pop view
+- `showItem(item)` - Navigate to detail view
+- `showCreate()` - Present creation form
+- `dismiss()` - Go back / close
 
-**ViewModel Initialization**:
-- Creates ViewModels with proper dependencies
+**Initialization**:
+- Creates view models / controllers with proper dependencies
 - Injects callbacks for navigation
 
 ---
@@ -140,33 +142,33 @@
 ## Data Flow
 
 ```
-View (User Action)
+View / UI (User Action)
   ↓
-Delegate → Coordinator (Navigation)
+Router / Coordinator (Navigation)
   ↓
-ViewModel (Business Logic)
+ViewModel / Controller (Business Logic)
   ↓
-Repository (Data Access)
+Repository / Service (Data Access)
   ↓
-Network/Storage
+Network / Storage
   ↓
-Repository @Published update
+Repository state update
   ↓
-ViewModel Combine subscription
+ViewModel reactive subscription
   ↓
-ViewModel @Published update
+ViewModel state update
   ↓
 View re-render
 ```
 
 **Example: Fetching Data**
 
-1. User opens screen → `ViewModel.init()` → `fetchData()`
+1. User opens screen → ViewModel initializes → `fetchData()`
 2. ViewModel → `repository.fetchData()` (async)
 3. Repository → Network call
-4. Repository updates `@Published items`
-5. ViewModel Combine subscription receives update
-6. ViewModel updates local `items` property
+4. Repository updates its observable state
+5. ViewModel subscription receives update
+6. ViewModel updates local state
 7. View automatically re-renders with new data
 
 ---
@@ -174,25 +176,25 @@ View re-render
 ## File Structure
 
 ```
-Feature/[FeatureName]/
-├── [FeatureName]ViewModel.swift
-├── [FeatureName]View.swift
-└── [FeatureName]Subviews/
-    ├── Subview1.swift
-    └── Subview2.swift
+[feature-path]/
+├── [FeatureName]ViewModel.[ext]
+├── [FeatureName]View.[ext]
+└── components/
+    ├── SubComponent1.[ext]
+    └── SubComponent2.[ext]
 
-Domain/[DomainName]/
-├── [FeatureName]Repository.swift
-└── [FeatureName]Service.swift
+[data-layer-path]/
+├── [FeatureName]Repository.[ext]
+└── [FeatureName]Service.[ext]
 
-Foundation/Models/
-└── [ModelName].swift
+[models-path]/
+└── [ModelName].[ext]
 
-Sportio/Navigation/
-└── [FeatureName]Coordinator.swift
+[navigation-path]/
+└── [FeatureName]Router.[ext]
 
-SportioTests/
-└── [FeatureName]ViewModelTests.swift
+[tests-path]/
+└── [FeatureName]ViewModel.test.[ext]
 ```
 
 ---
@@ -205,7 +207,7 @@ SportioTests/
 
 **Handling**: [How it's handled in code]
 
-**Location**: `[FileName].swift:123`
+**Location**: `[file path:line number]`
 
 ### Edge Case 2: [Description]
 
@@ -217,28 +219,28 @@ SportioTests/
 
 ### Unit Tests
 
-**Location**: `SportioTests/[FeatureName]ViewModelTests.swift`
+**Location**: `[path/to/test file]`
 
 **Test Coverage**:
 - Initial state validation
 - Fetch data success path
 - Fetch data error handling
 - User actions (select, filter, search)
-- Combine subscription behavior
+- Reactive subscription behavior
 
 **Example**:
-```swift
-@Test func fetchDataSuccess() async {
-    let viewModel = await withDependencies {
-        $0.repository = .mock
-    } operation: {
-        [FeatureName]ViewModel()
-    }
+```
+// Pseudocode - adapt to your testing framework
+test "fetchData populates items on success" {
+    // Arrange
+    repository = MockRepository(items: [sampleItem])
+    viewModel = FeatureNameViewModel(repository: repository)
 
-    await viewModel.fetchData()
+    // Act
+    viewModel.fetchData()
 
-    let items = await viewModel.items
-    #expect(!items.isEmpty)
+    // Assert
+    expect(viewModel.items).not.toBeEmpty()
 }
 ```
 
@@ -252,10 +254,10 @@ SportioTests/
 
 - [ ] Open feature screen → displays loading indicator
 - [ ] Data loads → displays list of items
-- [ ] Tap item → navigates to detail
-- [ ] Pull to refresh → reloads data
-- [ ] Network error → displays ErrorView
-- [ ] Clear error → dismisses ErrorView
+- [ ] Select item → navigates to detail
+- [ ] Refresh → reloads data
+- [ ] Network error → displays error state
+- [ ] Dismiss error → clears error state
 - [ ] Search input → filters results (debounced)
 
 ---
@@ -263,32 +265,31 @@ SportioTests/
 ## Related Features
 
 - **[RelatedFeature1]**: [How they're related]
-  - **Location**: `Feature/[RelatedFeature1]/`
+  - **Location**: `[path/to/related feature]`
   - **Connection**: [Shares repository / navigates to]
 
 - **[RelatedFeature2]**: [How they're related]
-  - **Location**: `Domain/[RelatedDomain]/`
+  - **Location**: `[path/to/related feature]`
   - **Connection**: [Uses same models / calls same service]
 
 ---
 
 ## Patterns Used
 
-- [MVVM ViewModel Pattern](../../.ai/patterns/mvvm-viewmodel-pattern.md)
-- [MVVM Coordinator Pattern](../../.ai/patterns/mvvm-coordinator-pattern.md)
-- [MVVM Combine Pattern](../../.ai/patterns/mvvm-combine-pattern.md)
-- [Design System Usage](../../.ai/patterns/design-system-usage-pattern.md)
-- [MVVM Error Handling](../../.ai/patterns/mvvm-error-handling-pattern.md)
+> Link to your project's pattern documentation as applicable.
+
+- [Pattern 1](../../.ai/patterns/[pattern-name].md)
+- [Pattern 2](../../.ai/patterns/[pattern-name].md)
+- [Pattern 3](../../.ai/patterns/[pattern-name].md)
 
 ---
 
 ## Landmines Avoided
 
-- ✅ No property observers on @Published properties (see: [mvvm-published-property-observers.md](../../.ai/landmines/mvvm-published-property-observers.md))
-- ✅ All Combine subscriptions stored in cancellables (see: [mvvm-combine-cancellation.md](../../.ai/landmines/mvvm-combine-cancellation.md))
-- ✅ All @Published updates on main thread via @MainActor (see: [mvvm-mainactor-viewmodel.md](../../.ai/landmines/mvvm-mainactor-viewmodel.md))
-- ✅ Using [weak self] in all closures
-- ✅ DesignSystem components used throughout
+> Link to your project's landmine documentation as applicable.
+
+- [Landmine 1 avoided and why](../../.ai/landmines/[landmine-name].md)
+- [Landmine 2 avoided and why](../../.ai/landmines/[landmine-name].md)
 
 ---
 
