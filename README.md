@@ -19,7 +19,7 @@ Most AI coding tools start every project cold. north-starr gives them project-sp
 - **`.claude/rules/`** + **`.github/instructions/`** + **`.cursor/rules/`** — conventions scoped by file path (auto-enforced)
 - **`.claude/agents/`** + **`.github/agents/`** — project-tuned specialized agents
 
-This configuration is generated from your actual code — not templates. The `/bootstrap` skill explores your codebase, identifies architecture patterns, detects danger zones, and writes configuration in each tool's native format.
+This configuration is generated from your actual code — not templates. The `/bootstrap` skill explores your codebase, identifies architecture patterns, detects danger zones, and writes configuration in each tool's native format. For new projects with no code yet, `/architect` captures your architectural intent and generates the same configuration from declared conventions.
 
 ---
 
@@ -36,7 +36,7 @@ Pick your tool and follow the steps.
 /plugin install north-starr
 ```
 
-Skills are available immediately across all your projects. Run `/north-starr:bootstrap` to generate configuration.
+Skills are available immediately across all your projects. Run `/north-starr:architect` (new project) or `/north-starr:bootstrap` (existing code) to generate configuration.
 
 **Option B — Homebrew:**
 
@@ -46,7 +46,7 @@ cd your-project
 north-starr init
 ```
 
-Then run `/bootstrap` in Claude Code to generate configuration.
+Then run `/architect` (new project) or `/bootstrap` (existing code) in Claude Code to generate configuration.
 
 ### VS Code Copilot
 
@@ -56,7 +56,7 @@ cd your-project
 north-starr init
 ```
 
-This installs skills to `.github/skills/` and creates `AGENTS.md`. Open Copilot Chat and run `/bootstrap` to generate configuration.
+This installs skills to `.github/skills/` and creates `AGENTS.md`. Open Copilot Chat and run `/architect` (new project) or `/bootstrap` (existing code) to generate configuration.
 
 ### Cursor
 
@@ -66,7 +66,7 @@ cd your-project
 north-starr init
 ```
 
-This creates `AGENTS.md` and installs skills. Run `/bootstrap` from Cursor's chat to generate `.cursor/rules/` and other configuration.
+This creates `AGENTS.md` and installs skills. Run `/architect` (new project) or `/bootstrap` (existing code) from Cursor's chat to generate `.cursor/rules/` and other configuration.
 
 ### Any other AI tool
 
@@ -91,6 +91,7 @@ your-project/
 ├── AGENTS.md                          # Universal — works with any AI tool
 ├── CLAUDE.md                          # Claude Code starter
 ├── .claude/skills/                    # Claude Code skills
+│   ├── architect/
 │   ├── bootstrap/
 │   ├── invert/
 │   ├── plan/
@@ -132,7 +133,8 @@ After bootstrap, your AI tool auto-loads this configuration. Rules fire when tou
 
 | Skill | When to use |
 |-------|-------------|
-| `/bootstrap` | First time in a project — generates rules, agents, and context files from your code |
+| `/architect` | New project with no code yet — define architecture and conventions from intent |
+| `/bootstrap` | First time in an existing project — generates rules, agents, and context files from your code |
 | `/invert` | Before complex tasks — structured risk analysis (what could go wrong?) |
 | `/plan` | For multi-session work — persistent implementation plans with progress tracking |
 | `/document` | When a module needs a context file — generates one from actual code |
@@ -194,9 +196,13 @@ Every codebase has a **grain** — a direction that changes flow easily. Adding 
 The system improves through use:
 
 ```
-/bootstrap  →  generates initial config
+/architect  →  declares intent (new projects)
+     ↓                    or
+/bootstrap  →  generates config from code (existing projects)
      ↓
   you work  →  your AI tool uses the config automatically
+     ↓
+/bootstrap  →  validates declared config against reality
      ↓
   /learn    →  updates config from what was discovered
      ↓

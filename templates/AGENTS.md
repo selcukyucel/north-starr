@@ -4,14 +4,15 @@ This project uses [North Starr](https://github.com/selcukyucel/north-starr) for 
 
 ## Getting Started
 
-Run `/bootstrap` to generate project-specific configuration:
+Run `/architect` (new project) or `/bootstrap` (existing code) to generate project-specific configuration:
 - Project context with architecture, grain, module map, and vocabulary
 - Path-scoped rules for conventions and constraints
 - A project-tuned explorer agent
 
 ## Available Skills
 
-- `/bootstrap` — Generate project configuration (run once)
+- `/architect` — Define architecture for a new project (before code exists)
+- `/bootstrap` — Generate project configuration from existing code (run once)
 - `/invert` — Deep risk analysis before complex tasks
 - `/plan` — Break complex tasks into persistent, trackable implementation plans
 - `/document` — Generate documentation for a module

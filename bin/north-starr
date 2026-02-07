@@ -219,11 +219,12 @@ cmd_init() {
   echo ""
   echo -e "  ${BOLD}What's next:${NC}"
   echo -e "  ${DIM}1.${NC} Open your AI coding tool (Claude Code, VS Code Copilot, Cursor, etc.)"
-  echo -e "  ${DIM}2.${NC} Run ${CYAN}/bootstrap${NC} to generate project-specific config"
+  echo -e "  ${DIM}2.${NC} Run ${CYAN}/architect${NC} (new project) or ${CYAN}/bootstrap${NC} (existing code)"
   echo -e "  ${DIM}3.${NC} Start working — your AI tool auto-loads the generated context"
   echo ""
   echo -e "  ${DIM}Available skills:${NC}"
-  echo -e "    /bootstrap  — Generate project config (rules, agents, context files)"
+  echo -e "    /architect  — Define architecture for a new project (before code exists)"
+  echo -e "    /bootstrap  — Generate project config from existing code"
   echo -e "    /invert     — Deep risk analysis before complex tasks"
   echo -e "    /plan       — Break complex tasks into persistent implementation plans"
   echo -e "    /document   — Generate documentation for a module"
@@ -352,9 +353,12 @@ cmd_status() {
 
   # Check CLAUDE.md
   if [[ -f "$target_dir/CLAUDE.md" ]]; then
-    if grep -q "Run \`/bootstrap\` to generate" "$target_dir/CLAUDE.md" 2>/dev/null; then
+    if grep -q "Run \`/bootstrap\` to generate\|Run \`/architect\`" "$target_dir/CLAUDE.md" 2>/dev/null; then
       print_success "CLAUDE.md — starter"
       bootstrapped=false
+    elif grep -q '\[DECLARED\]' "$target_dir/CLAUDE.md" 2>/dev/null; then
+      local declared_count=$(grep -c '\[DECLARED\]' "$target_dir/CLAUDE.md" 2>/dev/null || echo 0)
+      print_success "CLAUDE.md — architected (${declared_count} declared sections — run /bootstrap to validate)"
     else
       print_success "CLAUDE.md — project-specific"
     fi
@@ -417,7 +421,7 @@ cmd_status() {
   if [[ "$initialized" == "false" ]]; then
     print_info "Run ${BOLD}north-starr init${NC} to install North Starr."
   elif [[ "$bootstrapped" == "false" ]]; then
-    echo -e "  ${YELLOW}${BOLD}Skills installed.${NC} Run ${CYAN}/bootstrap${NC} in your AI tool to generate project config."
+    echo -e "  ${YELLOW}${BOLD}Skills installed.${NC} Run ${CYAN}/architect${NC} (new project) or ${CYAN}/bootstrap${NC} (existing code) to generate config."
   else
     echo -e "  ${GREEN}${BOLD}North Starr is fully configured.${NC}"
   fi
@@ -447,7 +451,8 @@ cmd_help() {
   echo -e "    ${DIM}north-starr status${NC}             # Check setup status"
   echo ""
   echo -e "${BOLD}  After init, use these skills in your AI tool:${NC}"
-  echo -e "    /bootstrap  — Generate project config (rules, agents, context files)"
+  echo -e "    /architect  — Define architecture for a new project (before code exists)"
+  echo -e "    /bootstrap  — Generate project config from existing code"
   echo -e "    /invert     — Deep risk analysis before complex tasks"
   echo -e "    /plan       — Break complex tasks into persistent implementation plans"
   echo -e "    /document   — Generate documentation for a module"
