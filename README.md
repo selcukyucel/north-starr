@@ -8,6 +8,8 @@ Supports [Claude Code](https://docs.anthropic.com/en/docs/claude-code), [VS Code
 
 It's language-agnostic. Works for any project — iOS, web, backend, infrastructure, anything.
 
+[![agentlinter score: 96/100 A+](assets/agentlinter-score.png)](https://agentlinter.com/r/w7Jo9X0qVOV8)
+
 ---
 
 ## What it does
