@@ -1,6 +1,6 @@
 # north-starr
 
-**Your North Star for Friction-Free Development**
+**Your North Starr for Friction-Free Development**
 
 > *"We don't improve productivity by trying to go faster, we improve productivity by improving control."*
 > — Idea Flow
