@@ -74,7 +74,7 @@ Janelle Arty Starr explains the Idea Flow methodology:
 ## Install
 
 ```bash
-brew install selcukyucel/north-starr/north-starr
+brew tap selcukyucel/north-starr https://github.com/selcukyucel/north-starr.git && brew install north-starr
 ```
 
 ### Update
