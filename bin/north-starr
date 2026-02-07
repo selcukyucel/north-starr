@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-VERSION="1.1.0"
+VERSION="2.0.0"
 NORTH_STARR_HOME="${NORTH_STARR_HOME:-}"
 
 # Resolve where templates live
@@ -49,7 +49,7 @@ NC='\033[0m'
 print_banner() {
   echo ""
   echo -e "${CYAN}    ★ ${BOLD}north-starr${NC}"
-  echo -e "${DIM}    Your North Star for Friction-Free Development${NC}"
+  echo -e "${DIM}    Your North Starr for Friction-Free Development${NC}"
   echo -e "${DIM}    Inspired by Idea Flow — Janelle Arty Starr${NC}"
   echo ""
 }
@@ -87,74 +87,79 @@ cmd_init() {
     exit 1
   fi
 
-  echo -e "${BOLD}  Initializing Idea Flow workflow in:${NC}"
+  echo -e "${BOLD}  Initializing North Starr in:${NC}"
   echo -e "  ${DIM}$target_dir${NC}"
   echo ""
 
   # Check for existing files
-  local has_existing=false
-  if [[ -d "$target_dir/.ai" || -d "$target_dir/.claude" || -f "$target_dir/CLAUDE.md" ]]; then
-    has_existing=true
-    print_warn "Some Idea Flow files already exist."
+  if [[ -d "$target_dir/.claude/skills" || -f "$target_dir/CLAUDE.md" ]]; then
+    print_warn "Some North Starr files already exist."
     echo ""
     read -rp "  Overwrite existing files? [y/N] " confirm
     if [[ "$confirm" != "y" && "$confirm" != "Y" ]]; then
       echo ""
-      print_info "Use ${BOLD}north-starr update${NC} to update without overwriting."
+      print_info "Use ${BOLD}north-starr update${NC} to update skills without overwriting."
       exit 0
     fi
     echo ""
   fi
 
-  # Copy .ai/ directory
-  if [[ -d "$template_dir/ai" ]]; then
-    mkdir -p "$target_dir/.ai"
-    cp -r "$template_dir/ai/"* "$target_dir/.ai/"
-    print_success ".ai/ — project knowledge base (patterns, landmines, checklists, tasks, memory)"
-  fi
-
-  # Copy .claude/ directory
-  if [[ -d "$template_dir/claude" ]]; then
+  # Copy .claude/skills/
+  if [[ -d "$template_dir/claude/skills" ]]; then
     mkdir -p "$target_dir/.claude/skills"
     cp -r "$template_dir/claude/skills/"* "$target_dir/.claude/skills/"
-    print_success ".claude/skills/ — workflow phase skills (sense, model, sculpt, validate, learn, bootstrap)"
+    print_success ".claude/skills/ — workflow skills (bootstrap, invert, document, learn)"
   fi
 
-  # Copy memory/ into .ai/memory/
-  if [[ -d "$template_dir/ai/memory" ]]; then
-    mkdir -p "$target_dir/.ai/memory"
-    cp -r "$template_dir/ai/memory/"* "$target_dir/.ai/memory/"
-    print_success ".ai/memory/ — friction log, vocabulary, patterns index"
-  fi
-
-  # Copy CLAUDE.md
+  # Copy starter CLAUDE.md
   if [[ -f "$template_dir/CLAUDE.md" ]]; then
     cp "$template_dir/CLAUDE.md" "$target_dir/CLAUDE.md"
-    print_success "CLAUDE.md — active workflow instructions for Claude Code"
+    print_success "CLAUDE.md — starter instructions for Claude Code"
   fi
 
-  # Copy IDEAFLOW_AGENTIC_WORKFLOW.md
-  if [[ -f "$template_dir/IDEAFLOW_AGENTIC_WORKFLOW.md" ]]; then
-    cp "$template_dir/IDEAFLOW_AGENTIC_WORKFLOW.md" "$target_dir/IDEAFLOW_AGENTIC_WORKFLOW.md"
-    print_success "IDEAFLOW_AGENTIC_WORKFLOW.md — full methodology reference"
+  # Migrate from v1.x: clean up old .ai/ structure if user confirms
+  if [[ -d "$target_dir/.ai" ]]; then
+    echo ""
+    print_warn "Found .ai/ directory from a previous version."
+    print_info "North Starr v2 uses native Claude Code primitives instead."
+    print_info "Run ${CYAN}/bootstrap${NC} to regenerate config as .claude/rules/ and .claude/agents/."
+    echo ""
+    read -rp "  Remove old .ai/ directory? [y/N] " confirm_ai
+    if [[ "$confirm_ai" == "y" || "$confirm_ai" == "Y" ]]; then
+      rm -rf "$target_dir/.ai"
+      print_success "Removed .ai/"
+    else
+      print_info "Kept .ai/ — you can remove it manually later."
+    fi
   fi
+
+  # Migrate from v1.x: remove old workflow reference doc
+  if [[ -f "$target_dir/IDEAFLOW_AGENTIC_WORKFLOW.md" ]]; then
+    rm "$target_dir/IDEAFLOW_AGENTIC_WORKFLOW.md"
+    print_success "Removed IDEAFLOW_AGENTIC_WORKFLOW.md (no longer needed)"
+  fi
+
+  # Migrate from v1.x: remove old skills (deleted + renamed)
+  for old_skill in ideaflow-sense ideaflow-model ideaflow-sculpt ideaflow-validate ideaflow-bootstrap ideaflow-invert ideaflow-document ideaflow-learn; do
+    if [[ -d "$target_dir/.claude/skills/$old_skill" ]]; then
+      rm -rf "$target_dir/.claude/skills/$old_skill"
+      print_success "Removed .claude/skills/$old_skill (replaced in v2)"
+    fi
+  done
 
   echo ""
-  echo -e "${GREEN}${BOLD}  Done!${NC} Idea Flow workflow initialized."
+  echo -e "${GREEN}${BOLD}  Done!${NC} North Starr initialized."
   echo ""
   echo -e "  ${BOLD}What's next:${NC}"
   echo -e "  ${DIM}1.${NC} Open Claude Code in this project"
-  echo -e "  ${DIM}2.${NC} Run ${CYAN}/ideaflow-bootstrap${NC} to generate project context"
-  echo -e "  ${DIM}3.${NC} Start any task with ${CYAN}/ideaflow-sense${NC}"
+  echo -e "  ${DIM}2.${NC} Run ${CYAN}/bootstrap${NC} to generate project-specific config"
+  echo -e "  ${DIM}3.${NC} Start working — Claude Code auto-loads the generated context"
   echo ""
   echo -e "  ${DIM}Available skills:${NC}"
-  echo -e "    /ideaflow-bootstrap  — Generate initial project context"
-  echo -e "    /ideaflow-sense      — Start any task (friction forecast)"
-  echo -e "    /ideaflow-model      — Plan implementation (medium/complex)"
-  echo -e "    /ideaflow-sculpt     — Execute with micro-cycles"
-  echo -e "    /ideaflow-validate   — Verify with explicit predictions"
-  echo -e "    /ideaflow-learn      — Capture learnings"
-  echo -e "    /ideaflow-document   — Generate module documentation"
+  echo -e "    /bootstrap  — Generate project config (rules, agents, CLAUDE.md)"
+  echo -e "    /invert     — Deep risk analysis before complex tasks"
+  echo -e "    /document   — Generate CLAUDE.md for a module"
+  echo -e "    /learn      — Update config from experience"
   echo ""
   echo -e "  ${DIM}Learn more: https://github.com/selcukyucel/north-starr${NC}"
   echo ""
@@ -177,72 +182,40 @@ cmd_update() {
     exit 1
   fi
 
-  echo -e "${BOLD}  Updating Idea Flow workflow in:${NC}"
+  echo -e "${BOLD}  Updating North Starr in:${NC}"
   echo -e "  ${DIM}$target_dir${NC}"
   echo ""
 
-  # Update skills (safe — these are read-only reference files)
+  # Update skills
   if [[ -d "$template_dir/claude/skills" ]]; then
     mkdir -p "$target_dir/.claude/skills"
     cp -r "$template_dir/claude/skills/"* "$target_dir/.claude/skills/"
     print_success "Updated .claude/skills/"
   fi
 
-  # Update templates (safe — these are empty templates)
-  if [[ -d "$template_dir/ai" ]]; then
-    # Only update templates, not user-created patterns/landmines
-    for dir in patterns landmines checklists; do
-      if [[ -f "$template_dir/ai/$dir/_TEMPLATE.md" ]]; then
-        mkdir -p "$target_dir/.ai/$dir"
-        cp "$template_dir/ai/$dir/_TEMPLATE.md" "$target_dir/.ai/$dir/_TEMPLATE.md"
-      fi
-    done
-
-    # Update task templates
-    if [[ -d "$template_dir/ai/tasks/.templates" ]]; then
-      mkdir -p "$target_dir/.ai/tasks/.templates"
-      cp "$template_dir/ai/tasks/.templates/"* "$target_dir/.ai/tasks/.templates/"
-    fi
-
-    # Update .ai README and QUICK-START
-    for file in README.md QUICK-START.md; do
-      if [[ -f "$template_dir/ai/$file" ]]; then
-        cp "$template_dir/ai/$file" "$target_dir/.ai/$file"
-      fi
-    done
-
-    print_success "Updated .ai/ templates"
-  fi
-
-  # Migrate memory/ into .ai/memory/ (for projects initialized before v1.1.0)
-  if [[ -d "$target_dir/memory" && ! -d "$target_dir/.ai/memory" ]]; then
-    mkdir -p "$target_dir/.ai/memory"
-    cp -r "$target_dir/memory/"* "$target_dir/.ai/memory/" 2>/dev/null || true
-    rm -rf "$target_dir/memory"
-    print_success "Migrated memory/ → .ai/memory/"
-  fi
-
-  # Ensure .ai/memory/ exists
-  if [[ -d "$template_dir/ai/memory" && ! -d "$target_dir/.ai/memory" ]]; then
-    mkdir -p "$target_dir/.ai/memory"
-    cp -r "$template_dir/ai/memory/"* "$target_dir/.ai/memory/"
-    print_success "Created .ai/memory/"
-  fi
-
-  # Update workflow files
-  if [[ -f "$template_dir/CLAUDE.md" ]]; then
+  # Update starter CLAUDE.md only if it hasn't been customized by bootstrap
+  # Check if it still contains the "Getting Started" marker from the starter template
+  if [[ -f "$target_dir/CLAUDE.md" ]] && grep -q "Run \`/bootstrap\` to generate" "$target_dir/CLAUDE.md" 2>/dev/null; then
     cp "$template_dir/CLAUDE.md" "$target_dir/CLAUDE.md"
-    print_success "Updated CLAUDE.md"
+    print_success "Updated CLAUDE.md (starter template)"
+  elif [[ ! -f "$target_dir/CLAUDE.md" ]]; then
+    cp "$template_dir/CLAUDE.md" "$target_dir/CLAUDE.md"
+    print_success "Created CLAUDE.md (starter template)"
+  else
+    print_info "Skipped CLAUDE.md (customized by bootstrap — not overwriting)"
   fi
 
-  if [[ -f "$template_dir/IDEAFLOW_AGENTIC_WORKFLOW.md" ]]; then
-    cp "$template_dir/IDEAFLOW_AGENTIC_WORKFLOW.md" "$target_dir/IDEAFLOW_AGENTIC_WORKFLOW.md"
-    print_success "Updated IDEAFLOW_AGENTIC_WORKFLOW.md"
-  fi
+  # Remove old skills from v1.x (deleted + renamed)
+  for old_skill in ideaflow-sense ideaflow-model ideaflow-sculpt ideaflow-validate ideaflow-bootstrap ideaflow-invert ideaflow-document ideaflow-learn; do
+    if [[ -d "$target_dir/.claude/skills/$old_skill" ]]; then
+      rm -rf "$target_dir/.claude/skills/$old_skill"
+      print_success "Removed .claude/skills/$old_skill (replaced in v2)"
+    fi
+  done
 
   echo ""
-  echo -e "${GREEN}${BOLD}  Done!${NC} Workflow updated to v${VERSION}."
-  echo -e "  ${DIM}Your patterns, landmines, and memory files were preserved.${NC}"
+  echo -e "${GREEN}${BOLD}  Done!${NC} Skills updated to v${VERSION}."
+  echo -e "  ${DIM}Your rules, agents, and project CLAUDE.md were preserved.${NC}"
   echo ""
 }
 
@@ -258,25 +231,9 @@ cmd_status() {
   echo ""
 
   local initialized=true
+  local bootstrapped=true
 
-  if [[ -f "$target_dir/CLAUDE.md" ]]; then
-    print_success "CLAUDE.md"
-  else
-    print_warn "CLAUDE.md — missing"
-    initialized=false
-  fi
-
-  if [[ -d "$target_dir/.ai" ]]; then
-    local pattern_count=$(find "$target_dir/.ai/patterns" -name "*.md" ! -name "_TEMPLATE.md" 2>/dev/null | wc -l | tr -d ' ')
-    local landmine_count=$(find "$target_dir/.ai/landmines" -name "*.md" ! -name "_TEMPLATE.md" 2>/dev/null | wc -l | tr -d ' ')
-    local checklist_count=$(find "$target_dir/.ai/checklists" -name "*.md" ! -name "_TEMPLATE.md" 2>/dev/null | wc -l | tr -d ' ')
-    local task_count=$(find "$target_dir/.ai/tasks" -mindepth 1 -maxdepth 1 -type d ! -name ".templates" 2>/dev/null | wc -l | tr -d ' ')
-    print_success ".ai/ — ${pattern_count} patterns, ${landmine_count} landmines, ${checklist_count} checklists, ${task_count} tasks"
-  else
-    print_warn ".ai/ — missing"
-    initialized=false
-  fi
-
+  # Check skills
   if [[ -d "$target_dir/.claude/skills" ]]; then
     local skill_count=$(find "$target_dir/.claude/skills" -name "SKILL.md" 2>/dev/null | wc -l | tr -d ' ')
     print_success ".claude/skills/ — ${skill_count} skills installed"
@@ -285,19 +242,61 @@ cmd_status() {
     initialized=false
   fi
 
-  if [[ -d "$target_dir/.ai/memory" ]]; then
-    print_success ".ai/memory/"
+  # Check CLAUDE.md
+  if [[ -f "$target_dir/CLAUDE.md" ]]; then
+    if grep -q "Run \`/bootstrap\` to generate" "$target_dir/CLAUDE.md" 2>/dev/null; then
+      print_success "CLAUDE.md — starter (run /bootstrap to generate project config)"
+      bootstrapped=false
+    else
+      print_success "CLAUDE.md — project-specific"
+    fi
   else
-    print_warn ".ai/memory/ — missing"
+    print_warn "CLAUDE.md — missing"
     initialized=false
+    bootstrapped=false
+  fi
+
+  # Check rules (created by bootstrap)
+  if [[ -d "$target_dir/.claude/rules" ]]; then
+    local rule_count=$(find "$target_dir/.claude/rules" -name "*.md" 2>/dev/null | wc -l | tr -d ' ')
+    print_success ".claude/rules/ — ${rule_count} rules"
+  else
+    print_info ".claude/rules/ — not yet created (run /bootstrap)"
+    bootstrapped=false
+  fi
+
+  # Check agents (created by bootstrap)
+  if [[ -d "$target_dir/.claude/agents" ]]; then
+    local agent_count=$(find "$target_dir/.claude/agents" -name "*.md" 2>/dev/null | wc -l | tr -d ' ')
+    print_success ".claude/agents/ — ${agent_count} agents"
+  else
+    print_info ".claude/agents/ — not yet created (run /bootstrap)"
+    bootstrapped=false
+  fi
+
+  # Check for module-level CLAUDE.md files (created by bootstrap or document)
+  local module_claude_count=$(find "$target_dir" -name "CLAUDE.md" -not -path "$target_dir/CLAUDE.md" -not -path "$target_dir/.claude/*" -not -path "*/node_modules/*" -not -path "*/.git/*" 2>/dev/null | wc -l | tr -d ' ')
+  if [[ "$module_claude_count" -gt 0 ]]; then
+    print_success "Module CLAUDE.md — ${module_claude_count} files"
+  fi
+
+  # Warn about old v1.x artifacts
+  if [[ -d "$target_dir/.ai" ]]; then
+    echo ""
+    print_warn ".ai/ directory found (v1.x artifact — can be removed)"
+  fi
+  if [[ -f "$target_dir/IDEAFLOW_AGENTIC_WORKFLOW.md" ]]; then
+    print_warn "IDEAFLOW_AGENTIC_WORKFLOW.md found (v1.x artifact — can be removed)"
   fi
 
   echo ""
 
   if [[ "$initialized" == "false" ]]; then
-    print_info "Run ${BOLD}north-starr init${NC} to set up the Idea Flow workflow."
+    print_info "Run ${BOLD}north-starr init${NC} to install North Starr skills."
+  elif [[ "$bootstrapped" == "false" ]]; then
+    echo -e "  ${YELLOW}${BOLD}Skills installed.${NC} Run ${CYAN}/bootstrap${NC} in Claude Code to generate project config."
   else
-    echo -e "  ${GREEN}${BOLD}Idea Flow workflow is active.${NC}"
+    echo -e "  ${GREEN}${BOLD}North Starr is fully configured.${NC}"
   fi
   echo ""
 }
@@ -309,26 +308,23 @@ cmd_help() {
   echo -e "${BOLD}  Usage:${NC} north-starr <command> [directory]"
   echo ""
   echo -e "${BOLD}  Commands:${NC}"
-  echo -e "    ${CYAN}init${NC}     [dir]   Initialize Idea Flow workflow in a project"
-  echo -e "    ${CYAN}update${NC}   [dir]   Update skills and templates (preserves your data)"
-  echo -e "    ${CYAN}status${NC}   [dir]   Check if Idea Flow is set up in a project"
+  echo -e "    ${CYAN}init${NC}     [dir]   Install North Starr skills in a project"
+  echo -e "    ${CYAN}update${NC}   [dir]   Update skills (preserves your config)"
+  echo -e "    ${CYAN}status${NC}   [dir]   Check setup status"
   echo -e "    ${CYAN}help${NC}             Show this help message"
   echo -e "    ${CYAN}version${NC}          Show version"
   echo ""
   echo -e "${BOLD}  Examples:${NC}"
   echo -e "    ${DIM}north-starr init${NC}              # Initialize in current directory"
   echo -e "    ${DIM}north-starr init ~/my-project${NC}  # Initialize in specific directory"
-  echo -e "    ${DIM}north-starr update${NC}             # Update to latest templates"
+  echo -e "    ${DIM}north-starr update${NC}             # Update to latest skills"
   echo -e "    ${DIM}north-starr status${NC}             # Check setup status"
   echo ""
   echo -e "${BOLD}  After init, use these Claude Code skills:${NC}"
-  echo -e "    /ideaflow-bootstrap  — Generate initial project context"
-  echo -e "    /ideaflow-sense      — Start any task (friction forecast)"
-  echo -e "    /ideaflow-model      — Plan implementation (medium/complex)"
-  echo -e "    /ideaflow-sculpt     — Execute with micro-cycles"
-  echo -e "    /ideaflow-validate   — Verify with explicit predictions"
-  echo -e "    /ideaflow-learn      — Capture learnings"
-  echo -e "    /ideaflow-document   — Generate module documentation"
+  echo -e "    /bootstrap  — Generate project config (rules, agents, CLAUDE.md)"
+  echo -e "    /invert     — Deep risk analysis before complex tasks"
+  echo -e "    /document   — Generate CLAUDE.md for a module"
+  echo -e "    /learn      — Update config from experience"
   echo ""
   echo -e "  ${DIM}https://github.com/selcukyucel/north-starr${NC}"
   echo ""
