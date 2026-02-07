@@ -1,0 +1,356 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+VERSION="1.0.0"
+NORTH_STARR_HOME="${NORTH_STARR_HOME:-}"
+
+# Resolve where templates live
+resolve_template_dir() {
+  if [[ -n "$NORTH_STARR_HOME" ]]; then
+    echo "$NORTH_STARR_HOME/templates"
+    return
+  fi
+
+  # Check common install locations
+  local script_dir
+  script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+  local parent_dir="$(dirname "$script_dir")"
+
+  if [[ -d "$parent_dir/templates" ]]; then
+    echo "$parent_dir/templates"
+    return
+  fi
+
+  # Homebrew cellar path
+  if [[ -d "/usr/local/share/north-starr/templates" ]]; then
+    echo "/usr/local/share/north-starr/templates"
+    return
+  fi
+
+  # Apple Silicon Homebrew
+  if [[ -d "/opt/homebrew/share/north-starr/templates" ]]; then
+    echo "/opt/homebrew/share/north-starr/templates"
+    return
+  fi
+
+  # User local install
+  if [[ -d "$HOME/.north-starr/templates" ]]; then
+    echo "$HOME/.north-starr/templates"
+    return
+  fi
+
+  echo ""
+}
+
+# Colors
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+CYAN='\033[0;36m'
+BOLD='\033[1m'
+DIM='\033[2m'
+NC='\033[0m'
+
+print_banner() {
+  echo ""
+  echo -e "${CYAN}    ★ ${BOLD}north-starr${NC}"
+  echo -e "${DIM}    Your North Star for Friction-Free Development${NC}"
+  echo -e "${DIM}    Inspired by Idea Flow — Janelle Arty Starr${NC}"
+  echo ""
+}
+
+print_success() {
+  echo -e "${GREEN}  ✓${NC} $1"
+}
+
+print_info() {
+  echo -e "${BLUE}  →${NC} $1"
+}
+
+print_warn() {
+  echo -e "${YELLOW}  !${NC} $1"
+}
+
+print_error() {
+  echo -e "${RED}  ✗${NC} $1"
+}
+
+# ─── INIT ──────────────────────────────────────────────────────────────────────
+
+cmd_init() {
+  local target_dir="${1:-.}"
+  target_dir="$(cd "$target_dir" && pwd)"
+
+  print_banner
+
+  local template_dir
+  template_dir="$(resolve_template_dir)"
+
+  if [[ -z "$template_dir" || ! -d "$template_dir" ]]; then
+    print_error "Could not find north-starr templates."
+    echo "  Set NORTH_STARR_HOME to the north-starr install directory."
+    exit 1
+  fi
+
+  echo -e "${BOLD}  Initializing Idea Flow workflow in:${NC}"
+  echo -e "  ${DIM}$target_dir${NC}"
+  echo ""
+
+  # Check for existing files
+  local has_existing=false
+  if [[ -d "$target_dir/.ai" || -d "$target_dir/.claude" || -f "$target_dir/CLAUDE.md" ]]; then
+    has_existing=true
+    print_warn "Some Idea Flow files already exist."
+    echo ""
+    read -rp "  Overwrite existing files? [y/N] " confirm
+    if [[ "$confirm" != "y" && "$confirm" != "Y" ]]; then
+      echo ""
+      print_info "Use ${BOLD}north-starr update${NC} to update without overwriting."
+      exit 0
+    fi
+    echo ""
+  fi
+
+  # Copy .ai/ directory
+  if [[ -d "$template_dir/ai" ]]; then
+    cp -r "$template_dir/ai" "$target_dir/.ai"
+    print_success ".ai/ — project knowledge base (patterns, landmines, checklists, task templates)"
+  fi
+
+  # Copy .claude/ directory
+  if [[ -d "$template_dir/claude" ]]; then
+    mkdir -p "$target_dir/.claude"
+    cp -r "$template_dir/claude/skills" "$target_dir/.claude/skills"
+    print_success ".claude/skills/ — workflow phase skills (sense, model, sculpt, validate, learn, bootstrap)"
+  fi
+
+  # Copy memory/ directory
+  if [[ -d "$template_dir/memory" ]]; then
+    cp -r "$template_dir/memory" "$target_dir/memory"
+    print_success "memory/ — friction log, vocabulary, patterns index"
+  fi
+
+  # Copy CLAUDE.md
+  if [[ -f "$template_dir/CLAUDE.md" ]]; then
+    cp "$template_dir/CLAUDE.md" "$target_dir/CLAUDE.md"
+    print_success "CLAUDE.md — active workflow instructions for Claude Code"
+  fi
+
+  # Copy IDEAFLOW_AGENTIC_WORKFLOW.md
+  if [[ -f "$template_dir/IDEAFLOW_AGENTIC_WORKFLOW.md" ]]; then
+    cp "$template_dir/IDEAFLOW_AGENTIC_WORKFLOW.md" "$target_dir/IDEAFLOW_AGENTIC_WORKFLOW.md"
+    print_success "IDEAFLOW_AGENTIC_WORKFLOW.md — full methodology reference"
+  fi
+
+  echo ""
+  echo -e "${GREEN}${BOLD}  Done!${NC} Idea Flow workflow initialized."
+  echo ""
+  echo -e "  ${BOLD}What's next:${NC}"
+  echo -e "  ${DIM}1.${NC} Open Claude Code in this project"
+  echo -e "  ${DIM}2.${NC} Run ${CYAN}/ideaflow-bootstrap${NC} to generate project context"
+  echo -e "  ${DIM}3.${NC} Start any task with ${CYAN}/ideaflow-sense${NC}"
+  echo ""
+  echo -e "  ${DIM}Available skills:${NC}"
+  echo -e "    /ideaflow-bootstrap  — Generate initial project context"
+  echo -e "    /ideaflow-sense      — Start any task (friction forecast)"
+  echo -e "    /ideaflow-model      — Plan implementation (medium/complex)"
+  echo -e "    /ideaflow-sculpt     — Execute with micro-cycles"
+  echo -e "    /ideaflow-validate   — Verify with explicit predictions"
+  echo -e "    /ideaflow-learn      — Capture learnings"
+  echo -e "    /ideaflow-document   — Generate module documentation"
+  echo ""
+  echo -e "  ${DIM}Learn more: https://github.com/selcukyucel/north-starr${NC}"
+  echo ""
+}
+
+# ─── UPDATE ────────────────────────────────────────────────────────────────────
+
+cmd_update() {
+  local target_dir="${1:-.}"
+  target_dir="$(cd "$target_dir" && pwd)"
+
+  print_banner
+
+  local template_dir
+  template_dir="$(resolve_template_dir)"
+
+  if [[ -z "$template_dir" || ! -d "$template_dir" ]]; then
+    print_error "Could not find north-starr templates."
+    echo "  Set NORTH_STARR_HOME to the north-starr install directory."
+    exit 1
+  fi
+
+  echo -e "${BOLD}  Updating Idea Flow workflow in:${NC}"
+  echo -e "  ${DIM}$target_dir${NC}"
+  echo ""
+
+  # Update skills (safe — these are read-only reference files)
+  if [[ -d "$template_dir/claude/skills" ]]; then
+    mkdir -p "$target_dir/.claude/skills"
+    cp -r "$template_dir/claude/skills/"* "$target_dir/.claude/skills/"
+    print_success "Updated .claude/skills/"
+  fi
+
+  # Update templates (safe — these are empty templates)
+  if [[ -d "$template_dir/ai" ]]; then
+    # Only update templates, not user-created patterns/landmines
+    for dir in patterns landmines checklists; do
+      if [[ -f "$template_dir/ai/$dir/_TEMPLATE.md" ]]; then
+        mkdir -p "$target_dir/.ai/$dir"
+        cp "$template_dir/ai/$dir/_TEMPLATE.md" "$target_dir/.ai/$dir/_TEMPLATE.md"
+      fi
+    done
+
+    # Update task templates
+    if [[ -d "$template_dir/ai/tasks/.templates" ]]; then
+      mkdir -p "$target_dir/.ai/tasks/.templates"
+      cp "$template_dir/ai/tasks/.templates/"* "$target_dir/.ai/tasks/.templates/"
+    fi
+
+    # Update .ai README and QUICK-START
+    for file in README.md QUICK-START.md; do
+      if [[ -f "$template_dir/ai/$file" ]]; then
+        cp "$template_dir/ai/$file" "$target_dir/.ai/$file"
+      fi
+    done
+
+    print_success "Updated .ai/ templates"
+  fi
+
+  # Update workflow files
+  if [[ -f "$template_dir/CLAUDE.md" ]]; then
+    cp "$template_dir/CLAUDE.md" "$target_dir/CLAUDE.md"
+    print_success "Updated CLAUDE.md"
+  fi
+
+  if [[ -f "$template_dir/IDEAFLOW_AGENTIC_WORKFLOW.md" ]]; then
+    cp "$template_dir/IDEAFLOW_AGENTIC_WORKFLOW.md" "$target_dir/IDEAFLOW_AGENTIC_WORKFLOW.md"
+    print_success "Updated IDEAFLOW_AGENTIC_WORKFLOW.md"
+  fi
+
+  echo ""
+  echo -e "${GREEN}${BOLD}  Done!${NC} Workflow updated to v${VERSION}."
+  echo -e "  ${DIM}Your patterns, landmines, and memory files were preserved.${NC}"
+  echo ""
+}
+
+# ─── STATUS ────────────────────────────────────────────────────────────────────
+
+cmd_status() {
+  local target_dir="${1:-.}"
+  target_dir="$(cd "$target_dir" && pwd)"
+
+  print_banner
+
+  echo -e "${BOLD}  Project status:${NC} ${DIM}$target_dir${NC}"
+  echo ""
+
+  local initialized=true
+
+  if [[ -f "$target_dir/CLAUDE.md" ]]; then
+    print_success "CLAUDE.md"
+  else
+    print_warn "CLAUDE.md — missing"
+    initialized=false
+  fi
+
+  if [[ -d "$target_dir/.ai" ]]; then
+    local pattern_count=$(find "$target_dir/.ai/patterns" -name "*.md" ! -name "_TEMPLATE.md" 2>/dev/null | wc -l | tr -d ' ')
+    local landmine_count=$(find "$target_dir/.ai/landmines" -name "*.md" ! -name "_TEMPLATE.md" 2>/dev/null | wc -l | tr -d ' ')
+    local checklist_count=$(find "$target_dir/.ai/checklists" -name "*.md" ! -name "_TEMPLATE.md" 2>/dev/null | wc -l | tr -d ' ')
+    local task_count=$(find "$target_dir/.ai/tasks" -mindepth 1 -maxdepth 1 -type d ! -name ".templates" 2>/dev/null | wc -l | tr -d ' ')
+    print_success ".ai/ — ${pattern_count} patterns, ${landmine_count} landmines, ${checklist_count} checklists, ${task_count} tasks"
+  else
+    print_warn ".ai/ — missing"
+    initialized=false
+  fi
+
+  if [[ -d "$target_dir/.claude/skills" ]]; then
+    local skill_count=$(find "$target_dir/.claude/skills" -name "SKILL.md" 2>/dev/null | wc -l | tr -d ' ')
+    print_success ".claude/skills/ — ${skill_count} skills installed"
+  else
+    print_warn ".claude/skills/ — missing"
+    initialized=false
+  fi
+
+  if [[ -d "$target_dir/memory" ]]; then
+    print_success "memory/"
+  else
+    print_warn "memory/ — missing"
+    initialized=false
+  fi
+
+  echo ""
+
+  if [[ "$initialized" == "false" ]]; then
+    print_info "Run ${BOLD}north-starr init${NC} to set up the Idea Flow workflow."
+  else
+    echo -e "  ${GREEN}${BOLD}Idea Flow workflow is active.${NC}"
+  fi
+  echo ""
+}
+
+# ─── HELP ──────────────────────────────────────────────────────────────────────
+
+cmd_help() {
+  print_banner
+  echo -e "${BOLD}  Usage:${NC} north-starr <command> [directory]"
+  echo ""
+  echo -e "${BOLD}  Commands:${NC}"
+  echo -e "    ${CYAN}init${NC}     [dir]   Initialize Idea Flow workflow in a project"
+  echo -e "    ${CYAN}update${NC}   [dir]   Update skills and templates (preserves your data)"
+  echo -e "    ${CYAN}status${NC}   [dir]   Check if Idea Flow is set up in a project"
+  echo -e "    ${CYAN}help${NC}             Show this help message"
+  echo -e "    ${CYAN}version${NC}          Show version"
+  echo ""
+  echo -e "${BOLD}  Examples:${NC}"
+  echo -e "    ${DIM}north-starr init${NC}              # Initialize in current directory"
+  echo -e "    ${DIM}north-starr init ~/my-project${NC}  # Initialize in specific directory"
+  echo -e "    ${DIM}north-starr update${NC}             # Update to latest templates"
+  echo -e "    ${DIM}north-starr status${NC}             # Check setup status"
+  echo ""
+  echo -e "${BOLD}  After init, use these Claude Code skills:${NC}"
+  echo -e "    /ideaflow-bootstrap  — Generate initial project context"
+  echo -e "    /ideaflow-sense      — Start any task (friction forecast)"
+  echo -e "    /ideaflow-model      — Plan implementation (medium/complex)"
+  echo -e "    /ideaflow-sculpt     — Execute with micro-cycles"
+  echo -e "    /ideaflow-validate   — Verify with explicit predictions"
+  echo -e "    /ideaflow-learn      — Capture learnings"
+  echo -e "    /ideaflow-document   — Generate module documentation"
+  echo ""
+  echo -e "  ${DIM}https://github.com/selcukyucel/north-starr${NC}"
+  echo ""
+}
+
+# ─── MAIN ──────────────────────────────────────────────────────────────────────
+
+main() {
+  local command="${1:-help}"
+
+  case "$command" in
+    init)
+      cmd_init "${2:-}"
+      ;;
+    update)
+      cmd_update "${2:-}"
+      ;;
+    status)
+      cmd_status "${2:-}"
+      ;;
+    help|--help|-h)
+      cmd_help
+      ;;
+    version|--version|-v)
+      echo "north-starr v${VERSION}"
+      ;;
+    *)
+      print_error "Unknown command: $command"
+      echo ""
+      cmd_help
+      exit 1
+      ;;
+  esac
+}
+
+main "$@"
