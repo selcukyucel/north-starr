@@ -56,6 +56,41 @@ resolve_skills_dir() {
   echo ""
 }
 
+# Resolve and validate target directory
+resolve_target_dir() {
+  local dir="${1:-.}"
+  if [[ ! -d "$dir" ]]; then
+    print_error "Directory does not exist: $dir" >&2
+    exit 1
+  fi
+  (cd "$dir" && pwd)
+}
+
+# Resolve template dir or exit with a clear error
+require_template_dir() {
+  local dir
+  dir="$(resolve_template_dir)"
+  if [[ -z "$dir" || ! -d "$dir" ]]; then
+    print_error "Could not find north-starr templates." >&2
+    print_info "Set NORTH_STARR_HOME to the north-starr install directory." >&2
+    exit 1
+  fi
+  echo "$dir"
+}
+
+# Validate that copied skills have correct YAML frontmatter
+validate_skills() {
+  local skills_dir="$1"
+  for skill_file in "$skills_dir"/*/SKILL.md; do
+    [[ -f "$skill_file" ]] || continue
+    if ! head -1 "$skill_file" | grep -q '^---$'; then
+      print_warn "Missing YAML frontmatter: $(basename "$(dirname "$skill_file")")/SKILL.md"
+    elif ! grep -q '^name:' "$skill_file"; then
+      print_warn "Missing 'name' field: $(basename "$(dirname "$skill_file")")/SKILL.md"
+    fi
+  done
+}
+
 # Colors
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -93,19 +128,13 @@ print_error() {
 # ─── INIT ──────────────────────────────────────────────────────────────────────
 
 cmd_init() {
-  local target_dir="${1:-.}"
-  target_dir="$(cd "$target_dir" && pwd)"
+  local target_dir
+  target_dir="$(resolve_target_dir "${1:-}")"
 
   print_banner
 
   local template_dir
-  template_dir="$(resolve_template_dir)"
-
-  if [[ -z "$template_dir" || ! -d "$template_dir" ]]; then
-    print_error "Could not find north-starr templates."
-    echo "  Set NORTH_STARR_HOME to the north-starr install directory."
-    exit 1
-  fi
+  template_dir="$(require_template_dir)"
 
   local skills_dir
   skills_dir="$(resolve_skills_dir "$template_dir")"
@@ -137,6 +166,7 @@ cmd_init() {
   if [[ -n "$skills_dir" && -d "$skills_dir" ]]; then
     mkdir -p "$target_dir/.claude/skills"
     cp -r "$skills_dir/"* "$target_dir/.claude/skills/"
+    validate_skills "$target_dir/.claude/skills"
     print_success ".claude/skills/ — Claude Code skills"
   fi
 
@@ -144,6 +174,7 @@ cmd_init() {
   if [[ -n "$skills_dir" && -d "$skills_dir" ]]; then
     mkdir -p "$target_dir/.github/skills"
     cp -r "$skills_dir/"* "$target_dir/.github/skills/"
+    validate_skills "$target_dir/.github/skills"
     print_success ".github/skills/ — VS Code Copilot skills"
   fi
 
@@ -205,19 +236,13 @@ cmd_init() {
 # ─── UPDATE ────────────────────────────────────────────────────────────────────
 
 cmd_update() {
-  local target_dir="${1:-.}"
-  target_dir="$(cd "$target_dir" && pwd)"
+  local target_dir
+  target_dir="$(resolve_target_dir "${1:-}")"
 
   print_banner
 
   local template_dir
-  template_dir="$(resolve_template_dir)"
-
-  if [[ -z "$template_dir" || ! -d "$template_dir" ]]; then
-    print_error "Could not find north-starr templates."
-    echo "  Set NORTH_STARR_HOME to the north-starr install directory."
-    exit 1
-  fi
+  template_dir="$(require_template_dir)"
 
   local skills_dir
   skills_dir="$(resolve_skills_dir "$template_dir")"
@@ -230,6 +255,7 @@ cmd_update() {
   if [[ -n "$skills_dir" && -d "$skills_dir" ]]; then
     mkdir -p "$target_dir/.claude/skills"
     cp -r "$skills_dir/"* "$target_dir/.claude/skills/"
+    validate_skills "$target_dir/.claude/skills"
     print_success "Updated .claude/skills/"
   fi
 
@@ -237,6 +263,7 @@ cmd_update() {
   if [[ -n "$skills_dir" && -d "$skills_dir" ]]; then
     mkdir -p "$target_dir/.github/skills"
     cp -r "$skills_dir/"* "$target_dir/.github/skills/"
+    validate_skills "$target_dir/.github/skills"
     print_success "Updated .github/skills/"
   fi
 
@@ -279,8 +306,8 @@ cmd_update() {
 # ─── STATUS ────────────────────────────────────────────────────────────────────
 
 cmd_status() {
-  local target_dir="${1:-.}"
-  target_dir="$(cd "$target_dir" && pwd)"
+  local target_dir
+  target_dir="$(resolve_target_dir "${1:-}")"
 
   print_banner
 
