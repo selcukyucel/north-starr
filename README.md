@@ -101,6 +101,25 @@ brew tap selcukyucel/north-starr https://github.com/selcukyucel/north-starr.git
 brew install north-starr
 ```
 
+### Update
+
+```bash
+# If installed via curl
+curl -fsSL https://raw.githubusercontent.com/selcukyucel/north-starr/main/install.sh | bash
+
+# If installed via manual clone
+cd ~/.north-starr && git pull
+
+# If installed via Homebrew
+brew update && brew upgrade north-starr
+```
+
+Then update the workflow files in your project (preserves your patterns, landmines, and memory):
+
+```bash
+north-starr update
+```
+
 ---
 
 ## Usage
