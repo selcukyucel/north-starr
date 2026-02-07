@@ -2,72 +2,21 @@
 
 **Your North Starr for Friction-Free Development**
 
-> *"We don't improve productivity by trying to go faster, we improve productivity by improving control."*
-> — Idea Flow
+north-starr is a project bootstrapper for [Claude Code](https://docs.anthropic.com/en/docs/claude-code). It installs skills that analyze any codebase and generate native Claude Code configuration — so the AI works effectively from the first task.
 
-north-starr brings the [Idea Flow](https://leanpub.com/ideaflow) methodology by **Janelle Arty Starr** into your AI-assisted development workflow. It transforms [Claude Code](https://docs.anthropic.com/en/docs/claude-code) from a code generator into a **development partner** that makes invisible friction visible, prevents the Cycle of Chaos, and builds project knowledge that compounds over time.
+It's language-agnostic. Works for any project — iOS, web, backend, infrastructure, anything.
 
 ---
 
-## What is this?
+## What it does
 
-Most AI coding tools optimize for speed. north-starr optimizes for **control**.
+Most AI coding tools start every project cold. north-starr gives Claude Code project-specific context by generating:
 
-Based on the book *[Idea Flow: How to Measure the PAIN in Software Development](https://leanpub.com/ideaflow)*, this tool installs a structured agentic workflow into any project. It gives Claude Code the methodology to:
+- **`CLAUDE.md` files** — architecture, grain, module map, danger zones (auto-loaded by Claude Code)
+- **`.claude/rules/`** — conventions and constraints scoped by file path (auto-enforced)
+- **`.claude/agents/`** — project-tuned specialized agents with persistent memory
 
-- **Assess risk before writing code** — not after things break
-- **Work in small, safe micro-cycles** — predict, change, observe, confirm
-- **Classify friction** using the Ten Pains framework — so you fix the right problems
-- **Build compounding project knowledge** — patterns, landmines, and vocabulary that grow with your codebase
-- **Never gamble for speed** — because high-risk shortcuts cost 10-100x more than they save
-
-It's language-agnostic. It works for any project — iOS, web, backend, infrastructure, anything.
-
-## The Idea Flow Methodology
-
-Janelle Arty Starr spent 17+ years as a developer, consultant, and CTO studying why software teams slow down. Her answer: **invisible friction**. Bugs, unclear requirements, unfamiliar code, over-engineering — these are all forms of friction that compound silently until everything feels slow.
-
-Idea Flow makes friction visible and measurable through the **Ten Pains**:
-
-| # | Pain | What it means |
-|---|------|---------------|
-| 1 | DESIGN_FIT | Feature doesn't fit existing architecture |
-| 2 | REQUIREMENTS | Requirements wrong, unclear, or changed |
-| 3 | MODELING | Code hard to understand |
-| 4 | COLLABORATION | Merge conflicts, coordination overhead |
-| 5 | EXPERIMENT | Hard to validate, slow feedback |
-| 6 | ALARM | Test maintenance, false alarms |
-| 7 | COGNITIVE | Too many details at once |
-| 8 | EXECUTION | Changes mistake-prone, tedious |
-| 9 | FAMILIARITY | Unfamiliar code/tools/libraries |
-| 10 | DISRUPTION | Context switching, interruptions |
-
-north-starr encodes this methodology into a structured workflow with six phases:
-
-```
-BOOTSTRAP → SENSE → MODEL → SCULPT → VALIDATE → LEARN
-     ↑                                           |
-     └───────────── knowledge compounds ──────────┘
-```
-
-**BOOTSTRAP** — Generate project context (once per project)
-**SENSE** — Assess risk and friction before every task
-**MODEL** — Plan implementation for medium/complex tasks
-**SCULPT** — Execute in small, safe micro-cycles
-**VALIDATE** — Verify with explicit predictions
-**LEARN** — Capture patterns, landmines, and lessons learned
-
-## Watch
-
-Janelle Arty Starr explains the Idea Flow methodology:
-
-[**Idea Flow — Janelle Arty Starr**](https://www.youtube.com/watch?v=qqaOpSJKdWc)
-
-## Read
-
-- [*Idea Flow: How to Measure the PAIN in Software Development*](https://leanpub.com/ideaflow) — the book
-- [Legacy Code Rocks: Idea Flow with Arty Starr](https://legacycoderocks.libsyn.com/idea-flow-with-arty-starr) — podcast episode
-- [*"The most underrated book in software engineering management"*](https://ericnormand.substack.com/p/the-most-underrated-book-in-software) — Eric Normand
+This configuration is generated from your actual code — not templates. The `/bootstrap` skill explores your codebase, identifies architecture patterns, detects danger zones, and writes configuration that Claude Code consumes natively.
 
 ---
 
@@ -83,7 +32,7 @@ brew tap selcukyucel/north-starr https://github.com/selcukyucel/north-starr.git 
 brew update && brew upgrade north-starr
 ```
 
-Then update the workflow files in your project (preserves your patterns, landmines, and memory):
+Then update skills in your project (preserves your rules, agents, and CLAUDE.md):
 
 ```bash
 north-starr update
@@ -91,7 +40,7 @@ north-starr update
 
 ### Uninstall
 
-Remove north-starr from your system:
+Remove from your system:
 
 ```bash
 brew uninstall north-starr
@@ -101,7 +50,7 @@ brew untap selcukyucel/north-starr
 Remove from a project:
 
 ```bash
-rm -rf .ai .claude/skills/ideaflow-* .claude/skills/commit-message-generator .claude/skills/refactoring-analyzer CLAUDE.md IDEAFLOW_AGENTIC_WORKFLOW.md
+rm -rf .claude/skills/bootstrap .claude/skills/invert .claude/skills/document .claude/skills/learn .claude/skills/commit-message-generator .claude/skills/refactoring-analyzer CLAUDE.md
 ```
 
 ---
@@ -115,63 +64,65 @@ cd your-project
 north-starr init
 ```
 
-This creates:
+This installs skills and a starter `CLAUDE.md`:
 
 ```
 your-project/
-├── CLAUDE.md                          # Active workflow instructions
-├── IDEAFLOW_AGENTIC_WORKFLOW.md       # Full methodology reference
-├── .ai/                               # Project knowledge base
-│   ├── README.md                      # What goes here
-│   ├── QUICK-START.md                 # Quick reference
-│   ├── patterns/                      # Reusable solutions (grows through work)
-│   │   └── _TEMPLATE.md
-│   ├── landmines/                     # Known dangers (grows through pain)
-│   │   └── _TEMPLATE.md
-│   ├── checklists/                    # Verification frameworks
-│   │   └── _TEMPLATE.md
-│   ├── tasks/                         # Per-task context (complex work)
-│   │   └── .templates/
-│   │       ├── CONTEXT.md
-│   │       ├── IMPLEMENTATION_PLAN.md
-│   │       ├── LEARNINGS.md
-│   │       └── FEATURE_DOCUMENTATION.md
-│   └── memory/                        # Cross-session friction tracking
-│       ├── friction-log.md            # Friction events with pain type tags
-│       ├── vocabulary.md              # Codebase terms and conventions
-│       └── patterns.md               # Index of discovered patterns
+├── CLAUDE.md                          # Starter — tells you to run /bootstrap
 └── .claude/
-    └── skills/                        # Claude Code workflow skills
-        ├── ideaflow-bootstrap/
-        ├── ideaflow-sense/
-        ├── ideaflow-model/
-        ├── ideaflow-sculpt/
-        ├── ideaflow-validate/
-        ├── ideaflow-learn/
-        ├── ideaflow-document/
+    └── skills/
+        ├── bootstrap/                 # Generate project config
+        ├── invert/                    # Deep risk analysis
+        ├── document/                  # Module documentation generator
+        ├── learn/                     # Update config from experience
         ├── commit-message-generator/
         └── refactoring-analyzer/
 ```
 
-### Use the workflow
+### Bootstrap your project
 
-Open Claude Code in your project and use the slash commands:
+Open Claude Code and run:
 
-| Command | Phase | When to use |
-|---------|-------|-------------|
-| `/ideaflow-bootstrap` | BOOTSTRAP | First time in a project — generates architecture overview, vocabulary, initial patterns |
-| `/ideaflow-sense` | SENSE | **Start every task here** — risk assessment, friction forecast, complexity routing |
-| `/ideaflow-model` | MODEL | Medium/complex tasks — strategy evaluation, decomposition, reuse-first check |
-| `/ideaflow-sculpt` | SCULPT | Execution — micro-cycles, 20-minute rule, mistake-proofing |
-| `/ideaflow-validate` | VALIDATE | After coding — explicit predictions, conflict resolution, test triage |
-| `/ideaflow-learn` | LEARN | After validation — experience review, pattern/landmine extraction |
-| `/ideaflow-document` | Utility | Generate module documentation from actual code |
+```
+/bootstrap
+```
 
-### Other commands
+This explores your codebase and generates:
+
+```
+your-project/
+├── CLAUDE.md                          # Architecture, grain, module map, vocabulary
+├── src/
+│   ├── payments/CLAUDE.md             # Module-level warnings and patterns
+│   └── auth/CLAUDE.md                 # Module-level context
+└── .claude/
+    ├── rules/
+    │   ├── naming-conventions.md      # Scoped to your file types
+    │   ├── error-handling.md          # Your project's patterns
+    │   └── payments-warnings.md       # Danger zone alerts
+    ├── agents/
+    │   └── project-explorer.md        # Tuned to your architecture
+    └── skills/
+        └── ...
+```
+
+After bootstrap, Claude Code auto-loads this configuration. Rules fire when touching matching files. Module CLAUDE.md files appear when working in those directories. No ceremony needed.
+
+### Available skills
+
+| Command | When to use |
+|---------|-------------|
+| `/bootstrap` | First time in a project — generates rules, agents, and CLAUDE.md from your code |
+| `/invert` | Before complex tasks — structured risk analysis (what could go wrong?) |
+| `/document` | When a module needs a CLAUDE.md — generates one from actual code |
+| `/learn` | After completing work — updates rules, agents, or CLAUDE.md from experience |
+
+### CLI commands
 
 ```bash
-north-starr status          # Check if Idea Flow is set up
-north-starr update          # Update skills and templates (preserves your data)
+north-starr init            # Install skills in a project
+north-starr update          # Update skills (preserves your config)
+north-starr status          # Check setup status
 north-starr version         # Show version
 north-starr help            # Show help
 ```
@@ -180,79 +131,62 @@ north-starr help            # Show help
 
 ## How it works
 
-### The Friction Forecast
+### The grain concept
 
-Every task starts with a Friction Forecast — a structured risk assessment that determines how to approach the work:
+Every codebase has a **grain** — a direction that changes flow easily. Adding a new API endpoint might be straightforward. Adding a new data model might require touching 12 files. The bootstrap skill identifies this grain and documents it, so Claude Code knows which changes are safe and which require extra care.
 
-```
-## Friction Forecast
+### Self-improving configuration
 
-Task: Add user authentication
-
-Risk Assessment:
-- Familiarity: LOW — first time working with auth in this codebase
-- Quality:     MED — existing patterns to follow, but gaps
-- Assumption:  HIGH — requirements not fully specified
-- Dependency:  MED — touches middleware, routes, and database
-
-Complexity: Complex
-Expected Friction: HIGH
-Recommendation: clarify requirements first, then spike on auth approach
-```
-
-### The Micro-Cycle
-
-Execution happens in small, safe increments:
+The system improves through use:
 
 ```
-PREDICT → CHANGE → OBSERVE → RESULT
-   ↓         ↓         ↓         ↓
- "I expect  smallest   run it   CONFIRM
-  this to   possible   and      or
-  work      change     watch"   CONFLICT
-  because..."
+/bootstrap  →  generates initial config
+     ↓
+  you work  →  Claude Code uses the config automatically
+     ↓
+  /learn    →  updates config from what was discovered
+     ↓
+  next task →  Claude Code is smarter than last time
 ```
 
-If a micro-cycle produces a **CONFLICT**, you stop, diagnose, and fix before moving forward. No piling code on top of broken assumptions.
+Rules, agents, and CLAUDE.md files are all native Claude Code primitives. There's no parallel knowledge system — everything feeds directly into how Claude Code operates.
 
-### Knowledge that compounds
+### Risk analysis on demand
 
-As you work, the `.ai/` directory fills up organically:
+For complex or high-stakes tasks, `/invert` provides deep structured analysis before you commit to implementation:
 
-- **Patterns** — solutions that worked well, captured for reuse
-- **Landmines** — gotchas that wasted time, documented so they don't bite again
-- **Vocabulary** — codebase-specific terms so AI and humans stay aligned
-- **Friction log** — pain events classified by type, revealing systemic issues
+- User/consumer impact
+- Technical failure modes
+- Edge cases
+- Architecture and convention risks
+- Observability and recovery
 
-This knowledge persists across sessions and grows with the project.
+This is optional — for routine tasks, the lightweight risk assessment baked into the project CLAUDE.md is sufficient.
 
 ---
 
-## Philosophy
+## Inspiration
 
-> *Friction is the enemy. Safety enables speed. Measure the pain, don't assume the solution. Reuse before you create.*
+north-starr is inspired by the [Idea Flow](https://leanpub.com/ideaflow) methodology by **Janelle Arty Starr** — a framework for making invisible friction visible in software development.
 
-- You are a development partner, not a code generator
-- Your job is to make invisible friction visible and prevent the Cycle of Chaos
-- Never gamble for speed — high-risk shortcuts cost 10-100x more than they save
-- The developer's brain is the most precious resource; protect it from unnecessary cognitive load
-- Keep haystacks small — the smaller the change, the easier it is to troubleshoot
+The core insight: *you don't improve productivity by going faster, you improve it by improving control.* north-starr applies this to AI-assisted development by giving Claude Code the context it needs to work with control, not just speed.
 
----
+### Learn more about Idea Flow
 
-## Credits
-
-**Methodology:** [Janelle Arty Starr](https://leanpub.com/u/artystarr) — creator of Idea Flow, founder of [Twilight City, Inc.](https://www.crunchbase.com/person/janelle-arty-starr), and pioneering researcher on making software friction visible.
-
-**Book:** [*Idea Flow: How to Measure the PAIN in Software Development*](https://leanpub.com/ideaflow)
-
-**Agentic implementation:** This project adapts the Idea Flow methodology for AI-assisted development with [Claude Code](https://docs.anthropic.com/en/docs/claude-code), encoding the principles into structured skills and workflow phases.
+- [*Idea Flow: How to Measure the PAIN in Software Development*](https://leanpub.com/ideaflow) — the book
+- [Idea Flow — Janelle Arty Starr](https://www.youtube.com/watch?v=qqaOpSJKdWc) — talk
+- [Legacy Code Rocks: Idea Flow with Arty Starr](https://legacycoderocks.libsyn.com/idea-flow-with-arty-starr) — podcast
+- [*"The most underrated book in software engineering management"*](https://ericnormand.substack.com/p/the-most-underrated-book-in-software) — Eric Normand
 
 ---
+
+## Thanks
+
+- [Tolga Ergin](https://github.com/tolgaergin) — for contributions to the v2.0.0 architecture
 
 ## Contributing
 
-Contributions are welcome! If you've found patterns, improved skills, or adapted the workflow for specific tech stacks, please open a PR.
+Contributions are welcome! If you've improved skills, found edge cases, or adapted north-starr for specific workflows, please open a PR.
 
 ## License
 
