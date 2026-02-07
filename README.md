@@ -2,7 +2,9 @@
 
 **Your North Starr for Friction-Free Development**
 
-north-starr is a project bootstrapper for [Claude Code](https://docs.anthropic.com/en/docs/claude-code). It installs skills that analyze any codebase and generate native Claude Code configuration — so the AI works effectively from the first task.
+north-starr is a project bootstrapper for AI coding tools. It analyzes any codebase and generates tool-native configuration — so your AI works effectively from the first task.
+
+Supports [Claude Code](https://docs.anthropic.com/en/docs/claude-code), [VS Code Copilot](https://code.visualstudio.com/docs/copilot/overview), [Cursor](https://cursor.sh), and any tool that reads [AGENTS.md](https://github.com/anthropics/agent-protocol).
 
 It's language-agnostic. Works for any project — iOS, web, backend, infrastructure, anything.
 
@@ -10,13 +12,14 @@ It's language-agnostic. Works for any project — iOS, web, backend, infrastruct
 
 ## What it does
 
-Most AI coding tools start every project cold. north-starr gives Claude Code project-specific context by generating:
+Most AI coding tools start every project cold. north-starr gives them project-specific context by generating:
 
+- **`AGENTS.md`** — universal project context (works with any AI tool)
 - **`CLAUDE.md` files** — architecture, grain, module map, danger zones (auto-loaded by Claude Code)
-- **`.claude/rules/`** — conventions and constraints scoped by file path (auto-enforced)
-- **`.claude/agents/`** — project-tuned specialized agents with persistent memory
+- **`.claude/rules/`** + **`.github/instructions/`** + **`.cursor/rules/`** — conventions scoped by file path (auto-enforced)
+- **`.claude/agents/`** + **`.github/agents/`** — project-tuned specialized agents
 
-This configuration is generated from your actual code — not templates. The `/bootstrap` skill explores your codebase, identifies architecture patterns, detects danger zones, and writes configuration that Claude Code consumes natively.
+This configuration is generated from your actual code — not templates. The `/bootstrap` skill explores your codebase, identifies architecture patterns, detects danger zones, and writes configuration in each tool's native format.
 
 ---
 
@@ -156,7 +159,7 @@ north-starr help            # Show help
 
 ### The grain concept
 
-Every codebase has a **grain** — a direction that changes flow easily. Adding a new API endpoint might be straightforward. Adding a new data model might require touching 12 files. The bootstrap skill identifies this grain and documents it, so Claude Code knows which changes are safe and which require extra care.
+Every codebase has a **grain** — a direction that changes flow easily. Adding a new API endpoint might be straightforward. Adding a new data model might require touching 12 files. The bootstrap skill identifies this grain and documents it, so your AI tool knows which changes are safe and which require extra care.
 
 ### Self-improving configuration
 
@@ -165,14 +168,14 @@ The system improves through use:
 ```
 /bootstrap  →  generates initial config
      ↓
-  you work  →  Claude Code uses the config automatically
+  you work  →  your AI tool uses the config automatically
      ↓
   /learn    →  updates config from what was discovered
      ↓
-  next task →  Claude Code is smarter than last time
+  next task →  your AI tool is smarter than last time
 ```
 
-Rules, agents, and CLAUDE.md files are all native Claude Code primitives. There's no parallel knowledge system — everything feeds directly into how Claude Code operates.
+All generated files are native primitives for each tool — CLAUDE.md for Claude Code, copilot-instructions.md for VS Code Copilot, .cursor/rules for Cursor, AGENTS.md for everything. There's no parallel knowledge system — everything feeds directly into how your tools operate.
 
 ### Risk analysis on demand
 
@@ -192,7 +195,7 @@ This is optional — for routine tasks, the lightweight risk assessment baked in
 
 north-starr is inspired by the [Idea Flow](https://leanpub.com/ideaflow) methodology by **Janelle Arty Starr** — a framework for making invisible friction visible in software development.
 
-The core insight: *you don't improve productivity by going faster, you improve it by improving control.* north-starr applies this to AI-assisted development by giving Claude Code the context it needs to work with control, not just speed.
+The core insight: *you don't improve productivity by going faster, you improve it by improving control.* north-starr applies this to AI-assisted development by giving your tools the context they need to work with control, not just speed.
 
 ### Learn more about Idea Flow
 
