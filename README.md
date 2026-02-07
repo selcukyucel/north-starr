@@ -97,7 +97,7 @@ export PATH="$HOME/.local/bin:$PATH"
 ### Homebrew
 
 ```bash
-brew tap selcukyucel/north-starr
+brew tap selcukyucel/north-starr https://github.com/selcukyucel/north-starr.git
 brew install north-starr
 ```
 
