@@ -2,6 +2,7 @@
 name: invert
 description: Deep structured inversion analysis on a requirement before implementation. Identifies risks, edge cases, failure modes, and convention violations. Use before complex or high-stakes tasks.
 argument-hint: <requirement or feature description>
+author: Selcuk Yucel
 ---
 
 # Inversion Analysis — What Could Go Wrong?

@@ -1,6 +1,7 @@
 ---
 name: bootstrap
 description: Generate native Claude Code configuration for an existing project. Explores the codebase and produces CLAUDE.md files, .claude/rules/, and .claude/agents/ so Claude Code works effectively from the first task. Run once per project.
+author: Selcuk Yucel
 ---
 
 # Project Bootstrap — Claude Code Configuration Generator

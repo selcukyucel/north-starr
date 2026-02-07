@@ -2,6 +2,7 @@
 name: plan
 description: Break complex tasks into persistent implementation plans that survive session boundaries. Tracks progress, session notes, and architecture decisions so any AI tool can resume where the last session left off. Use after /invert for medium and high complexity tasks.
 argument-hint: <task description> | resume | status
+author: Selcuk Yucel
 ---
 
 # Plan — Persistent Implementation Plans

@@ -2,6 +2,7 @@
 name: learn
 description: After completing a task, capture learnings by updating AI tool configuration. Creates or updates rules, agents, and context files based on what was discovered — in the native format for each tool (Claude Code, VS Code Copilot, Cursor, AGENTS.md). Use after any task where something surprised you, went wrong, or produced a reusable insight.
 argument-hint: [optional: brief description of what was learned]
+author: Selcuk Yucel
 ---
 
 # Learn — Update AI Tool Configuration From Experience

@@ -2,6 +2,7 @@
 name: document
 description: Generate a context file for a module or feature by analyzing its actual code. Produces a CLAUDE.md that AI tools use when working in that area. Use when a module has no context file, or when existing documentation is outdated.
 argument-hint: <module path or name>
+author: Selcuk Yucel
 ---
 
 # Document — Generate Module Context File
@@ -108,7 +109,7 @@ Only update sections that are affected (Module Map, Vocabulary, Architecture). D
 ## Notes
 
 - This skill is language-agnostic — adapts to whatever architecture exists
-- Write from the code, not from assumptions — read every file before documenting
+- Write from the code, not from assumptions — read the module's source files before documenting
 - Be practical: "how to add X" guides are more valuable than abstract descriptions
 - Be honest: document gotchas and known issues, not just happy paths
 - Skip sections that don't apply — a small, accurate doc beats a comprehensive stale one
