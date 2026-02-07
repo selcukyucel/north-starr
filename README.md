@@ -101,7 +101,7 @@ brew untap selcukyucel/north-starr
 Remove from a project:
 
 ```bash
-rm -rf .ai .claude/skills/ideaflow-* .claude/skills/commit-message-generator .claude/skills/refactoring-analyzer memory CLAUDE.md IDEAFLOW_AGENTIC_WORKFLOW.md
+rm -rf .ai .claude/skills/ideaflow-* .claude/skills/commit-message-generator .claude/skills/refactoring-analyzer CLAUDE.md IDEAFLOW_AGENTIC_WORKFLOW.md
 ```
 
 ---
@@ -130,27 +130,27 @@ your-project/
 │   │   └── _TEMPLATE.md
 │   ├── checklists/                    # Verification frameworks
 │   │   └── _TEMPLATE.md
-│   └── tasks/                         # Per-task context (complex work)
-│       └── .templates/
-│           ├── CONTEXT.md
-│           ├── IMPLEMENTATION_PLAN.md
-│           ├── LEARNINGS.md
-│           └── FEATURE_DOCUMENTATION.md
-├── .claude/
-│   └── skills/                        # Claude Code workflow skills
-│       ├── ideaflow-bootstrap/
-│       ├── ideaflow-sense/
-│       ├── ideaflow-model/
-│       ├── ideaflow-sculpt/
-│       ├── ideaflow-validate/
-│       ├── ideaflow-learn/
-│       ├── ideaflow-document/
-│       ├── commit-message-generator/
-│       └── refactoring-analyzer/
-└── memory/
-    ├── friction-log.md                # Friction events with pain type tags
-    ├── vocabulary.md                  # Codebase terms and conventions
-    └── patterns.md                    # Index of discovered patterns
+│   ├── tasks/                         # Per-task context (complex work)
+│   │   └── .templates/
+│   │       ├── CONTEXT.md
+│   │       ├── IMPLEMENTATION_PLAN.md
+│   │       ├── LEARNINGS.md
+│   │       └── FEATURE_DOCUMENTATION.md
+│   └── memory/                        # Cross-session friction tracking
+│       ├── friction-log.md            # Friction events with pain type tags
+│       ├── vocabulary.md              # Codebase terms and conventions
+│       └── patterns.md               # Index of discovered patterns
+└── .claude/
+    └── skills/                        # Claude Code workflow skills
+        ├── ideaflow-bootstrap/
+        ├── ideaflow-sense/
+        ├── ideaflow-model/
+        ├── ideaflow-sculpt/
+        ├── ideaflow-validate/
+        ├── ideaflow-learn/
+        ├── ideaflow-document/
+        ├── commit-message-generator/
+        └── refactoring-analyzer/
 ```
 
 ### Use the workflow

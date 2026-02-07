@@ -104,7 +104,7 @@ Upgrade complexity tier if ANY of these appear:
 ### What Gets Generated
 
 1. **Architecture Overview** -- Layers, key modules, how they connect, the "grain" of the codebase
-2. **Vocabulary** -- Codebase-specific terms, naming conventions, resolved ambiguities (saved to `memory/vocabulary.md`)
+2. **Vocabulary** -- Codebase-specific terms, naming conventions, resolved ambiguities (saved to `.ai/memory/vocabulary.md`)
 3. **Initial Patterns** -- How things are typically done in this codebase (saved to `.ai/patterns/`)
 4. **Initial Landmines** -- Known trouble spots from TODOs, complex areas, git churn (saved to `.ai/landmines/`)
 5. **Module Map** -- Which modules exist, what they do, how they relate
@@ -171,7 +171,7 @@ Prioritize findings by likelihood x impact. Use high-priority risks to ask targe
 ### Actions
 
 - Read all relevant files before forming any opinion
-- Check `memory/` files for known trouble spots and vocabulary
+- Check `.ai/memory/` files for known trouble spots and vocabulary
 - Check `.ai/patterns/` and `.ai/landmines/` for relevant knowledge
 - If any risk is HIGH, use plan mode or ask clarifying questions
 - If requirements are ambiguous, ask -- never assume
@@ -394,7 +394,7 @@ After non-trivial tasks, create or update artifacts in `.ai/`:
 | Hit a gotcha that wasted time | New landmine | `.ai/landmines/[name].md` |
 | Recurring task type with many steps | New checklist | `.ai/checklists/[name].md` |
 | New module or feature completed (Medium/Complex) | Feature documentation | Module directory or `.ai/tasks/` |
-| New codebase terms clarified | Vocabulary update | `memory/vocabulary.md` |
+| New codebase terms clarified | Vocabulary update | `.ai/memory/vocabulary.md` |
 
 Only create when there's genuine new insight. Don't create noise.
 
@@ -422,9 +422,9 @@ Update the appropriate memory files:
 
 | File | What to Record |
 |------|---------------|
-| `memory/friction-log.md` | Specific friction events with pain type tags |
-| `memory/vocabulary.md` | Codebase-specific terms, resolved ambiguities |
-| `memory/patterns.md` | Index linking to `.ai/patterns/` with summaries |
+| `.ai/memory/friction-log.md` | Specific friction events with pain type tags |
+| `.ai/memory/vocabulary.md` | Codebase-specific terms, resolved ambiguities |
+| `.ai/memory/patterns.md` | Index linking to `.ai/patterns/` with summaries |
 
 ### 5.6 Periodic Health Check
 
@@ -469,12 +469,16 @@ Project knowledge base for AI-assisted development. Lives in the project root.
 │   └── _TEMPLATE.md
 ├── checklists/                 # Verification frameworks (created for recurring tasks)
 │   └── _TEMPLATE.md
-└── tasks/                      # Per-task context (for Complex work)
-    └── .templates/
-        ├── CONTEXT.md
-        ├── IMPLEMENTATION_PLAN.md
-        ├── LEARNINGS.md
-        └── FEATURE_DOCUMENTATION.md
+├── tasks/                      # Per-task context (for Complex work)
+│   └── .templates/
+│       ├── CONTEXT.md
+│       ├── IMPLEMENTATION_PLAN.md
+│       ├── LEARNINGS.md
+│       └── FEATURE_DOCUMENTATION.md
+└── memory/                     # Cross-session friction tracking
+    ├── friction-log.md
+    ├── vocabulary.md
+    └── patterns.md
 ```
 
 **Starts mostly empty. Grows through work.** Each LEARN phase adds knowledge. The Bootstrap phase seeds initial content.

@@ -18,12 +18,16 @@ It is language-agnostic. It works for any project type -- backend, frontend, mob
 │   └── _TEMPLATE.md
 ├── checklists/                 # Verification frameworks
 │   └── _TEMPLATE.md
-└── tasks/                      # Per-task context for complex work
-    └── .templates/
-        ├── CONTEXT.md
-        ├── IMPLEMENTATION_PLAN.md
-        ├── LEARNINGS.md
-        └── FEATURE_DOCUMENTATION.md
+├── tasks/                      # Per-task context for complex work
+│   └── .templates/
+│       ├── CONTEXT.md
+│       ├── IMPLEMENTATION_PLAN.md
+│       ├── LEARNINGS.md
+│       └── FEATURE_DOCUMENTATION.md
+└── memory/                     # Cross-session friction tracking
+    ├── friction-log.md
+    ├── vocabulary.md
+    └── patterns.md
 ```
 
 ---
@@ -111,7 +115,7 @@ This analyzes the codebase and generates initial patterns, vocabulary, and an ar
 
 - `CLAUDE.md` (project root) -- Workflow operating instructions and behavioral rules
 - `IDEAFLOW_AGENTIC_WORKFLOW.md` (project root) -- Full methodology reference
-- `memory/` (project root) -- Cross-session friction log, pain map, and strategies
+- `.ai/memory/` -- Cross-session friction log, vocabulary, and pattern index
 
 ---
 

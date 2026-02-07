@@ -19,10 +19,10 @@ The SENSE phase is the entry point for every task. Before writing any code, asse
 
 - Read relevant `.ai/patterns/` files for applicable architectural patterns and conventions.
 - Read relevant `.ai/landmines/` files for known warnings, gotchas, and areas of danger.
-- Check `memory/vocabulary.md` for codebase-specific terminology and resolved ambiguities.
-- Check `memory/friction-log.md` for prior friction events in the affected area.
-- Check `memory/strategies.md` for approaches that previously worked or failed in similar contexts.
-- Check `memory/pain-map.md` for known pain areas that overlap with this task.
+- Check `.ai/memory/vocabulary.md` for codebase-specific terminology and resolved ambiguities.
+- Check `.ai/memory/friction-log.md` for prior friction events in the affected area.
+- Check `.ai/memory/strategies.md` for approaches that previously worked or failed in similar contexts.
+- Check `.ai/memory/pain-map.md` for known pain areas that overlap with this task.
 
 ## Step 3: Risk Assessment (4 Dimensions)
 

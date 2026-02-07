@@ -157,7 +157,7 @@ RESULT:  CONFLICT -- empty string returns no results instead of all
 | `.ai/landmines/` | Known dangerous patterns | When gotcha wastes time |
 | `.ai/checklists/` | Verification frameworks | When task type recurs |
 | `.ai/tasks/` | Per-task context (Complex) | At start of Complex task |
-| `memory/` | Cross-session knowledge | Ongoing |
+| `.ai/memory/` | Cross-session knowledge | Ongoing |
 
 ---
 

@@ -20,7 +20,7 @@ You operate under the **Idea Flow Agentic Workflow**. This is not optional guida
 
 When working on a project for the first time, generate minimum viable context:
 1. Architecture overview (layers, modules, how they connect)
-2. Vocabulary (codebase-specific terms -> `memory/vocabulary.md`)
+2. Vocabulary (codebase-specific terms -> `.ai/memory/vocabulary.md`)
 3. Initial patterns (how things are done -> `.ai/patterns/`)
 4. Initial landmines (known trouble spots -> `.ai/landmines/`)
 
@@ -59,7 +59,7 @@ Before writing ANY code, deliver a **Friction Forecast**:
 
 **Complexity:** [Simple / Medium / Complex] -- [justification]
 
-**Known Pain Points:** [from memory/ and .ai/]
+**Known Pain Points:** [from .ai/memory/ and .ai/]
 **Patterns to Apply:** [from .ai/patterns/]
 **Landmines to Avoid:** [from .ai/landmines/]
 
@@ -78,7 +78,7 @@ Systematically identify what could go wrong:
 
 Actions:
 - Read all relevant files before forming any opinion
-- Check `memory/` for known trouble spots and vocabulary
+- Check `.ai/memory/` for known trouble spots and vocabulary
 - Check `.ai/patterns/` and `.ai/landmines/` for relevant knowledge
 - If any risk is HIGH, use plan mode or ask clarifying questions
 - If requirements are ambiguous, ask -- never assume
@@ -183,7 +183,7 @@ Skip for Simple tasks with no friction.
 | Gotcha that wasted time | Landmine | `.ai/landmines/[name].md` |
 | Recurring task type | Checklist | `.ai/checklists/[name].md` |
 | New/modified module (Med/Complex) | Feature docs | `.ai/tasks/.templates/FEATURE_DOCUMENTATION.md` template |
-| Codebase terms clarified | Vocabulary | `memory/vocabulary.md` |
+| Codebase terms clarified | Vocabulary | `.ai/memory/vocabulary.md` |
 
 ### Feature Documentation (Medium/Complex new modules)
 Invoke `/ideaflow-document` to generate a `Claude.md` file for new or significantly modified modules. It analyzes actual code and documents: architecture, components, data flow, user flows, integration points, edge cases, common tasks ("How to add X"), related patterns/landmines. Can also be invoked on-demand for any undocumented module.
@@ -191,9 +191,9 @@ Invoke `/ideaflow-document` to generate a `Claude.md` file for new or significan
 ### Memory Updates
 | File | Content |
 |------|---------|
-| `memory/friction-log.md` | Friction events with pain type tags |
-| `memory/vocabulary.md` | Codebase terms, naming conventions |
-| `memory/patterns.md` | Index linking to `.ai/patterns/` |
+| `.ai/memory/friction-log.md` | Friction events with pain type tags |
+| `.ai/memory/vocabulary.md` | Codebase terms, naming conventions |
+| `.ai/memory/patterns.md` | Index linking to `.ai/patterns/` |
 
 ### Periodic Health Check
 Every few sessions: Is friction trending up/down? Dominant pain type? Cycle of Safety or Chaos? Biggest improvement opportunity?
@@ -251,13 +251,12 @@ Every few sessions: Is friction trending up/down? Dominant pain type? Cycle of S
 ├── patterns/        # Reusable solutions (grows through work)
 ├── landmines/       # Known dangers (grows through pain)
 ├── checklists/      # Verification frameworks
-└── tasks/           # Per-task context (Complex work)
-    └── .templates/  # CONTEXT, PLAN, LEARNINGS, FEATURE_DOCS
-
-memory/
-├── friction-log.md  # Chronological friction events
-├── vocabulary.md    # Codebase terms and conventions
-└── patterns.md      # Index of .ai/patterns/
+├── tasks/           # Per-task context (Complex work)
+│   └── .templates/  # CONTEXT, PLAN, LEARNINGS, FEATURE_DOCS
+└── memory/          # Cross-session friction tracking
+    ├── friction-log.md  # Chronological friction events
+    ├── vocabulary.md    # Codebase terms and conventions
+    └── patterns.md      # Index of .ai/patterns/
 ```
 
 ---

@@ -20,7 +20,7 @@ Generate the minimum viable context so the AI can work effectively from the firs
 
 - First time using the Idea Flow workflow on an existing project
 - When onboarding to a new codebase
-- When the `.ai/` directory and `memory/` files are empty or missing project-specific content
+- When the `.ai/` directory and `.ai/memory/` files are empty or missing project-specific content
 
 **Trigger phrases:**
 - "bootstrap this project"
@@ -91,7 +91,7 @@ Generate the minimum viable context so the AI can work effectively from the firs
 3. Resolve ambiguous terms -- same word meaning different things in different parts of the codebase
 4. Note any abbreviations or acronyms used without explanation
 
-**Save to:** `memory/vocabulary.md`
+**Save to:** `.ai/memory/vocabulary.md`
 
 ### Step 4: Discover Patterns
 
@@ -143,17 +143,17 @@ Generate the minimum viable context so the AI can work effectively from the firs
    - Networking, persistence, and other service layers
 4. Note the module boundaries -- where are the seams that allow independent changes?
 
-**Save to:** `memory/` as a project overview, and reference from `memory/patterns.md` if relevant.
+**Save to:** `.ai/memory/` as a project overview, and reference from `.ai/memory/patterns.md` if relevant.
 
 ## Post-Bootstrap Checklist
 
 After running all steps, verify these files exist and contain useful content:
 
-- [ ] `memory/vocabulary.md` -- updated with project-specific terms
-- [ ] `memory/patterns.md` -- index of discovered patterns
+- [ ] `.ai/memory/vocabulary.md` -- updated with project-specific terms
+- [ ] `.ai/memory/patterns.md` -- index of discovered patterns
 - [ ] `.ai/patterns/` -- 2-4 pattern files for the most important conventions
 - [ ] `.ai/landmines/` -- landmine files for the most dangerous areas
-- [ ] Module map saved to `memory/`
+- [ ] Module map saved to `.ai/memory/`
 
 ## Output
 
@@ -192,7 +192,7 @@ After completing all steps, present a summary:
   ├── checklists/
   └── tasks/
   ```
-- Check if `memory/` directory exists; create it if needed
+- Check if `.ai/memory/` directory exists; create it if needed
 - If the project already has partial context (e.g., some patterns documented), build on what exists rather than starting over
 - The bootstrap is a starting point, not the final word -- every subsequent LEARN phase (Phase 5) adds more context naturally
 - Prefer breadth over depth: a shallow understanding of the whole project is more useful than deep knowledge of one module

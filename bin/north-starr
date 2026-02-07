@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-VERSION="1.0.3"
+VERSION="1.1.0"
 NORTH_STARR_HOME="${NORTH_STARR_HOME:-}"
 
 # Resolve where templates live
@@ -110,7 +110,7 @@ cmd_init() {
   if [[ -d "$template_dir/ai" ]]; then
     mkdir -p "$target_dir/.ai"
     cp -r "$template_dir/ai/"* "$target_dir/.ai/"
-    print_success ".ai/ — project knowledge base (patterns, landmines, checklists, task templates)"
+    print_success ".ai/ — project knowledge base (patterns, landmines, checklists, tasks, memory)"
   fi
 
   # Copy .claude/ directory
@@ -120,11 +120,11 @@ cmd_init() {
     print_success ".claude/skills/ — workflow phase skills (sense, model, sculpt, validate, learn, bootstrap)"
   fi
 
-  # Copy memory/ directory
-  if [[ -d "$template_dir/memory" ]]; then
-    mkdir -p "$target_dir/memory"
-    cp -r "$template_dir/memory/"* "$target_dir/memory/"
-    print_success "memory/ — friction log, vocabulary, patterns index"
+  # Copy memory/ into .ai/memory/
+  if [[ -d "$template_dir/ai/memory" ]]; then
+    mkdir -p "$target_dir/.ai/memory"
+    cp -r "$template_dir/ai/memory/"* "$target_dir/.ai/memory/"
+    print_success ".ai/memory/ — friction log, vocabulary, patterns index"
   fi
 
   # Copy CLAUDE.md
@@ -214,6 +214,21 @@ cmd_update() {
     print_success "Updated .ai/ templates"
   fi
 
+  # Migrate memory/ into .ai/memory/ (for projects initialized before v1.1.0)
+  if [[ -d "$target_dir/memory" && ! -d "$target_dir/.ai/memory" ]]; then
+    mkdir -p "$target_dir/.ai/memory"
+    cp -r "$target_dir/memory/"* "$target_dir/.ai/memory/" 2>/dev/null || true
+    rm -rf "$target_dir/memory"
+    print_success "Migrated memory/ → .ai/memory/"
+  fi
+
+  # Ensure .ai/memory/ exists
+  if [[ -d "$template_dir/ai/memory" && ! -d "$target_dir/.ai/memory" ]]; then
+    mkdir -p "$target_dir/.ai/memory"
+    cp -r "$template_dir/ai/memory/"* "$target_dir/.ai/memory/"
+    print_success "Created .ai/memory/"
+  fi
+
   # Update workflow files
   if [[ -f "$template_dir/CLAUDE.md" ]]; then
     cp "$template_dir/CLAUDE.md" "$target_dir/CLAUDE.md"
@@ -270,10 +285,10 @@ cmd_status() {
     initialized=false
   fi
 
-  if [[ -d "$target_dir/memory" ]]; then
-    print_success "memory/"
+  if [[ -d "$target_dir/.ai/memory" ]]; then
+    print_success ".ai/memory/"
   else
-    print_warn "memory/ — missing"
+    print_warn ".ai/memory/ — missing"
     initialized=false
   fi
 

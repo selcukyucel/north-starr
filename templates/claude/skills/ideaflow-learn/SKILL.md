@@ -70,9 +70,9 @@ If the task created or significantly modified a module:
 
 ## Step 5: Update Memory Files
 
-- `memory/friction-log.md` -- Add friction events with pain type tags.
-- `memory/vocabulary.md` -- Add any new codebase terms discovered.
-- `memory/patterns.md` -- Update index if new patterns created.
+- `.ai/memory/friction-log.md` -- Add friction events with pain type tags.
+- `.ai/memory/vocabulary.md` -- Add any new codebase terms discovered.
+- `.ai/memory/patterns.md` -- Update index if new patterns created.
 
 ---
 
