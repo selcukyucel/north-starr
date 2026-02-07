@@ -120,6 +120,24 @@ Then update the workflow files in your project (preserves your patterns, landmin
 north-starr update
 ```
 
+### Uninstall
+
+Remove north-starr from your system:
+
+```bash
+# If installed via curl or manual clone
+rm -rf ~/.north-starr ~/.local/bin/north-starr
+
+# If installed via Homebrew
+brew uninstall north-starr && brew untap selcukyucel/north-starr
+```
+
+Remove from a project:
+
+```bash
+rm -rf .ai .claude/skills/ideaflow-* .claude/skills/commit-message-generator .claude/skills/refactoring-analyzer memory CLAUDE.md IDEAFLOW_AGENTIC_WORKFLOW.md
+```
+
 ---
 
 ## Usage
