@@ -74,8 +74,7 @@ Janelle Arty Starr explains the Idea Flow methodology:
 ## Install
 
 ```bash
-brew tap selcukyucel/north-starr https://github.com/selcukyucel/north-starr.git
-brew install north-starr
+brew install selcukyucel/north-starr/north-starr
 ```
 
 ### Update
@@ -95,7 +94,8 @@ north-starr update
 Remove north-starr from your system:
 
 ```bash
-brew uninstall north-starr && brew untap selcukyucel/north-starr
+brew uninstall north-starr
+brew untap selcukyucel/north-starr
 ```
 
 Remove from a project:
