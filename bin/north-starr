@@ -114,20 +114,22 @@ cmd_init() {
 
   # Copy .ai/ directory
   if [[ -d "$template_dir/ai" ]]; then
-    cp -r "$template_dir/ai" "$target_dir/.ai"
+    mkdir -p "$target_dir/.ai"
+    cp -r "$template_dir/ai/"* "$target_dir/.ai/"
     print_success ".ai/ — project knowledge base (patterns, landmines, checklists, task templates)"
   fi
 
   # Copy .claude/ directory
   if [[ -d "$template_dir/claude" ]]; then
-    mkdir -p "$target_dir/.claude"
-    cp -r "$template_dir/claude/skills" "$target_dir/.claude/skills"
+    mkdir -p "$target_dir/.claude/skills"
+    cp -r "$template_dir/claude/skills/"* "$target_dir/.claude/skills/"
     print_success ".claude/skills/ — workflow phase skills (sense, model, sculpt, validate, learn, bootstrap)"
   fi
 
   # Copy memory/ directory
   if [[ -d "$template_dir/memory" ]]; then
-    cp -r "$template_dir/memory" "$target_dir/memory"
+    mkdir -p "$target_dir/memory"
+    cp -r "$template_dir/memory/"* "$target_dir/memory/"
     print_success "memory/ — friction log, vocabulary, patterns index"
   fi
 
