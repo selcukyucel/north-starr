@@ -1,8 +1,8 @@
 class NorthStarr < Formula
   desc "Your North Star for Friction-Free Development — Idea Flow workflow for Claude Code"
   homepage "https://github.com/selcukyucel/north-starr"
-  url "https://github.com/selcukyucel/north-starr/archive/refs/tags/v1.0.1.tar.gz"
-  sha256 "7fdfc35a759b6665fc684375034589267ec1d119a1af40a4f1711cdd4245f3c1"
+  url "https://github.com/selcukyucel/north-starr/archive/refs/tags/v1.0.2.tar.gz"
+  sha256 "71cc6ab1f91acf5bc9ff45c5ddd6f22fe1b6de36794a311d8ccb9acc1fdc4477"
   license "MIT"
 
   def install
