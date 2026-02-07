@@ -92,13 +92,19 @@ Explore an existing project and generate native Claude Code configuration so it 
 
 ### Step 5: Generate Configuration
 
-**Goal:** Produce native Claude Code artifacts from what was discovered.
+**Goal:** Produce configuration files for the AI tools in use. Generate all sections below. The content is the same — only the file locations differ per tool.
 
 ---
 
-#### A. Root `CLAUDE.md`
+#### A. Project Context (root-level)
 
-Write to `CLAUDE.md` at the project root with:
+Write the project context to all applicable locations:
+
+- `CLAUDE.md` — Claude Code (auto-loaded)
+- `AGENTS.md` — Universal (works with any AI tool)
+- `.github/copilot-instructions.md` — VS Code Copilot (auto-loaded)
+
+All three get the same content:
 
 ```markdown
 # [Project Name]
@@ -137,13 +143,15 @@ Use plan mode for anything touching 3+ files or unfamiliar areas.
 For high-stakes tasks, run `/invert` for deep structured analysis before implementation.
 ```
 
-If a root `CLAUDE.md` already exists, merge new content into it rather than overwriting.
+If any of these files already exist with project-specific content, merge rather than overwrite.
 
 ---
 
-#### B. Module-Level `CLAUDE.md` Files
+#### B. Module-Level Context Files
 
-For each danger zone or complex module found in Step 4, write a `CLAUDE.md` inside that directory:
+For each danger zone or complex module found in Step 4, write context in that directory:
+
+- `CLAUDE.md` — Claude Code (auto-loaded when working in that directory)
 
 ```markdown
 # [Module Name]
@@ -159,21 +167,13 @@ For each danger zone or complex module found in Step 4, write a `CLAUDE.md` insi
 [How this module does things, if different from the project defaults]
 ```
 
-These files auto-load when Claude Code reads files in or below that directory. Place warnings where they matter.
-
 ---
 
-#### C. `.claude/rules/*.md` Files
+#### C. Path-Scoped Rules
 
-Generate rules scoped by file path. Each rule file must have YAML frontmatter with `paths` globs.
+Generate rules scoped by file path. Create in all applicable formats:
 
-**What to generate rules for:**
-- Naming conventions — scoped to the project's file extensions
-- Architecture constraints — what the grain allows and disallows
-- Error handling — the project's established pattern
-- Danger zone alerts — scoped to specific risky directories
-
-**Format:**
+**Claude Code** — `.claude/rules/*.md`:
 ```markdown
 ---
 paths: ["glob/pattern/**"]
@@ -182,18 +182,42 @@ paths: ["glob/pattern/**"]
 [Clear, concise instruction or warning]
 ```
 
+**VS Code Copilot** — `.github/instructions/*.instructions.md`:
+```markdown
+---
+applyTo: "glob/pattern/**"
+---
+
+[Same instruction content]
+```
+
+**Cursor** — `.cursor/rules/*.mdc`:
+```markdown
+---
+globs: glob/pattern/**
+---
+
+[Same instruction content]
+```
+
+**What to generate rules for:**
+- Naming conventions — scoped to the project's file extensions
+- Architecture constraints — what the grain allows and disallows
+- Error handling — the project's established pattern
+- Danger zone alerts — scoped to specific risky directories
+
 **Guidelines:**
 - Generate only rules that reflect real patterns found in the codebase
 - Do not invent rules for patterns that don't exist
 - Use specific path globs — broad rules waste context on irrelevant files
 - Keep each rule file focused on one concern
-- Name files descriptively: `naming-conventions.md`, `error-handling.md`, `auth-module-warnings.md`
+- The content is the same across tools — only the frontmatter format differs
 
 ---
 
-#### D. `.claude/agents/*.md` Files
+#### D. Agents
 
-Generate a project-tuned explorer agent:
+**Claude Code** — `.claude/agents/*.md`:
 
 ```yaml
 ---
@@ -205,20 +229,29 @@ memory: project
 ---
 ```
 
+**VS Code Copilot** — `.github/agents/*.agent.md`:
+
+```yaml
+---
+name: [project]-explorer
+description: Deep exploration and analysis of the [project] codebase
+tools: codebase
+---
+```
+
 The agent prompt should include:
 - The discovered architecture and grain
 - Key modules and their relationships
 - Known danger zones to watch for
-- Instruction to update its memory when it discovers new patterns
 
-Generate additional agents only if the project clearly warrants them (e.g., a dedicated test agent for a project with complex test infrastructure). Default to one.
+Generate additional agents only if the project clearly warrants them. Default to one.
 
 ## Post-Bootstrap Checklist
 
-- [ ] `CLAUDE.md` at project root — architecture, grain, module map, vocabulary
+- [ ] Project context at root — `CLAUDE.md`, `AGENTS.md`, `.github/copilot-instructions.md`
 - [ ] Module-level `CLAUDE.md` for each identified danger zone
-- [ ] `.claude/rules/` — at least one rules file with path-scoped conventions
-- [ ] `.claude/agents/` — at least one project-tuned agent
+- [ ] Path-scoped rules — `.claude/rules/`, `.github/instructions/`, `.cursor/rules/`
+- [ ] At least one project-tuned agent
 
 ## Output Summary
 
@@ -233,10 +266,25 @@ After completing all steps, present:
 **Grain:** [easy changes vs. hard changes]
 
 **Files Generated:**
-- CLAUDE.md (root) — [sections included]
-- [N] module-level CLAUDE.md files — [list directories]
-- [N] rule files in .claude/rules/ — [list names]
-- [N] agent files in .claude/agents/ — [list names]
+
+Universal:
+- AGENTS.md — [sections included]
+
+Claude Code:
+- CLAUDE.md — [sections included]
+- [N] .claude/rules/ files — [list names]
+- [N] .claude/agents/ files — [list names]
+
+VS Code Copilot:
+- .github/copilot-instructions.md
+- [N] .github/instructions/ files — [list names]
+- [N] .github/agents/ files — [list names]
+
+Cursor:
+- [N] .cursor/rules/ files — [list names]
+
+Module-level:
+- [N] CLAUDE.md files — [list directories]
 
 **Recommended First Read:** [2-3 files a newcomer should read first]
 **Key Danger Zones:** [areas to approach with caution]
@@ -245,9 +293,10 @@ After completing all steps, present:
 ## Notes
 
 - This skill is language-agnostic — it detects the project's stack and generates appropriate configuration
+- This skill is tool-agnostic — it generates config for Claude Code, VS Code Copilot, and Cursor simultaneously
 - Can be run incrementally — bootstrap just the area you're working in, expand later
 - Do not try to document everything — focus on what reduces friction for the next task
 - Prefer breadth over depth: shallow understanding of the whole project beats deep knowledge of one module
 - Generate only rules for patterns that actually exist — never invent conventions
-- If the project already has Claude Code configuration, build on what exists rather than overwriting
-- The generated configuration is a starting point — Claude Code's auto-memory accumulates further learnings through subsequent work
+- If the project already has configuration, build on what exists rather than overwriting
+- The generated configuration is a starting point — it improves through subsequent `/learn` invocations

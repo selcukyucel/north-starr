@@ -84,49 +84,52 @@ cd your-project
 north-starr init
 ```
 
-This installs skills and a starter `CLAUDE.md`:
+This installs skills and starter context for multiple AI tools:
 
 ```
 your-project/
-├── CLAUDE.md                          # Starter — tells you to run /bootstrap
-└── .claude/
-    └── skills/
-        ├── bootstrap/                 # Generate project config
-        ├── invert/                    # Deep risk analysis
-        ├── document/                  # Module documentation generator
-        ├── learn/                     # Update config from experience
-        ├── commit-message-generator/
-        └── refactoring-analyzer/
+├── AGENTS.md                          # Universal — works with any AI tool
+├── CLAUDE.md                          # Claude Code starter
+├── .claude/skills/                    # Claude Code skills
+│   ├── bootstrap/
+│   ├── invert/
+│   ├── document/
+│   ├── learn/
+│   ├── commit-message-generator/
+│   └── refactoring-analyzer/
+└── .github/skills/                    # VS Code Copilot skills (same content)
+    └── ...
 ```
 
 ### Bootstrap your project
 
-Open Claude Code and run:
+Open your AI tool and run:
 
 ```
 /bootstrap
 ```
 
-This explores your codebase and generates:
+This explores your codebase and generates config for all supported tools:
 
 ```
 your-project/
-├── CLAUDE.md                          # Architecture, grain, module map, vocabulary
+├── AGENTS.md                          # Universal project context
+├── CLAUDE.md                          # Claude Code context
 ├── src/
-│   ├── payments/CLAUDE.md             # Module-level warnings and patterns
+│   ├── payments/CLAUDE.md             # Module-level warnings
 │   └── auth/CLAUDE.md                 # Module-level context
-└── .claude/
-    ├── rules/
-    │   ├── naming-conventions.md      # Scoped to your file types
-    │   ├── error-handling.md          # Your project's patterns
-    │   └── payments-warnings.md       # Danger zone alerts
-    ├── agents/
-    │   └── project-explorer.md        # Tuned to your architecture
-    └── skills/
-        └── ...
+├── .claude/
+│   ├── rules/                         # Claude Code path-scoped rules
+│   └── agents/                        # Claude Code agents
+├── .github/
+│   ├── copilot-instructions.md        # VS Code Copilot context
+│   ├── instructions/                  # VS Code Copilot path-scoped rules
+│   └── agents/                        # VS Code Copilot agents
+└── .cursor/
+    └── rules/                         # Cursor path-scoped rules
 ```
 
-After bootstrap, Claude Code auto-loads this configuration. Rules fire when touching matching files. Module CLAUDE.md files appear when working in those directories. No ceremony needed.
+After bootstrap, your AI tool auto-loads this configuration. Rules fire when touching matching files. Module context files appear when working in those directories. No ceremony needed.
 
 ### Available skills
 

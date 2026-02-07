@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-VERSION="2.0.0"
+VERSION="2.1.0"
 NORTH_STARR_HOME="${NORTH_STARR_HOME:-}"
 
 # Resolve where templates live
@@ -30,6 +30,26 @@ resolve_template_dir() {
   # Apple Silicon Homebrew
   if [[ -d "/opt/homebrew/share/north-starr/templates" ]]; then
     echo "/opt/homebrew/share/north-starr/templates"
+    return
+  fi
+
+  echo ""
+}
+
+# Resolve where skills live (root-level for plugin, or via templates symlink)
+resolve_skills_dir() {
+  local template_dir="$1"
+  local parent_dir="$(dirname "$template_dir")"
+
+  # Root-level skills/ (plugin structure)
+  if [[ -d "$parent_dir/skills" ]]; then
+    echo "$parent_dir/skills"
+    return
+  fi
+
+  # Symlinked through templates/claude/skills
+  if [[ -d "$template_dir/claude/skills" ]]; then
+    echo "$template_dir/claude/skills"
     return
   fi
 
@@ -87,12 +107,15 @@ cmd_init() {
     exit 1
   fi
 
+  local skills_dir
+  skills_dir="$(resolve_skills_dir "$template_dir")"
+
   echo -e "${BOLD}  Initializing North Starr in:${NC}"
   echo -e "  ${DIM}$target_dir${NC}"
   echo ""
 
   # Check for existing files
-  if [[ -d "$target_dir/.claude/skills" || -f "$target_dir/CLAUDE.md" ]]; then
+  if [[ -d "$target_dir/.claude/skills" || -d "$target_dir/.github/skills" || -f "$target_dir/AGENTS.md" ]]; then
     print_warn "Some North Starr files already exist."
     echo ""
     read -rp "  Overwrite existing files? [y/N] " confirm
@@ -104,25 +127,38 @@ cmd_init() {
     echo ""
   fi
 
-  # Copy .claude/skills/
-  if [[ -d "$template_dir/claude/skills" ]]; then
-    mkdir -p "$target_dir/.claude/skills"
-    cp -r "$template_dir/claude/skills/"* "$target_dir/.claude/skills/"
-    print_success ".claude/skills/ — workflow skills (bootstrap, invert, document, learn)"
+  # Copy AGENTS.md (universal — works with any AI tool)
+  if [[ -f "$template_dir/AGENTS.md" ]]; then
+    cp "$template_dir/AGENTS.md" "$target_dir/AGENTS.md"
+    print_success "AGENTS.md — universal AI assistant instructions"
   fi
 
-  # Copy starter CLAUDE.md
+  # Copy skills to .claude/skills/ (Claude Code)
+  if [[ -n "$skills_dir" && -d "$skills_dir" ]]; then
+    mkdir -p "$target_dir/.claude/skills"
+    cp -r "$skills_dir/"* "$target_dir/.claude/skills/"
+    print_success ".claude/skills/ — Claude Code skills"
+  fi
+
+  # Copy skills to .github/skills/ (VS Code Copilot)
+  if [[ -n "$skills_dir" && -d "$skills_dir" ]]; then
+    mkdir -p "$target_dir/.github/skills"
+    cp -r "$skills_dir/"* "$target_dir/.github/skills/"
+    print_success ".github/skills/ — VS Code Copilot skills"
+  fi
+
+  # Copy starter CLAUDE.md (Claude Code specific)
   if [[ -f "$template_dir/CLAUDE.md" ]]; then
     cp "$template_dir/CLAUDE.md" "$target_dir/CLAUDE.md"
-    print_success "CLAUDE.md — starter instructions for Claude Code"
+    print_success "CLAUDE.md — Claude Code starter instructions"
   fi
 
   # Migrate from v1.x: clean up old .ai/ structure if user confirms
   if [[ -d "$target_dir/.ai" ]]; then
     echo ""
     print_warn "Found .ai/ directory from a previous version."
-    print_info "North Starr v2 uses native Claude Code primitives instead."
-    print_info "Run ${CYAN}/bootstrap${NC} to regenerate config as .claude/rules/ and .claude/agents/."
+    print_info "North Starr v2 uses native AI tool primitives instead."
+    print_info "Run ${CYAN}/bootstrap${NC} to regenerate project config."
     echo ""
     read -rp "  Remove old .ai/ directory? [y/N] " confirm_ai
     if [[ "$confirm_ai" == "y" || "$confirm_ai" == "Y" ]]; then
@@ -151,14 +187,14 @@ cmd_init() {
   echo -e "${GREEN}${BOLD}  Done!${NC} North Starr initialized."
   echo ""
   echo -e "  ${BOLD}What's next:${NC}"
-  echo -e "  ${DIM}1.${NC} Open Claude Code in this project"
+  echo -e "  ${DIM}1.${NC} Open your AI coding tool (Claude Code, VS Code Copilot, Cursor, etc.)"
   echo -e "  ${DIM}2.${NC} Run ${CYAN}/bootstrap${NC} to generate project-specific config"
-  echo -e "  ${DIM}3.${NC} Start working — Claude Code auto-loads the generated context"
+  echo -e "  ${DIM}3.${NC} Start working — your AI tool auto-loads the generated context"
   echo ""
   echo -e "  ${DIM}Available skills:${NC}"
-  echo -e "    /bootstrap  — Generate project config (rules, agents, CLAUDE.md)"
+  echo -e "    /bootstrap  — Generate project config (rules, agents, context files)"
   echo -e "    /invert     — Deep risk analysis before complex tasks"
-  echo -e "    /document   — Generate CLAUDE.md for a module"
+  echo -e "    /document   — Generate documentation for a module"
   echo -e "    /learn      — Update config from experience"
   echo ""
   echo -e "  ${DIM}Learn more: https://github.com/selcukyucel/north-starr${NC}"
@@ -182,19 +218,39 @@ cmd_update() {
     exit 1
   fi
 
+  local skills_dir
+  skills_dir="$(resolve_skills_dir "$template_dir")"
+
   echo -e "${BOLD}  Updating North Starr in:${NC}"
   echo -e "  ${DIM}$target_dir${NC}"
   echo ""
 
-  # Update skills
-  if [[ -d "$template_dir/claude/skills" ]]; then
+  # Update skills in .claude/skills/
+  if [[ -n "$skills_dir" && -d "$skills_dir" ]]; then
     mkdir -p "$target_dir/.claude/skills"
-    cp -r "$template_dir/claude/skills/"* "$target_dir/.claude/skills/"
+    cp -r "$skills_dir/"* "$target_dir/.claude/skills/"
     print_success "Updated .claude/skills/"
   fi
 
-  # Update starter CLAUDE.md only if it hasn't been customized by bootstrap
-  # Check if it still contains the "Getting Started" marker from the starter template
+  # Update skills in .github/skills/
+  if [[ -n "$skills_dir" && -d "$skills_dir" ]]; then
+    mkdir -p "$target_dir/.github/skills"
+    cp -r "$skills_dir/"* "$target_dir/.github/skills/"
+    print_success "Updated .github/skills/"
+  fi
+
+  # Update AGENTS.md if it's still the starter template
+  if [[ -f "$target_dir/AGENTS.md" ]] && grep -q "Run \`/bootstrap\` to generate" "$target_dir/AGENTS.md" 2>/dev/null; then
+    cp "$template_dir/AGENTS.md" "$target_dir/AGENTS.md"
+    print_success "Updated AGENTS.md (starter template)"
+  elif [[ ! -f "$target_dir/AGENTS.md" ]]; then
+    cp "$template_dir/AGENTS.md" "$target_dir/AGENTS.md"
+    print_success "Created AGENTS.md (universal instructions)"
+  else
+    print_info "Skipped AGENTS.md (customized — not overwriting)"
+  fi
+
+  # Update starter CLAUDE.md only if not customized
   if [[ -f "$target_dir/CLAUDE.md" ]] && grep -q "Run \`/bootstrap\` to generate" "$target_dir/CLAUDE.md" 2>/dev/null; then
     cp "$template_dir/CLAUDE.md" "$target_dir/CLAUDE.md"
     print_success "Updated CLAUDE.md (starter template)"
@@ -215,7 +271,7 @@ cmd_update() {
 
   echo ""
   echo -e "${GREEN}${BOLD}  Done!${NC} Skills updated to v${VERSION}."
-  echo -e "  ${DIM}Your rules, agents, and project CLAUDE.md were preserved.${NC}"
+  echo -e "  ${DIM}Your rules, agents, and project config were preserved.${NC}"
   echo ""
 }
 
@@ -233,48 +289,87 @@ cmd_status() {
   local initialized=true
   local bootstrapped=true
 
-  # Check skills
-  if [[ -d "$target_dir/.claude/skills" ]]; then
-    local skill_count=$(find "$target_dir/.claude/skills" -name "SKILL.md" 2>/dev/null | wc -l | tr -d ' ')
-    print_success ".claude/skills/ — ${skill_count} skills installed"
+  # Check AGENTS.md (universal)
+  if [[ -f "$target_dir/AGENTS.md" ]]; then
+    if grep -q "Run \`/bootstrap\` to generate" "$target_dir/AGENTS.md" 2>/dev/null; then
+      print_success "AGENTS.md — starter (run /bootstrap to generate project config)"
+    else
+      print_success "AGENTS.md — project-specific"
+    fi
   else
-    print_warn ".claude/skills/ — missing"
+    print_warn "AGENTS.md — missing"
+    initialized=false
+  fi
+
+  # Check Claude Code skills
+  if [[ -d "$target_dir/.claude/skills" ]]; then
+    local claude_skill_count=$(find "$target_dir/.claude/skills" -name "SKILL.md" 2>/dev/null | wc -l | tr -d ' ')
+    print_success ".claude/skills/ — ${claude_skill_count} skills (Claude Code)"
+  else
+    print_info ".claude/skills/ — not installed"
+  fi
+
+  # Check VS Code Copilot skills
+  if [[ -d "$target_dir/.github/skills" ]]; then
+    local github_skill_count=$(find "$target_dir/.github/skills" -name "SKILL.md" 2>/dev/null | wc -l | tr -d ' ')
+    print_success ".github/skills/ — ${github_skill_count} skills (VS Code Copilot)"
+  else
+    print_info ".github/skills/ — not installed"
+  fi
+
+  # Check if at least one skill location exists
+  if [[ ! -d "$target_dir/.claude/skills" && ! -d "$target_dir/.github/skills" ]]; then
     initialized=false
   fi
 
   # Check CLAUDE.md
   if [[ -f "$target_dir/CLAUDE.md" ]]; then
     if grep -q "Run \`/bootstrap\` to generate" "$target_dir/CLAUDE.md" 2>/dev/null; then
-      print_success "CLAUDE.md — starter (run /bootstrap to generate project config)"
+      print_success "CLAUDE.md — starter"
       bootstrapped=false
     else
       print_success "CLAUDE.md — project-specific"
     fi
-  else
-    print_warn "CLAUDE.md — missing"
-    initialized=false
-    bootstrapped=false
   fi
 
-  # Check rules (created by bootstrap)
+  # Check Claude Code rules (created by bootstrap)
   if [[ -d "$target_dir/.claude/rules" ]]; then
     local rule_count=$(find "$target_dir/.claude/rules" -name "*.md" 2>/dev/null | wc -l | tr -d ' ')
     print_success ".claude/rules/ — ${rule_count} rules"
   else
-    print_info ".claude/rules/ — not yet created (run /bootstrap)"
     bootstrapped=false
   fi
 
-  # Check agents (created by bootstrap)
+  # Check Claude Code agents (created by bootstrap)
   if [[ -d "$target_dir/.claude/agents" ]]; then
     local agent_count=$(find "$target_dir/.claude/agents" -name "*.md" 2>/dev/null | wc -l | tr -d ' ')
     print_success ".claude/agents/ — ${agent_count} agents"
   else
-    print_info ".claude/agents/ — not yet created (run /bootstrap)"
     bootstrapped=false
   fi
 
-  # Check for module-level CLAUDE.md files (created by bootstrap or document)
+  # Check VS Code Copilot instructions (created by bootstrap)
+  if [[ -f "$target_dir/.github/copilot-instructions.md" ]]; then
+    print_success ".github/copilot-instructions.md — Copilot instructions"
+  fi
+
+  # Check VS Code Copilot file-scoped instructions (created by bootstrap)
+  if [[ -d "$target_dir/.github/instructions" ]]; then
+    local instruction_count=$(find "$target_dir/.github/instructions" -name "*.instructions.md" 2>/dev/null | wc -l | tr -d ' ')
+    if [[ "$instruction_count" -gt 0 ]]; then
+      print_success ".github/instructions/ — ${instruction_count} scoped rules"
+    fi
+  fi
+
+  # Check Cursor rules (created by bootstrap)
+  if [[ -d "$target_dir/.cursor/rules" ]]; then
+    local cursor_count=$(find "$target_dir/.cursor/rules" -name "*.mdc" -o -name "*.md" 2>/dev/null | wc -l | tr -d ' ')
+    if [[ "$cursor_count" -gt 0 ]]; then
+      print_success ".cursor/rules/ — ${cursor_count} rules"
+    fi
+  fi
+
+  # Check module-level CLAUDE.md files
   local module_claude_count=$(find "$target_dir" -name "CLAUDE.md" -not -path "$target_dir/CLAUDE.md" -not -path "$target_dir/.claude/*" -not -path "*/node_modules/*" -not -path "*/.git/*" 2>/dev/null | wc -l | tr -d ' ')
   if [[ "$module_claude_count" -gt 0 ]]; then
     print_success "Module CLAUDE.md — ${module_claude_count} files"
@@ -292,9 +387,9 @@ cmd_status() {
   echo ""
 
   if [[ "$initialized" == "false" ]]; then
-    print_info "Run ${BOLD}north-starr init${NC} to install North Starr skills."
+    print_info "Run ${BOLD}north-starr init${NC} to install North Starr."
   elif [[ "$bootstrapped" == "false" ]]; then
-    echo -e "  ${YELLOW}${BOLD}Skills installed.${NC} Run ${CYAN}/bootstrap${NC} in Claude Code to generate project config."
+    echo -e "  ${YELLOW}${BOLD}Skills installed.${NC} Run ${CYAN}/bootstrap${NC} in your AI tool to generate project config."
   else
     echo -e "  ${GREEN}${BOLD}North Starr is fully configured.${NC}"
   fi
@@ -314,16 +409,19 @@ cmd_help() {
   echo -e "    ${CYAN}help${NC}             Show this help message"
   echo -e "    ${CYAN}version${NC}          Show version"
   echo ""
+  echo -e "${BOLD}  Supported AI tools:${NC}"
+  echo -e "    Claude Code, VS Code Copilot, Cursor, Windsurf"
+  echo ""
   echo -e "${BOLD}  Examples:${NC}"
   echo -e "    ${DIM}north-starr init${NC}              # Initialize in current directory"
   echo -e "    ${DIM}north-starr init ~/my-project${NC}  # Initialize in specific directory"
   echo -e "    ${DIM}north-starr update${NC}             # Update to latest skills"
   echo -e "    ${DIM}north-starr status${NC}             # Check setup status"
   echo ""
-  echo -e "${BOLD}  After init, use these Claude Code skills:${NC}"
-  echo -e "    /bootstrap  — Generate project config (rules, agents, CLAUDE.md)"
+  echo -e "${BOLD}  After init, use these skills in your AI tool:${NC}"
+  echo -e "    /bootstrap  — Generate project config (rules, agents, context files)"
   echo -e "    /invert     — Deep risk analysis before complex tasks"
-  echo -e "    /document   — Generate CLAUDE.md for a module"
+  echo -e "    /document   — Generate documentation for a module"
   echo -e "    /learn      — Update config from experience"
   echo ""
   echo -e "  ${DIM}https://github.com/selcukyucel/north-starr${NC}"

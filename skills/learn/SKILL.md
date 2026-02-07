@@ -39,13 +39,13 @@ Map each learning to the right artifact:
 
 | What you learned | Artifact to create/update |
 |---|---|
-| A convention that should always be followed | `.claude/rules/*.md` — new rule with path glob |
+| A convention that should always be followed | Path-scoped rules — update all formats present (`.claude/rules/`, `.github/instructions/`, `.cursor/rules/`) |
 | A danger zone in a specific module | Module-level `CLAUDE.md` — add Caution section |
-| A reusable pattern for how things are done | `.claude/rules/*.md` — new rule, or root `CLAUDE.md` patterns |
-| Architecture understanding deepened | Root `CLAUDE.md` — update Architecture or Grain section |
-| A new term was clarified | Root `CLAUDE.md` — update Vocabulary section |
-| The explorer agent needs more context | `.claude/agents/*.md` — update agent prompt |
-| A recurring task type was identified | Suggest creating a new skill in `.claude/skills/` |
+| A reusable pattern for how things are done | Path-scoped rules, or root context files |
+| Architecture understanding deepened | Root context — update `CLAUDE.md`, `AGENTS.md`, `.github/copilot-instructions.md` (whichever exist) |
+| A new term was clarified | Root context — update Vocabulary section in all context files |
+| The explorer agent needs more context | Agent files — update `.claude/agents/` and/or `.github/agents/` |
+| A recurring task type was identified | Suggest creating a new skill |
 
 ### Step 3: Generate the Artifacts
 
