@@ -224,6 +224,22 @@ The system improves through use — like a colleague who gets better the longer 
 
 Every learning becomes a native artifact — pattern rules for conventions worth following, landmine rules for dangers worth avoiding. CLAUDE.md for Claude Code, copilot-instructions.md for VS Code Copilot, .cursor/rules for Cursor, AGENTS.md for everything. There's no parallel knowledge system — everything feeds directly into how your tools operate.
 
+### How validation works
+
+The loop between `/architect` and `/bootstrap` is powered by a `[DECLARED]` tag.
+
+When `/architect` generates configuration for a new project, every section and rule is marked `[DECLARED]` — signaling "this is intent, not yet verified against real code." As you write code, your AI tools enforce these declared conventions.
+
+When you run `/bootstrap` later, it detects the `[DECLARED]` tags and validates each one against the actual codebase:
+
+- **CONFIRMED** — code matches the declaration → tag is removed, the convention is now a verified fact
+- **DIVERGED** — code differs from the declaration → both versions are presented, you decide which to keep
+- **NOT YET** — no code exists for this area yet → tag stays, convention remains declared intent
+
+If no `[DECLARED]` tags are found (e.g., you started with `/bootstrap` on an existing codebase), validation is skipped and bootstrap discovers patterns directly from code.
+
+After validation, `/learn` closes the loop — capturing new patterns and dangers discovered during work as rules that your AI tools load automatically on the next task.
+
 ### Risk analysis on demand
 
 For complex or high-stakes tasks, `/invert` provides deep structured analysis before you commit to implementation:
