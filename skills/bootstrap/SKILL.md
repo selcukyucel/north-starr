@@ -1,24 +1,32 @@
 ---
 name: bootstrap
-description: Generate native Claude Code configuration for an existing project. Explores the codebase and produces CLAUDE.md files, .claude/rules/, and .claude/agents/ so Claude Code works effectively from the first task. Run once per project.
+description: Generate AI tool configuration for an existing project. Explores the codebase and produces context files, path-scoped pattern rules, landmine rules, and agents for Claude Code, VS Code Copilot, and Cursor. Run once per project.
 author: Selcuk Yucel
 ---
 
-# Project Bootstrap — Claude Code Configuration Generator
+# Project Bootstrap — AI Tool Configuration Generator
 
 ## Purpose
 
-Explore an existing project and generate native Claude Code configuration so it works effectively from the first task. Runs once, produces artifacts that Claude Code auto-loads and auto-enforces.
+Explore an existing project and generate native configuration for the AI tools in use so they work effectively from the first task. Runs once, produces artifacts that each tool auto-loads and auto-enforces.
 
-**Outputs:**
-- `CLAUDE.md` files — project and module-level context (auto-loaded by Claude Code)
-- `.claude/rules/*.md` — conventions and constraints scoped by file path (auto-enforced)
-- `.claude/agents/*.md` — project-tuned specialized agents (reusable on-demand)
+**Outputs per tool:**
+
+| Artifact | Claude Code | VS Code Copilot | Cursor |
+|----------|-------------|-----------------|--------|
+| Project context | `CLAUDE.md` | `.github/copilot-instructions.md` | — |
+| Pattern rules | `.claude/rules/*.md` | `.github/instructions/*.instructions.md` | `.cursor/rules/*.mdc` |
+| Landmine rules | `.claude/rules/*.md` | `.github/instructions/*.instructions.md` | `.cursor/rules/*.mdc` |
+| Agents | `.claude/agents/*.md` | `.github/agents/*.agent.md` | — |
+| Module context | `CLAUDE.md` (in module dir) | — | — |
+| Universal | `AGENTS.md` | `AGENTS.md` | `AGENTS.md` |
+
+Pattern and landmine rules use the same content — only the frontmatter format differs per tool.
 
 ## When to Use
 
-- First time working on an existing project with Claude Code
-- When `.claude/` directory is empty or missing project-specific configuration
+- First time working on an existing project with any AI coding tool
+- When project-specific AI configuration is empty or missing
 - When onboarding to a new codebase
 
 ## Prerequisites
@@ -28,12 +36,14 @@ Explore an existing project and generate native Claude Code configuration so it 
 
 ## Content Depth
 
-Generated rules and context files must carry enough depth to be genuinely useful. Use two content structures from the project's knowledge base:
+Generated rules must carry enough depth to be genuinely useful. Use two content structures from the project's knowledge base:
 
-- **Pattern structure** (`skills/_references/patterns/_TEMPLATE.md`) — for conventions and reusable approaches. Include: When to Use, Core Approach with code, Do/Don't examples, Common Mistakes.
-- **Landmine structure** (`skills/_references/landmines/_TEMPLATE.md`) — for danger zones and known traps. Include: Severity, Symptoms, The Trap (why devs fall in), Safe Approach (Don't/Do with code), Prevention.
+- **Pattern structure** (`skills/_references/patterns/_TEMPLATE.md`) — for conventions and reusable approaches. Each pattern rule follows the full template: When to Use, Problem It Solves, Core Approach with step-by-step code examples, Best Practices, Common Mistakes with wrong/fix code, Variations, Related patterns and landmines.
+- **Landmine structure** (`skills/_references/landmines/_TEMPLATE.md`) — for danger zones and known traps. Each landmine rule follows the full template: Severity, Symptoms, Root Cause, The Trap (why devs fall in), Safe Approach (Don't/Do with code), Validation, Prevention, Related patterns and landmines.
 
-**Line limits:** Every generated file MUST stay under **100 lines**. If critical context would be lost, the absolute maximum is **125 lines**. Split into multiple scoped files rather than exceeding the limit.
+**Line limits:**
+- **Context files** (CLAUDE.md, AGENTS.md, copilot-instructions.md): MUST stay under **100 lines** (max 125 if critical context would be lost). Split into multiple scoped files rather than exceeding.
+- **Pattern and landmine rules**: Should be as detailed as needed to follow the full template — typically **50-150 lines**. Depth and working code examples matter more than brevity. These are the project's knowledge base.
 
 ## Workflow
 
@@ -100,44 +110,81 @@ Generated rules and context files must carry enough depth to be genuinely useful
 
 ### Step 3: Discover Patterns
 
-**Goal:** Understand "how things are done here" so new code follows conventions.
+**Goal:** Build a comprehensive catalogue of "how things are done here" so new code follows conventions and the knowledge survives across sessions.
+
+**Scope: Analyze ALL modules, not a sample.** Walk the entire codebase systematically. A 3-5 module sample misses cross-cutting patterns, infrastructure conventions, and operational practices that only surface when looking broadly.
 
 **Actions:**
-1. Pick 3-5 representative modules (by: most imported, most recently active, or central to the architecture)
-2. Identify recurring patterns:
-   - Feature file layout and structure
-   - Data fetching and transformation
-   - Error handling and user-facing error surfacing
-   - State management and propagation
-   - Dependency provision
-   - Test organization and style
-3. Look for shared utilities, base classes, or helpers reused across modules
-4. Note naming conventions — file names, types, functions, variables
-5. For each discovered pattern, capture using the **pattern structure**:
-   - **When to Use / Not Good For** — specific situations where this applies or doesn't
-   - **Core Approach** — 1-2 sentence summary with a representative code example
-   - **Do / Don't** — correct vs. incorrect implementation side by side with explanations
-   - **Common Mistakes** — pitfalls when applying this pattern and how to avoid them
+
+1. **Map every module** — list all top-level directories/packages. Group them by role (feature modules, shared libraries, infrastructure, configuration, tests, scripts, deployment).
+
+2. **Scan each group for recurring patterns.** Look for conventions in these areas — not all will apply to every project, focus on what the codebase actually uses:
+   - **Structure** — how features, modules, or components are organized and laid out
+   - **Data flow** — how data enters, moves through, and exits the system
+   - **Dependencies** — how components get what they need (injection, imports, configuration)
+   - **Error handling** — how errors are caught, surfaced, and recovered from
+   - **State** — how state is managed, shared, and synchronized
+   - **External boundaries** — how the system communicates with anything outside itself
+   - **Testing** — how tests are organized, what's mocked, what's tested end-to-end
+   - **Build & deploy** — how the project is built, packaged, and shipped
+   - **Naming** — file names, types, functions, variables, constants
+
+3. **Look for shared utilities, base classes, protocols, or helpers** reused across modules — these often encode implicit patterns worth documenting explicitly.
+
+4. **Cross-reference patterns** — note which patterns work together and which are alternatives to each other.
+
+5. **For each discovered pattern**, capture using the **full pattern structure** from `skills/_references/patterns/_TEMPLATE.md`:
+   - **When to Use / Not Good For** — specific situations
+   - **Problem It Solves** — what goes wrong without it, what improves with it
+   - **Core Approach** — step-by-step with code examples
+   - **Best Practices** — do this, why
+   - **Common Mistakes** — wrong approach with code, fix with code
+   - **Variations** — alternative forms of the pattern found in the codebase
+   - **Related** — links to other patterns and landmines
+
+**Aim for completeness.** A thorough bootstrap should discover 15-40 patterns depending on project complexity. If you find fewer than 10, you likely stopped too early — revisit areas beyond the core feature code (build, deploy, testing, configuration, shared infrastructure).
 
 ### Step 4: Detect Danger Zones
 
-**Goal:** Identify high-friction areas before anyone gets burned.
+**Goal:** Build a comprehensive map of every area where developers can get burned — from code-level traps to operational pitfalls.
+
+**Scope: Look everywhere, not just code hotspots.** Danger zones exist in configuration, deployment, infrastructure, third-party integrations, and operational procedures — not only in source code.
 
 **Actions:**
-1. **Complexity hotspots:** Large files (500+ lines), deeply nested logic, functions with many parameters (5+), classes with many responsibilities
-2. **Developer warnings:** Search for `TODO`, `FIXME`, `HACK`, `XXX`, `WORKAROUND`, `TEMPORARY` comments
-3. **Git churn** (if git history available):
+
+1. **Complexity hotspots** — large files, deeply nested logic, functions with many parameters, types with many responsibilities. These areas break easily and are hard to modify safely.
+
+2. **Misleading abstractions** — code that doesn't do what its name suggests, dead code paths, unused parameters that look required. These trap developers into wrong assumptions.
+
+3. **Silent failures** — swallowed errors, empty catch blocks, default fallbacks that hide problems. These make debugging nearly impossible.
+
+4. **Developer warnings** — search for `TODO`, `FIXME`, `HACK`, `XXX`, `WORKAROUND`, `TEMPORARY` comments. Each one is a documented landmine left by a previous developer.
+
+5. **Git churn** (if git history available):
    ```bash
    git log --since="6 months ago" --pretty=format: --name-only | sort | uniq -c | sort -rn | head -20
    ```
-4. **Test gaps:** Modules or features with no test coverage
-5. **Documentation gaps:** Complex logic with no comments or README
-6. For each danger zone, capture using the **landmine structure**:
-   - **Severity** — CRITICAL / HIGH / MEDIUM / LOW based on real-world impact
-   - **Symptoms** — observable signs you've hit this (crashes, data loss, silent failures)
-   - **The Trap** — why it seems correct and what makes it non-obvious
-   - **Safe Approach** — Don't (dangerous code with explanation) / Do (safe code with explanation)
-   - **Prevention** — habits, code review checks, and validation steps
+   Files changed most frequently often contain instability or poorly understood behavior.
+
+6. **External boundaries** — anywhere the system communicates with something outside itself (APIs, services, SDKs, hardware, file systems). These are where assumptions break and failures cascade.
+
+7. **Configuration sensitivity** — settings, credentials, feature flags, or environment-specific behavior where a wrong value causes silent or catastrophic failure.
+
+8. **Resource management** — anything the system allocates, opens, or acquires that must be released, closed, or returned. Leaks here cause gradual degradation.
+
+9. **Test gaps** — modules or features with no test coverage. Untested code is a landmine waiting to detonate.
+
+10. **For each danger zone**, capture using the **full landmine structure** from `skills/_references/landmines/_TEMPLATE.md`:
+    - **Severity** — CRITICAL / HIGH / MEDIUM / LOW based on real-world impact
+    - **Symptoms** — observable signs you've hit this
+    - **Root Cause** — technical explanation of why this happens
+    - **The Trap** — why it seems correct, what makes it non-obvious
+    - **Safe Approach** — Don't (dangerous code with explanation) / Do (safe code with explanation)
+    - **Validation** — how to verify you're safe, detection in existing code
+    - **Prevention** — habits, code review checks, and validation steps
+    - **Related** — safe patterns that avoid this, other related landmines
+
+**Aim for completeness.** A thorough bootstrap should discover 5-15 landmines depending on project maturity. If you find fewer than 3, you likely stopped too early — revisit areas beyond the core feature code.
 
 ### Step 5: Generate Configuration
 
@@ -178,11 +225,11 @@ All three get the same content:
 
 ## Key Patterns
 
-[Summarize 3-5 core patterns from Step 3. For each: name, one-line description, which modules use it. Reference specific rules files for Do/Don't details.]
+[Summarize all discovered patterns from Step 3. For each: name, one-line description, which modules use it. Reference the corresponding pattern rule file for full details.]
 
 ## Known Landmines
 
-[Summarize danger zones from Step 4. For each: name, severity (CRITICAL/HIGH/MEDIUM/LOW), one-line description. Reference specific rules files for safe approach details.]
+[Summarize all danger zones from Step 4. For each: name, severity (CRITICAL/HIGH/MEDIUM/LOW), one-line description. Reference the corresponding landmine rule file for full details.]
 
 ## Vocabulary
 
@@ -232,9 +279,11 @@ For each danger zone or complex module found in Step 4, write context in that di
 
 ---
 
-#### C. Path-Scoped Rules
+#### C. Pattern Rules & Landmine Rules
 
-Generate rules scoped by file path. Create in all applicable formats:
+Generate pattern and landmine rules for every AI tool in use. The content is the same — only the file location and frontmatter format differ per tool.
+
+**File formats per tool:**
 
 **Claude Code** — `.claude/rules/*.md`:
 ```markdown
@@ -242,7 +291,7 @@ Generate rules scoped by file path. Create in all applicable formats:
 paths: ["glob/pattern/**"]
 ---
 
-[Clear, concise instruction or warning]
+[Rule content]
 ```
 
 **VS Code Copilot** — `.github/instructions/*.instructions.md`:
@@ -251,7 +300,7 @@ paths: ["glob/pattern/**"]
 applyTo: "glob/pattern/**"
 ---
 
-[Same instruction content]
+[Same rule content]
 ```
 
 **Cursor** — `.cursor/rules/*.mdc`:
@@ -260,44 +309,61 @@ applyTo: "glob/pattern/**"
 globs: glob/pattern/**
 ---
 
-[Same instruction content]
+[Same rule content]
 ```
 
-**Generate two types of rules:**
+---
 
-**Pattern Rules** — for conventions and reusable approaches discovered in Step 3. Each rule file includes:
-- `## When to Use` — situations where this pattern applies
-- `## Core Approach` — 1-2 sentence summary
-- `### Do` — correct code example with `**Why**:` explanation
-- `### Don't` — incorrect code example with `**Why this breaks**:` explanation
-- `## Common Mistakes` — pitfalls and how to avoid them
+**Pattern Rules** — one rule file per pattern discovered in Step 3.
 
-**Landmine Rules** — for danger zones discovered in Step 4. Each rule file includes:
-- `**Severity**:` — CRITICAL / HIGH / MEDIUM / LOW
+Follow the **full pattern template** from `skills/_references/patterns/_TEMPLATE.md`. Each pattern rule file must include:
+
+- **Category** and **Language/Framework**
+- `## When to Use` — Good For / Not Good For
+- `## Problem It Solves` — what goes wrong without it, what improves with it
+- `## The Pattern` — core idea, step-by-step with code examples, complete working example
+- `## Best Practices` — do this, why
+- `## Common Mistakes` — wrong code with explanation, fix code with explanation
+- `## Variations` — alternative forms found in the codebase
+- `## Testing This Pattern` — how to verify correct application
+- `## Performance Considerations`
+- `## Related` — links to related pattern and landmine rule files
+
+**File naming:** `[descriptive-name]-pattern.md` (e.g. `caching-pattern.md`, `repository-pattern.md`)
+
+---
+
+**Landmine Rules** — one rule file per danger zone discovered in Step 4.
+
+Follow the **full landmine template** from `skills/_references/landmines/_TEMPLATE.md`. Each landmine rule file must include:
+
+- **Severity** (CRITICAL / HIGH / MEDIUM / LOW) and **Category**
+- `## Quick Summary` — one-line description
 - `## Symptoms` — observable signs you've hit this
-- `## The Trap` — why developers fall into this, what makes it non-obvious
-- `### Don't (dangerous)` — dangerous code with explanation
-- `### Do (safe)` — safe code with explanation
-- `## Prevention` — habits and checks that catch this
+- `## Root Cause` — technical explanation of why this happens
+- `## The Trap` — why developers fall in, what makes it non-obvious
+- `## Safe Approach` — Don't (dangerous code with explanation) / Do (safe code with explanation)
+- `## Validation` — how to verify you're safe, detection patterns in existing code
+- `## Real-World Impact` — what actually happens when this goes wrong
+- `## Prevention` — habits, code review checks, validation steps
+- `## Related` — safe pattern rules that avoid this, other related landmine rules
+
+**File naming:** `[descriptive-name].md` (e.g. `broken-exists-method.md`, `silent-auth-failure.md`)
+
+---
 
 **What to generate rules for:**
-- Naming conventions — scoped to the project's file extensions (pattern rules)
-- Architecture constraints — what the grain allows and disallows (pattern rules)
-- Error handling — the project's established pattern (pattern rules)
-- State management — how state flows through the architecture (pattern rules)
-- Dependency injection — how dependencies are provided (pattern rules)
-- Danger zone alerts — scoped to specific risky directories (landmine rules)
-- Concurrency traps — threading and async pitfalls (landmine rules)
-- Integration gotchas — API, database, or third-party quirks (landmine rules)
+
+Create one rule file per pattern or landmine discovered in Steps 3 and 4. Patterns become pattern rules, danger zones become landmine rules. The specific concerns depend on the project — generate rules only for what was actually found in the codebase.
 
 **Guidelines:**
-- Generate only rules that reflect real patterns or dangers found in the codebase
-- Do not invent rules for patterns that don't exist
+- Generate only rules that reflect real patterns or dangers found in the codebase — never invent conventions
 - Use specific path globs — broad rules waste context on irrelevant files
 - Keep each rule file focused on one concern
 - Include code examples in every rule — abstract descriptions without code are not actionable
-- Each rule file MUST stay under 100 lines (max 125 if critical context would be lost)
+- Pattern and landmine rules should be as detailed as the templates require — typically 50-150 lines. Depth matters.
 - The content is the same across tools — only the frontmatter format differs
+- Include a `_TEMPLATE.md` in the rules directory of each tool for future contributions via `/learn`
 
 ---
 
@@ -336,8 +402,10 @@ Generate additional agents only if the project clearly warrants them. Default to
 
 - [ ] Project context at root — `CLAUDE.md`, `AGENTS.md`, `.github/copilot-instructions.md`
 - [ ] Module-level `CLAUDE.md` for each identified danger zone
-- [ ] Path-scoped rules — `.claude/rules/`, `.github/instructions/`, `.cursor/rules/`
-- [ ] At least one project-tuned agent
+- [ ] Pattern rules in all tool formats — aim for 15-40 depending on project complexity
+- [ ] Landmine rules in all tool formats — aim for 5-15 depending on project maturity
+- [ ] `_TEMPLATE.md` in each tool's rules directory for future contributions
+- [ ] At least one project-tuned agent per tool that supports agents
 
 ## Output Summary
 
@@ -358,16 +426,16 @@ Universal:
 
 Claude Code:
 - CLAUDE.md — [sections included]
-- [N] .claude/rules/ files — [list names]
+- [N] .claude/rules/ files — [N] patterns, [N] landmines — [list names]
 - [N] .claude/agents/ files — [list names]
 
 VS Code Copilot:
 - .github/copilot-instructions.md
-- [N] .github/instructions/ files — [list names]
+- [N] .github/instructions/ files — [N] patterns, [N] landmines — [list names]
 - [N] .github/agents/ files — [list names]
 
 Cursor:
-- [N] .cursor/rules/ files — [list names]
+- [N] .cursor/rules/ files — [N] patterns, [N] landmines — [list names]
 
 Module-level:
 - [N] CLAUDE.md files — [list directories]
@@ -381,8 +449,8 @@ Module-level:
 - This skill is language-agnostic — it detects the project's stack and generates appropriate configuration
 - This skill is tool-agnostic — it generates config for Claude Code, VS Code Copilot, and Cursor simultaneously
 - Can be run incrementally — bootstrap just the area you're working in, expand later
-- Do not try to document everything — focus on what reduces friction for the next task
-- Prefer breadth over depth: shallow understanding of the whole project beats deep knowledge of one module
+- Be thorough — analyze the entire codebase, not a sample. Shallow bootstraps produce shallow configuration that misses real patterns and dangers
+- Balance breadth and depth: understand the whole project broadly, then go deep on patterns and landmines with full code examples and operational detail
 - Generate only rules for patterns that actually exist — never invent conventions
 - If the project already has configuration, build on what exists rather than overwriting
 - The generated configuration is a starting point — it improves through subsequent `/learn` invocations

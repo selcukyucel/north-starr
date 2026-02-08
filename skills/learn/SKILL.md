@@ -21,12 +21,14 @@ After completing a task, turn what you learned into native artifacts for all con
 
 ## Content Depth
 
-Generated rules and context files must carry enough depth to be genuinely useful. Use two content structures from the project's knowledge base:
+Generated rules must carry enough depth to be genuinely useful. Use two content structures from the project's knowledge base:
 
-- **Pattern structure** (`skills/_references/patterns/_TEMPLATE.md`) — for conventions: When to Use, Core Approach with code, Do/Don't examples, Common Mistakes.
-- **Landmine structure** (`skills/_references/landmines/_TEMPLATE.md`) — for dangers: Severity, Symptoms, The Trap, Safe Approach (Don't/Do with code), Prevention.
+- **Pattern structure** (`skills/_references/patterns/_TEMPLATE.md`) — for conventions and reusable approaches. Follow the full template: When to Use, Problem It Solves, Core Approach with step-by-step code examples, Best Practices, Common Mistakes with wrong/fix code, Variations, Related patterns and landmines.
+- **Landmine structure** (`skills/_references/landmines/_TEMPLATE.md`) — for danger zones and known traps. Follow the full template: Severity, Symptoms, Root Cause, The Trap, Safe Approach (Don't/Do with code), Validation, Prevention, Related patterns and landmines.
 
-**Line limits:** Every generated file MUST stay under **100 lines**. If critical context would be lost, the absolute maximum is **125 lines**. Split into multiple scoped files rather than exceeding the limit.
+**Line limits:**
+- **Context files** (CLAUDE.md, AGENTS.md, copilot-instructions.md): MUST stay under **100 lines** (max 125 if critical context would be lost). Split into multiple scoped files rather than exceeding.
+- **Pattern and landmine rules**: Should be as detailed as the templates require — typically **50-150 lines**. Depth and working code examples matter more than brevity.
 
 ## Workflow
 
@@ -140,53 +142,9 @@ When a convention, constraint, or danger was discovered, create in all applicabl
 
 The rule body is the same across tools — only the frontmatter differs. Choose the appropriate structure:
 
-**Pattern Rules** — for conventions and reusable approaches:
+**Pattern Rules** — for conventions and reusable approaches. Follow the **full pattern template** from `skills/_references/patterns/_TEMPLATE.md`. Include: Category, When to Use / Not Good For, Problem It Solves, The Pattern (step-by-step with code), Best Practices, Common Mistakes (wrong/fix code), Variations, Related.
 
-```
-# Pattern: [Name]
-
-## When to Use
-- [Specific situations where this applies]
-
-## Core Approach
-[1-2 sentence summary of the approach]
-
-### Do
-[Correct code example with language-appropriate code fence]
-**Why**: [Why this works]
-
-### Don't
-[Incorrect code example with language-appropriate code fence]
-**Why this breaks**: [What goes wrong]
-
-## Common Mistakes
-- [Mistake]: [How to avoid it]
-```
-
-**Landmine Rules** — for danger zones and known traps:
-
-```
-# Landmine: [Name]
-
-**Severity**: [CRITICAL / HIGH / MEDIUM / LOW]
-
-## Symptoms
-- [How you know you've hit this]
-
-## The Trap
-[Why developers fall into this — what seems correct but isn't]
-
-### Don't (dangerous)
-[Dangerous code with language-appropriate code fence]
-**Why this breaks**: [Explanation]
-
-### Do (safe)
-[Safe code with language-appropriate code fence]
-**Why this works**: [Explanation]
-
-## Prevention
-- [Habit or check that catches this]
-```
+**Landmine Rules** — for danger zones and known traps. Follow the **full landmine template** from `skills/_references/landmines/_TEMPLATE.md`. Include: Severity, Category, Quick Summary, Symptoms, Root Cause, The Trap, Safe Approach (Don't/Do with code), Validation, Prevention, Related.
 
 **Guidelines:**
 - Scope the glob as narrowly as possible
@@ -194,7 +152,7 @@ The rule body is the same across tools — only the frontmatter differs. Choose 
 - State the rule as a clear instruction, not a description
 - Include the "why" — it helps AI tools apply the rule correctly
 - Name the file after the concern: `api-error-handling.md`, `sync-race-condition.md`
-- Each rule file MUST stay under 100 lines (max 125 if critical context would be lost)
+- Pattern and landmine rules should be as detailed as the templates require — typically 50-150 lines
 
 #### Module CLAUDE.md Update
 
