@@ -6,7 +6,7 @@
   },
   "metadata": {
     "description": "Project bootstrapper for Claude Code — generates CLAUDE.md, rules, and agents from your codebase",
-    "version": "2.3.3"
+    "version": "2.3.4"
   },
   "plugins": [
     {
