@@ -2,7 +2,7 @@ class NorthStarr < Formula
   desc "Your North Starr for Friction-Free Development — project bootstrapper for Claude Code"
   homepage "https://github.com/selcukyucel/north-starr"
   url "https://github.com/selcukyucel/north-starr/archive/refs/tags/v2.3.2.tar.gz"
-  sha256 "8fbb7833f7715fc0ff6bbdc6ceb1ce60896fedece28b4f6d30b53200db8f71f3"
+  sha256 "96833cec890887a97ea8392a1bc87cbbf8d1ded51ee3d64621eb526e432b8176"
   license "MIT"
 
   def install
