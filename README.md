@@ -44,7 +44,7 @@ Pick your tool and follow the steps.
 /plugin install north-starr
 ```
 
-Skills are available immediately across all your projects. Run `/north-starr:architect` (new project) or `/north-starr:bootstrap` (existing code) to generate configuration.
+Skills are available immediately across all your projects — nothing is installed into your project directory. Run `/architect` (new project) or `/bootstrap` (existing code) to generate configuration.
 
 **Option B — Homebrew:**
 
@@ -54,7 +54,7 @@ cd your-project
 north-starr init
 ```
 
-Then run `/architect` (new project) or `/bootstrap` (existing code) in Claude Code to generate configuration.
+This copies skills into your project's `.claude/skills/` directory. Then run `/architect` (new project) or `/bootstrap` (existing code) in Claude Code to generate configuration.
 
 ### VS Code Copilot
 
@@ -95,9 +95,9 @@ This creates `AGENTS.md` — the universal project context file that works with 
 
 ## What gets generated
 
-### After `north-starr init`
+### After `north-starr init` (Homebrew only)
 
-Skills and starter context are installed for your tools:
+The CLI copies skills and starter context into your project:
 
 ```
 your-project/
@@ -115,6 +115,8 @@ your-project/
 └── .github/skills/                    # VS Code Copilot skills (same content)
     └── ...
 ```
+
+Plugin users skip this step — skills are already available globally.
 
 ### After `/bootstrap`
 
@@ -152,8 +154,6 @@ After bootstrap, your AI tool auto-loads this configuration. Rules fire when tou
 | `/plan` | For multi-session work — persistent implementation plans with progress tracking |
 | `/document` | When a module needs a context file — generates one from actual code |
 | `/learn` | After completing work — updates rules, agents, or context files from experience |
-
-> **Plugin users:** prefix with `north-starr:` — e.g. `/north-starr:bootstrap`
 
 ---
 
