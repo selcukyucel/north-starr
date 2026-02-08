@@ -1,12 +1,14 @@
 # north-starr
 
-**Your North Starr for Friction-Free Development**
+**Your Development Partner. Friction-Free Development.**
 
-north-starr is a project bootstrapper for AI coding tools. It analyzes any codebase and generates tool-native configuration — so your AI works effectively from the first task.
+north-starr is your AI development partner — not a code owner, not a scaffolder, a partner that learns your codebase, remembers your patterns, warns you about landmines, and gets smarter every time you work together.
+
+It analyzes any codebase and generates tool-native configuration — rules, instructions, context files, and agents — so your AI works effectively from the first task. Then it keeps learning. Every `/learn` invocation captures what you discovered — conventions worth preserving, dangers worth avoiding — and feeds it back into your tools automatically.
 
 Supports [Claude Code](https://docs.anthropic.com/en/docs/claude-code), [VS Code Copilot](https://code.visualstudio.com/docs/copilot/overview), [Cursor](https://cursor.sh), and any tool that reads [AGENTS.md](https://github.com/anthropics/agent-protocol).
 
-It's language-agnostic. Works for any project — iOS, web, backend, infrastructure, anything.
+Language-agnostic. Works for any project — iOS, web, backend, infrastructure, anything.
 
 Agent Linter Score: [agentlinter.com/r/w7Jo9X0qVOV8](https://agentlinter.com/r/w7Jo9X0qVOV8)
 
@@ -16,14 +18,16 @@ Agent Linter Score: [agentlinter.com/r/w7Jo9X0qVOV8](https://agentlinter.com/r/w
 
 ## What it does
 
-Most AI coding tools start every project cold. north-starr gives them project-specific context by generating:
+Most AI coding tools start every project cold — no memory, no conventions, no awareness of where the landmines are. north-starr gives them project-specific context by generating:
 
 - **`AGENTS.md`** — universal project context (works with any AI tool)
 - **`CLAUDE.md` files** — architecture, grain, module map, danger zones (auto-loaded by Claude Code)
 - **`.claude/rules/`** + **`.github/instructions/`** + **`.cursor/rules/`** — conventions scoped by file path (auto-enforced)
 - **`.claude/agents/`** + **`.github/agents/`** — project-tuned specialized agents
 
-This configuration is generated from your actual code — not templates. The `/bootstrap` skill explores your codebase, identifies architecture patterns, detects danger zones, and writes configuration in each tool's native format. For new projects with no code yet, `/architect` captures your architectural intent and generates the same configuration from declared conventions.
+This configuration is generated from your actual code — not templates. The `/bootstrap` skill explores your codebase, identifies architecture patterns as **pattern rules** (how things are done here) and danger zones as **landmine rules** (what to watch out for), then writes configuration in each tool's native format. After you work, `/learn` captures new patterns and landmines from experience — so your partner gets smarter with every task.
+
+For new projects with no code yet, `/architect` captures your architectural intent and generates the same configuration from declared conventions.
 
 ---
 
@@ -200,9 +204,9 @@ north-starr help            # Show help
 
 Every codebase has a **grain** — a direction that changes flow easily. Adding a new API endpoint might be straightforward. Adding a new data model might require touching 12 files. The bootstrap skill identifies this grain and documents it, so your AI tool knows which changes are safe and which require extra care.
 
-### Self-improving configuration
+### A partner that learns
 
-The system improves through use:
+The system improves through use — like a colleague who gets better the longer you work together:
 
 ```
 /architect  →  declares intent (new projects)
@@ -218,7 +222,7 @@ The system improves through use:
   next task →  your AI tool is smarter than last time
 ```
 
-All generated files are native primitives for each tool — CLAUDE.md for Claude Code, copilot-instructions.md for VS Code Copilot, .cursor/rules for Cursor, AGENTS.md for everything. There's no parallel knowledge system — everything feeds directly into how your tools operate.
+Every learning becomes a native artifact — pattern rules for conventions worth following, landmine rules for dangers worth avoiding. CLAUDE.md for Claude Code, copilot-instructions.md for VS Code Copilot, .cursor/rules for Cursor, AGENTS.md for everything. There's no parallel knowledge system — everything feeds directly into how your tools operate.
 
 ### Risk analysis on demand
 
@@ -238,7 +242,7 @@ This is optional — for routine tasks, the lightweight risk assessment baked in
 
 north-starr is inspired by the [Idea Flow](https://leanpub.com/ideaflow) methodology by **Janelle Arty Starr** — a framework for making invisible friction visible in software development.
 
-The core insight: *you don't improve productivity by going faster, you improve it by improving control.* north-starr applies this to AI-assisted development by giving your tools the context they need to work with control, not just speed.
+The core insight: *you don't improve productivity by going faster, you improve it by improving control.* north-starr applies this to AI-assisted development — your AI partner learns your patterns, remembers your landmines, and works with control, not just speed.
 
 ### Learn more about Idea Flow
 

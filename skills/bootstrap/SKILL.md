@@ -26,6 +26,15 @@ Explore an existing project and generate native Claude Code configuration so it 
 - The project root must be accessible
 - Git history is helpful but not required (used for churn analysis)
 
+## Content Depth
+
+Generated rules and context files must carry enough depth to be genuinely useful. Use two content structures from the project's knowledge base:
+
+- **Pattern structure** (`skills/_references/patterns/_TEMPLATE.md`) — for conventions and reusable approaches. Include: When to Use, Core Approach with code, Do/Don't examples, Common Mistakes.
+- **Landmine structure** (`skills/_references/landmines/_TEMPLATE.md`) — for danger zones and known traps. Include: Severity, Symptoms, The Trap (why devs fall in), Safe Approach (Don't/Do with code), Prevention.
+
+**Line limits:** Every generated file MUST stay under **100 lines**. If critical context would be lost, the absolute maximum is **125 lines**. Split into multiple scoped files rather than exceeding the limit.
+
 ## Workflow
 
 ### Step 1: Explore & Detect
@@ -104,6 +113,11 @@ Explore an existing project and generate native Claude Code configuration so it 
    - Test organization and style
 3. Look for shared utilities, base classes, or helpers reused across modules
 4. Note naming conventions — file names, types, functions, variables
+5. For each discovered pattern, capture using the **pattern structure**:
+   - **When to Use / Not Good For** — specific situations where this applies or doesn't
+   - **Core Approach** — 1-2 sentence summary with a representative code example
+   - **Do / Don't** — correct vs. incorrect implementation side by side with explanations
+   - **Common Mistakes** — pitfalls when applying this pattern and how to avoid them
 
 ### Step 4: Detect Danger Zones
 
@@ -118,6 +132,12 @@ Explore an existing project and generate native Claude Code configuration so it 
    ```
 4. **Test gaps:** Modules or features with no test coverage
 5. **Documentation gaps:** Complex logic with no comments or README
+6. For each danger zone, capture using the **landmine structure**:
+   - **Severity** — CRITICAL / HIGH / MEDIUM / LOW based on real-world impact
+   - **Symptoms** — observable signs you've hit this (crashes, data loss, silent failures)
+   - **The Trap** — why it seems correct and what makes it non-obvious
+   - **Safe Approach** — Don't (dangerous code with explanation) / Do (safe code with explanation)
+   - **Prevention** — habits, code review checks, and validation steps
 
 ### Step 5: Generate Configuration
 
@@ -142,23 +162,31 @@ All three get the same content:
 
 ## Tech Stack
 
-[Languages, frameworks, key dependencies, build tools, test runner]
+[List languages with versions, frameworks, key dependencies, build tools, package manager, test runner, CI/CD — be specific, not generic]
 
 ## Architecture
 
-[Pattern, topology, layers and their responsibilities]
+[Name the pattern (MVVM, Clean, etc.), topology (monolith, modular, etc.). List each layer with its responsibility and dependency direction. Include DI approach and state management strategy.]
 
 ## Grain
 
-[What changes easily, what is hard, what to avoid going against]
+[What changes easily (e.g. adding a new feature screen) vs. what is hard (e.g. changing navigation pattern). State what to avoid going against and why.]
 
 ## Module Map
 
-[Top-level modules/packages with one-line descriptions, key dependencies between them, shared infrastructure]
+[List each top-level module with one-line purpose. Show key dependencies between modules. Note shared infrastructure.]
+
+## Key Patterns
+
+[Summarize 3-5 core patterns from Step 3. For each: name, one-line description, which modules use it. Reference specific rules files for Do/Don't details.]
+
+## Known Landmines
+
+[Summarize danger zones from Step 4. For each: name, severity (CRITICAL/HIGH/MEDIUM/LOW), one-line description. Reference specific rules files for safe approach details.]
 
 ## Vocabulary
 
-[Only terms that are ambiguous or have project-specific meanings]
+[Terms with project-specific meanings. Format: "Term — definition". Only genuinely ambiguous terms.]
 
 ## How to Approach Tasks
 
@@ -235,17 +263,40 @@ globs: glob/pattern/**
 [Same instruction content]
 ```
 
+**Generate two types of rules:**
+
+**Pattern Rules** — for conventions and reusable approaches discovered in Step 3. Each rule file includes:
+- `## When to Use` — situations where this pattern applies
+- `## Core Approach` — 1-2 sentence summary
+- `### Do` — correct code example with `**Why**:` explanation
+- `### Don't` — incorrect code example with `**Why this breaks**:` explanation
+- `## Common Mistakes` — pitfalls and how to avoid them
+
+**Landmine Rules** — for danger zones discovered in Step 4. Each rule file includes:
+- `**Severity**:` — CRITICAL / HIGH / MEDIUM / LOW
+- `## Symptoms` — observable signs you've hit this
+- `## The Trap` — why developers fall into this, what makes it non-obvious
+- `### Don't (dangerous)` — dangerous code with explanation
+- `### Do (safe)` — safe code with explanation
+- `## Prevention` — habits and checks that catch this
+
 **What to generate rules for:**
-- Naming conventions — scoped to the project's file extensions
-- Architecture constraints — what the grain allows and disallows
-- Error handling — the project's established pattern
-- Danger zone alerts — scoped to specific risky directories
+- Naming conventions — scoped to the project's file extensions (pattern rules)
+- Architecture constraints — what the grain allows and disallows (pattern rules)
+- Error handling — the project's established pattern (pattern rules)
+- State management — how state flows through the architecture (pattern rules)
+- Dependency injection — how dependencies are provided (pattern rules)
+- Danger zone alerts — scoped to specific risky directories (landmine rules)
+- Concurrency traps — threading and async pitfalls (landmine rules)
+- Integration gotchas — API, database, or third-party quirks (landmine rules)
 
 **Guidelines:**
-- Generate only rules that reflect real patterns found in the codebase
+- Generate only rules that reflect real patterns or dangers found in the codebase
 - Do not invent rules for patterns that don't exist
 - Use specific path globs — broad rules waste context on irrelevant files
 - Keep each rule file focused on one concern
+- Include code examples in every rule — abstract descriptions without code are not actionable
+- Each rule file MUST stay under 100 lines (max 125 if critical context would be lost)
 - The content is the same across tools — only the frontmatter format differs
 
 ---

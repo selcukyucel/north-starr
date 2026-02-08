@@ -19,6 +19,15 @@ After completing a task, turn what you learned into native artifacts for all con
 - After working in a module that had no CLAUDE.md context
 - Skip for routine tasks where nothing new was learned
 
+## Content Depth
+
+Generated rules and context files must carry enough depth to be genuinely useful. Use two content structures from the project's knowledge base:
+
+- **Pattern structure** (`skills/_references/patterns/_TEMPLATE.md`) — for conventions: When to Use, Core Approach with code, Do/Don't examples, Common Mistakes.
+- **Landmine structure** (`skills/_references/landmines/_TEMPLATE.md`) — for dangers: Severity, Symptoms, The Trap, Safe Approach (Don't/Do with code), Prevention.
+
+**Line limits:** Every generated file MUST stay under **100 lines**. If critical context would be lost, the absolute maximum is **125 lines**. Split into multiple scoped files rather than exceeding the limit.
+
 ## Workflow
 
 ### Step 1: Identify What Was Learned
@@ -40,9 +49,9 @@ Map each learning to the right artifact:
 
 | What you learned | Artifact to create/update |
 |---|---|
-| A convention that should always be followed | Path-scoped rules — update all formats present (`.claude/rules/`, `.github/instructions/`, `.cursor/rules/`) |
-| A danger zone in a specific module | Module-level `CLAUDE.md` — add Caution section |
-| A reusable pattern for how things are done | Path-scoped rules, or root context files |
+| A convention that should always be followed | **Pattern rule** — create in all formats (`.claude/rules/`, `.github/instructions/`, `.cursor/rules/`) using pattern structure |
+| A danger zone or known trap | **Landmine rule** — create in all formats using landmine structure, plus module-level `CLAUDE.md` Caution section |
+| A reusable pattern for how things are done | **Pattern rule** — create in all formats using pattern structure |
 | Architecture understanding deepened | Root context — update `CLAUDE.md`, `AGENTS.md`, `.github/copilot-instructions.md` (whichever exist) |
 | A new term was clarified | Root context — update Vocabulary section in all context files |
 | The explorer agent needs more context | Agent files — update `.claude/agents/` and/or `.github/agents/` |
@@ -123,40 +132,69 @@ For each learning, create or update the appropriate file using the resolution de
 
 #### New Rule
 
-When a convention or constraint was discovered, create in all applicable formats:
+When a convention, constraint, or danger was discovered, create in all applicable formats. Use the appropriate frontmatter for each tool:
 
-**Claude Code** — `.claude/rules/*.md`:
-```markdown
----
-paths: ["glob/pattern/**"]
----
+- **Claude Code** (`.claude/rules/*.md`): `paths: ["glob/pattern/**"]`
+- **VS Code Copilot** (`.github/instructions/*.instructions.md`): `applyTo: "glob/pattern/**"`
+- **Cursor** (`.cursor/rules/*.mdc`): `globs: glob/pattern/**`
 
-[What to do or not do, and why]
+The rule body is the same across tools — only the frontmatter differs. Choose the appropriate structure:
+
+**Pattern Rules** — for conventions and reusable approaches:
+
+```
+# Pattern: [Name]
+
+## When to Use
+- [Specific situations where this applies]
+
+## Core Approach
+[1-2 sentence summary of the approach]
+
+### Do
+[Correct code example with language-appropriate code fence]
+**Why**: [Why this works]
+
+### Don't
+[Incorrect code example with language-appropriate code fence]
+**Why this breaks**: [What goes wrong]
+
+## Common Mistakes
+- [Mistake]: [How to avoid it]
 ```
 
-**VS Code Copilot** — `.github/instructions/*.instructions.md`:
-```markdown
----
-applyTo: "glob/pattern/**"
----
+**Landmine Rules** — for danger zones and known traps:
 
-[Same instruction content]
+```
+# Landmine: [Name]
+
+**Severity**: [CRITICAL / HIGH / MEDIUM / LOW]
+
+## Symptoms
+- [How you know you've hit this]
+
+## The Trap
+[Why developers fall into this — what seems correct but isn't]
+
+### Don't (dangerous)
+[Dangerous code with language-appropriate code fence]
+**Why this breaks**: [Explanation]
+
+### Do (safe)
+[Safe code with language-appropriate code fence]
+**Why this works**: [Explanation]
+
+## Prevention
+- [Habit or check that catches this]
 ```
 
-**Cursor** — `.cursor/rules/*.mdc`:
-```markdown
----
-globs: glob/pattern/**
----
-
-[Same instruction content]
-```
-
+**Guidelines:**
 - Scope the glob as narrowly as possible
+- Include code examples — abstract rules without code are not actionable
 - State the rule as a clear instruction, not a description
 - Include the "why" — it helps AI tools apply the rule correctly
-- Name the file after the concern: `api-error-handling.md`, `state-mutation-rules.md`
-- The content is the same across tools — only the frontmatter format differs
+- Name the file after the concern: `api-error-handling.md`, `sync-race-condition.md`
+- Each rule file MUST stay under 100 lines (max 125 if critical context would be lost)
 
 #### Module CLAUDE.md Update
 
