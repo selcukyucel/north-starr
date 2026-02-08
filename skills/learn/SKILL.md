@@ -30,6 +30,22 @@ Generated rules must carry enough depth to be genuinely useful. Use two content 
 - **Context files** (CLAUDE.md, AGENTS.md, copilot-instructions.md): MUST stay under **100 lines** (max 125 if critical context would be lost). Split into multiple scoped files rather than exceeding.
 - **Pattern and landmine rules**: Should be as detailed as the templates require — typically **50-150 lines**. Depth and working code examples matter more than brevity.
 
+## Tool Target Preferences
+
+Before generating any output, check for `.north-starr.json` in the project root:
+
+```json
+{
+  "version": 1,
+  "targets": ["claude", "copilot", "cursor"]
+}
+```
+
+- If the file exists, only generate artifacts for the listed targets
+- If the file is missing, generate for all tools (backward compatible)
+- "All formats" throughout this skill means **enabled target formats only**
+- `AGENTS.md` is always updated regardless of preferences (it's universal)
+
 ## Workflow
 
 ### Step 1: Identify What Was Learned
@@ -51,12 +67,12 @@ Map each learning to the right artifact:
 
 | What you learned | Artifact to create/update |
 |---|---|
-| A convention that should always be followed | **Pattern rule** — create in all formats (`.claude/rules/`, `.github/instructions/`, `.cursor/rules/`) using pattern structure |
-| A danger zone or known trap | **Landmine rule** — create in all formats using landmine structure, plus module-level `CLAUDE.md` Caution section |
-| A reusable pattern for how things are done | **Pattern rule** — create in all formats using pattern structure |
-| Architecture understanding deepened | Root context — update `CLAUDE.md`, `AGENTS.md`, `.github/copilot-instructions.md` (whichever exist) |
-| A new term was clarified | Root context — update Vocabulary section in all context files |
-| The explorer agent needs more context | Agent files — update `.claude/agents/` and/or `.github/agents/` |
+| A convention that should always be followed | **Pattern rule** — create in enabled tool formats (`.claude/rules/`, `.github/instructions/`, `.cursor/rules/`) using pattern structure |
+| A danger zone or known trap | **Landmine rule** — create in enabled tool formats using landmine structure, plus module-level `CLAUDE.md` Caution section (if `claude` enabled) |
+| A reusable pattern for how things are done | **Pattern rule** — create in enabled tool formats using pattern structure |
+| Architecture understanding deepened | Root context — update `CLAUDE.md` (if `claude` enabled), `AGENTS.md`, `.github/copilot-instructions.md` (if `copilot` enabled) |
+| A new term was clarified | Root context — update Vocabulary section in enabled context files |
+| The explorer agent needs more context | Agent files — update `.claude/agents/` (if `claude` enabled) and/or `.github/agents/` (if `copilot` enabled) |
 | A recurring task type was identified | Suggest creating a new skill |
 
 ### Step 2.5: Detect Conflicts With Existing Configuration
@@ -134,11 +150,11 @@ For each learning, create or update the appropriate file using the resolution de
 
 #### New Rule
 
-When a convention, constraint, or danger was discovered, create in all applicable formats. Use the appropriate frontmatter for each tool:
+When a convention, constraint, or danger was discovered, create in each enabled target format. Use the appropriate frontmatter for each tool:
 
-- **Claude Code** (`.claude/rules/*.md`): `paths: ["glob/pattern/**"]`
-- **VS Code Copilot** (`.github/instructions/*.instructions.md`): `applyTo: "glob/pattern/**"`
-- **Cursor** (`.cursor/rules/*.mdc`): `globs: glob/pattern/**`
+- **Claude Code** (`.claude/rules/*.md`): `paths: ["glob/pattern/**"]` — if `claude` target enabled
+- **VS Code Copilot** (`.github/instructions/*.instructions.md`): `applyTo: "glob/pattern/**"` — if `copilot` target enabled
+- **Cursor** (`.cursor/rules/*.mdc`): `globs: glob/pattern/**` — if `cursor` target enabled
 
 The rule body is the same across tools — only the frontmatter differs. Choose the appropriate structure:
 
@@ -156,7 +172,7 @@ The rule body is the same across tools — only the frontmatter differs. Choose 
 
 #### Module CLAUDE.md Update
 
-When a danger zone or module-specific pattern was found:
+When a danger zone or module-specific pattern was found (if `claude` target enabled):
 
 - If no `CLAUDE.md` exists in that directory, create one
 - If one exists, add to the relevant section (Caution, Patterns)
@@ -164,11 +180,11 @@ When a danger zone or module-specific pattern was found:
 
 #### Root Context File Update
 
-When project-level understanding changed, update all root context files that exist:
+When project-level understanding changed, update root context files for enabled targets:
 
-- `CLAUDE.md` — Claude Code
-- `AGENTS.md` — Universal
-- `.github/copilot-instructions.md` — VS Code Copilot
+- `CLAUDE.md` — Claude Code (if `claude` target enabled)
+- `AGENTS.md` — Universal (always)
+- `.github/copilot-instructions.md` — VS Code Copilot (if `copilot` target enabled)
 
 For each:
 - Update the specific section (Architecture, Grain, Module Map, Vocabulary)
@@ -176,10 +192,10 @@ For each:
 
 #### Agent Update
 
-When the explorer agent's prompt should include new knowledge, update all applicable formats:
+When the explorer agent's prompt should include new knowledge, update enabled target formats:
 
-- `.claude/agents/*.md` — Claude Code
-- `.github/agents/*.agent.md` — VS Code Copilot
+- `.claude/agents/*.md` — Claude Code (if `claude` target enabled)
+- `.github/agents/*.agent.md` — VS Code Copilot (if `copilot` target enabled)
 
 For each:
 - Add to the agent's context about architecture, danger zones, or module relationships
@@ -221,7 +237,8 @@ Omit the "Conflicts Resolved" and "Deprecated Rules Cleaned Up" sections if ther
 ## Notes
 
 - This skill is language-agnostic — works for any project type
-- Every output must be a native artifact for the AI tools in use (rules, agents, context files) — not a log or template file
+- This skill respects tool target preferences — check `.north-starr.json` for enabled targets. Only generate artifacts for enabled tools.
+- Every output must be a native artifact for the enabled AI tools (rules, agents, context files) — not a log or template file
 - Read existing files before updating — build on what's there, don't duplicate
 - **Never silently replace or delete existing rules** — always prompt the user when new knowledge contradicts existing content
 - Auto-update is fine for additive changes and deepening existing content

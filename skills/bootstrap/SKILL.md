@@ -23,6 +23,24 @@ Explore an existing project and generate native configuration for the AI tools i
 
 Pattern and landmine rules use the same content — only the frontmatter format differs per tool.
 
+**Only artifacts for enabled targets are generated.** Check `.north-starr.json` at the project root to see which tools are enabled. If the file is missing, generate for all tools (backward compatible).
+
+## Tool Target Preferences
+
+Before generating any output, check for `.north-starr.json` in the project root:
+
+```json
+{
+  "version": 1,
+  "targets": ["claude", "copilot", "cursor"]
+}
+```
+
+- If the file exists, only generate artifacts for the listed targets
+- If the file is missing, ask the user which tools they use, save their answer to `.north-starr.json`, then generate only for those targets
+- `AGENTS.md` is always generated regardless of preferences (it's universal)
+- Valid targets: `"claude"`, `"copilot"`, `"cursor"`
+
 ## When to Use
 
 - First time working on an existing project with any AI coding tool
@@ -194,13 +212,13 @@ Generated rules must carry enough depth to be genuinely useful. Use two content 
 
 #### A. Project Context (root-level)
 
-Write the project context to all applicable locations:
+Write the project context to enabled target locations:
 
-- `CLAUDE.md` — Claude Code (auto-loaded)
-- `AGENTS.md` — Universal (works with any AI tool)
-- `.github/copilot-instructions.md` — VS Code Copilot (auto-loaded)
+- `CLAUDE.md` — Claude Code (auto-loaded) — generate if `claude` target is enabled
+- `AGENTS.md` — Universal (works with any AI tool) — always generated
+- `.github/copilot-instructions.md` — VS Code Copilot (auto-loaded) — generate if `copilot` target is enabled
 
-All three get the same content:
+All context files get the same content:
 
 ```markdown
 # [Project Name]
@@ -281,11 +299,11 @@ For each danger zone or complex module found in Step 4, write context in that di
 
 #### C. Pattern Rules & Landmine Rules
 
-Generate pattern and landmine rules for every AI tool in use. The content is the same — only the file location and frontmatter format differ per tool.
+Generate pattern and landmine rules for each enabled target. The content is the same — only the file location and frontmatter format differ per tool.
 
-**File formats per tool:**
+**File formats per tool (generate only for enabled targets):**
 
-**Claude Code** — `.claude/rules/*.md`:
+**Claude Code** — `.claude/rules/*.md` (if `claude` target enabled):
 ```markdown
 ---
 paths: ["glob/pattern/**"]
@@ -294,7 +312,7 @@ paths: ["glob/pattern/**"]
 [Rule content]
 ```
 
-**VS Code Copilot** — `.github/instructions/*.instructions.md`:
+**VS Code Copilot** — `.github/instructions/*.instructions.md` (if `copilot` target enabled):
 ```markdown
 ---
 applyTo: "glob/pattern/**"
@@ -303,7 +321,7 @@ applyTo: "glob/pattern/**"
 [Same rule content]
 ```
 
-**Cursor** — `.cursor/rules/*.mdc`:
+**Cursor** — `.cursor/rules/*.mdc` (if `cursor` target enabled):
 ```markdown
 ---
 globs: glob/pattern/**
@@ -369,7 +387,9 @@ Create one rule file per pattern or landmine discovered in Steps 3 and 4. Patter
 
 #### D. Agents
 
-**Claude Code** — `.claude/agents/*.md`:
+Generate agents for each enabled target that supports them:
+
+**Claude Code** — `.claude/agents/*.md` (if `claude` target enabled):
 
 ```yaml
 ---
@@ -381,7 +401,7 @@ memory: project
 ---
 ```
 
-**VS Code Copilot** — `.github/agents/*.agent.md`:
+**VS Code Copilot** — `.github/agents/*.agent.md` (if `copilot` target enabled):
 
 ```yaml
 ---
@@ -400,12 +420,15 @@ Generate additional agents only if the project clearly warrants them. Default to
 
 ## Post-Bootstrap Checklist
 
-- [ ] Project context at root — `CLAUDE.md`, `AGENTS.md`, `.github/copilot-instructions.md`
-- [ ] Module-level `CLAUDE.md` for each identified danger zone
-- [ ] Pattern rules in all tool formats — aim for 15-40 depending on project complexity
-- [ ] Landmine rules in all tool formats — aim for 5-15 depending on project maturity
-- [ ] `_TEMPLATE.md` in each tool's rules directory for future contributions
-- [ ] At least one project-tuned agent per tool that supports agents
+- [ ] `.north-starr.json` exists (created if missing during this run)
+- [ ] `AGENTS.md` at root (always)
+- [ ] `CLAUDE.md` at root (if `claude` target enabled)
+- [ ] `.github/copilot-instructions.md` (if `copilot` target enabled)
+- [ ] Module-level `CLAUDE.md` for each identified danger zone (if `claude` target enabled)
+- [ ] Pattern rules in enabled tool formats — aim for 15-40 depending on project complexity
+- [ ] Landmine rules in enabled tool formats — aim for 5-15 depending on project maturity
+- [ ] `_TEMPLATE.md` in each enabled tool's rules directory for future contributions
+- [ ] At least one project-tuned agent per enabled tool that supports agents
 
 ## Output Summary
 
@@ -418,26 +441,29 @@ After completing all steps, present:
 **Tech Stack:** [languages, frameworks, tools]
 **Architecture:** [pattern, layers]
 **Grain:** [easy changes vs. hard changes]
+**Enabled Tools:** [list from .north-starr.json]
 
 **Files Generated:**
 
 Universal:
 - AGENTS.md — [sections included]
 
-Claude Code:
+[Include only sections for enabled targets:]
+
+Claude Code:                              ← if claude target enabled
 - CLAUDE.md — [sections included]
 - [N] .claude/rules/ files — [N] patterns, [N] landmines — [list names]
 - [N] .claude/agents/ files — [list names]
 
-VS Code Copilot:
+VS Code Copilot:                          ← if copilot target enabled
 - .github/copilot-instructions.md
 - [N] .github/instructions/ files — [N] patterns, [N] landmines — [list names]
 - [N] .github/agents/ files — [list names]
 
-Cursor:
+Cursor:                                   ← if cursor target enabled
 - [N] .cursor/rules/ files — [N] patterns, [N] landmines — [list names]
 
-Module-level:
+Module-level:                             ← if claude target enabled
 - [N] CLAUDE.md files — [list directories]
 
 **Recommended First Read:** [2-3 files a newcomer should read first]
@@ -447,7 +473,7 @@ Module-level:
 ## Notes
 
 - This skill is language-agnostic — it detects the project's stack and generates appropriate configuration
-- This skill is tool-agnostic — it generates config for Claude Code, VS Code Copilot, and Cursor simultaneously
+- This skill respects tool target preferences — check `.north-starr.json` for enabled targets, or ask and save if missing. Only generate artifacts for enabled tools.
 - Can be run incrementally — bootstrap just the area you're working in, expand later
 - Be thorough — analyze the entire codebase, not a sample. Shallow bootstraps produce shallow configuration that misses real patterns and dangers
 - Balance breadth and depth: understand the whole project broadly, then go deep on patterns and landmines with full code examples and operational detail

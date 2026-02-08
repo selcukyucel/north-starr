@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-VERSION="2.3.6"
+VERSION="2.3.7"
 NORTH_STARR_HOME="${NORTH_STARR_HOME:-}"
 
 # Resolve where templates live
@@ -91,6 +91,112 @@ validate_skills() {
   done
 }
 
+# ─── TOOL TARGET PREFERENCES ─────────────────────────────────────────────────
+
+PREFS_FILE=".north-starr.json"
+
+# Read tool target preferences from .north-starr.json
+# Sets TARGETS array; defaults to all tools if file missing
+read_preferences() {
+  local dir="${1:-.}"
+  local prefs_path="$dir/$PREFS_FILE"
+  TARGETS=()
+
+  if [[ -f "$prefs_path" ]]; then
+    # Parse targets array from JSON without jq
+    local raw
+    raw="$(grep '"targets"' "$prefs_path" | sed 's/.*\[//;s/\].*//' | tr -d '"' | tr -d ' ')"
+    IFS=',' read -ra TARGETS <<< "$raw"
+    return 0
+  fi
+
+  # Default: all tools
+  TARGETS=("claude" "copilot" "cursor")
+  return 1
+}
+
+# Write tool target preferences to .north-starr.json
+write_preferences() {
+  local dir="${1:-.}"
+  local prefs_path="$dir/$PREFS_FILE"
+  shift
+  local targets=("$@")
+
+  # Build JSON targets array
+  local json_targets=""
+  for i in "${!targets[@]}"; do
+    if [[ $i -gt 0 ]]; then
+      json_targets+=", "
+    fi
+    json_targets+="\"${targets[$i]}\""
+  done
+
+  cat > "$prefs_path" << EOF
+{
+  "version": 1,
+  "targets": [$json_targets]
+}
+EOF
+}
+
+# Check if a target is enabled
+has_target() {
+  local target="$1"
+  for t in "${TARGETS[@]}"; do
+    if [[ "$t" == "$target" ]]; then
+      return 0
+    fi
+  done
+  return 1
+}
+
+# Interactive prompt for tool selection
+# Defaults to [Y/n] (yes) for each tool
+prompt_tool_selection() {
+  local selected=()
+
+  echo -e "${BOLD}  Select AI tools to configure:${NC}"
+  echo ""
+
+  for tool in claude copilot cursor; do
+    local label
+    case "$tool" in
+      claude)  label="Claude Code" ;;
+      copilot) label="VS Code Copilot" ;;
+      cursor)  label="Cursor" ;;
+    esac
+
+    read -rp "    Enable ${label}? [Y/n] " answer
+    if [[ "$answer" != "n" && "$answer" != "N" ]]; then
+      selected+=("$tool")
+    fi
+  done
+
+  echo ""
+
+  if [[ ${#selected[@]} -eq 0 ]]; then
+    print_warn "No tools selected — defaulting to all."
+    selected=("claude" "copilot" "cursor")
+  fi
+
+  TARGETS=("${selected[@]}")
+}
+
+# Display current target preferences
+show_preferences() {
+  local labels=()
+  for t in "${TARGETS[@]}"; do
+    case "$t" in
+      claude)  labels+=("Claude Code") ;;
+      copilot) labels+=("VS Code Copilot") ;;
+      cursor)  labels+=("Cursor") ;;
+    esac
+  done
+  local joined
+  joined="$(IFS=', '; echo "${labels[*]}")"
+  echo -e "  ${BOLD}Enabled tools:${NC} $joined"
+}
+
 # Colors
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -156,14 +262,26 @@ cmd_init() {
     echo ""
   fi
 
-  # Copy AGENTS.md (universal — works with any AI tool)
+  # Tool target preferences
+  if read_preferences "$target_dir"; then
+    show_preferences
+    echo ""
+  else
+    prompt_tool_selection
+    write_preferences "$target_dir" "${TARGETS[@]}"
+    show_preferences
+    print_success "Saved to $PREFS_FILE"
+    echo ""
+  fi
+
+  # Copy AGENTS.md (universal — works with any AI tool, always generated)
   if [[ -f "$template_dir/AGENTS.md" ]]; then
     cp "$template_dir/AGENTS.md" "$target_dir/AGENTS.md"
     print_success "AGENTS.md — universal AI assistant instructions"
   fi
 
   # Copy skills to .claude/skills/ (Claude Code)
-  if [[ -n "$skills_dir" && -d "$skills_dir" ]]; then
+  if has_target "claude" && [[ -n "$skills_dir" && -d "$skills_dir" ]]; then
     mkdir -p "$target_dir/.claude/skills"
     cp -r "$skills_dir/"* "$target_dir/.claude/skills/"
     validate_skills "$target_dir/.claude/skills"
@@ -171,7 +289,7 @@ cmd_init() {
   fi
 
   # Copy skills to .github/skills/ (VS Code Copilot)
-  if [[ -n "$skills_dir" && -d "$skills_dir" ]]; then
+  if has_target "copilot" && [[ -n "$skills_dir" && -d "$skills_dir" ]]; then
     mkdir -p "$target_dir/.github/skills"
     cp -r "$skills_dir/"* "$target_dir/.github/skills/"
     validate_skills "$target_dir/.github/skills"
@@ -179,7 +297,7 @@ cmd_init() {
   fi
 
   # Copy starter CLAUDE.md (Claude Code specific)
-  if [[ -f "$template_dir/CLAUDE.md" ]]; then
+  if has_target "claude" && [[ -f "$template_dir/CLAUDE.md" ]]; then
     cp "$template_dir/CLAUDE.md" "$target_dir/CLAUDE.md"
     print_success "CLAUDE.md — Claude Code starter instructions"
   fi
@@ -218,7 +336,16 @@ cmd_init() {
   echo -e "${GREEN}${BOLD}  Done!${NC} North Starr initialized."
   echo ""
   echo -e "  ${BOLD}What's next:${NC}"
-  echo -e "  ${DIM}1.${NC} Open your AI coding tool (Claude Code, VS Code Copilot, Cursor, etc.)"
+
+  # Build tool list from enabled targets
+  local tool_names=()
+  has_target "claude"  && tool_names+=("Claude Code")
+  has_target "copilot" && tool_names+=("VS Code Copilot")
+  has_target "cursor"  && tool_names+=("Cursor")
+  local tool_list
+  tool_list="$(IFS=', '; echo "${tool_names[*]}")"
+
+  echo -e "  ${DIM}1.${NC} Open your AI coding tool (${tool_list})"
   echo -e "  ${DIM}2.${NC} Run ${CYAN}/architect${NC} (new project) or ${CYAN}/bootstrap${NC} (existing code)"
   echo -e "  ${DIM}3.${NC} Start working — your AI tool auto-loads the generated context"
   echo ""
@@ -252,8 +379,13 @@ cmd_update() {
   echo -e "  ${DIM}$target_dir${NC}"
   echo ""
 
+  # Read tool target preferences
+  read_preferences "$target_dir"
+  show_preferences
+  echo ""
+
   # Update skills in .claude/skills/
-  if [[ -n "$skills_dir" && -d "$skills_dir" ]]; then
+  if has_target "claude" && [[ -n "$skills_dir" && -d "$skills_dir" ]]; then
     mkdir -p "$target_dir/.claude/skills"
     cp -r "$skills_dir/"* "$target_dir/.claude/skills/"
     validate_skills "$target_dir/.claude/skills"
@@ -261,14 +393,14 @@ cmd_update() {
   fi
 
   # Update skills in .github/skills/
-  if [[ -n "$skills_dir" && -d "$skills_dir" ]]; then
+  if has_target "copilot" && [[ -n "$skills_dir" && -d "$skills_dir" ]]; then
     mkdir -p "$target_dir/.github/skills"
     cp -r "$skills_dir/"* "$target_dir/.github/skills/"
     validate_skills "$target_dir/.github/skills"
     print_success "Updated .github/skills/"
   fi
 
-  # Update AGENTS.md if it's still the starter template
+  # Update AGENTS.md if it's still the starter template (always — universal)
   if [[ -f "$target_dir/AGENTS.md" ]] && grep -q "Run \`/bootstrap\` to generate" "$target_dir/AGENTS.md" 2>/dev/null; then
     cp "$template_dir/AGENTS.md" "$target_dir/AGENTS.md"
     print_success "Updated AGENTS.md (starter template)"
@@ -280,14 +412,16 @@ cmd_update() {
   fi
 
   # Update starter CLAUDE.md only if not customized
-  if [[ -f "$target_dir/CLAUDE.md" ]] && grep -q "Run \`/bootstrap\` to generate" "$target_dir/CLAUDE.md" 2>/dev/null; then
-    cp "$template_dir/CLAUDE.md" "$target_dir/CLAUDE.md"
-    print_success "Updated CLAUDE.md (starter template)"
-  elif [[ ! -f "$target_dir/CLAUDE.md" ]]; then
-    cp "$template_dir/CLAUDE.md" "$target_dir/CLAUDE.md"
-    print_success "Created CLAUDE.md (starter template)"
-  else
-    print_info "Skipped CLAUDE.md (customized by bootstrap — not overwriting)"
+  if has_target "claude"; then
+    if [[ -f "$target_dir/CLAUDE.md" ]] && grep -q "Run \`/bootstrap\` to generate" "$target_dir/CLAUDE.md" 2>/dev/null; then
+      cp "$template_dir/CLAUDE.md" "$target_dir/CLAUDE.md"
+      print_success "Updated CLAUDE.md (starter template)"
+    elif [[ ! -f "$target_dir/CLAUDE.md" ]]; then
+      cp "$template_dir/CLAUDE.md" "$target_dir/CLAUDE.md"
+      print_success "Created CLAUDE.md (starter template)"
+    else
+      print_info "Skipped CLAUDE.md (customized by bootstrap — not overwriting)"
+    fi
   fi
 
   # Remove old skills from v1.x (deleted + renamed)
@@ -313,6 +447,14 @@ cmd_status() {
   print_banner
 
   echo -e "${BOLD}  Project status:${NC} ${DIM}$target_dir${NC}"
+  echo ""
+
+  # Show tool target preferences
+  if read_preferences "$target_dir"; then
+    show_preferences
+  else
+    echo -e "  ${BOLD}Enabled tools:${NC} all ${DIM}(no .north-starr.json — run ${CYAN}north-starr config${DIM} to set)${NC}"
+  fi
   echo ""
 
   local initialized=true
@@ -428,6 +570,39 @@ cmd_status() {
   echo ""
 }
 
+# ─── CONFIG ────────────────────────────────────────────────────────────────────
+
+cmd_config() {
+  local target_dir
+  target_dir="$(resolve_target_dir "${1:-}")"
+
+  print_banner
+
+  echo -e "${BOLD}  Tool target preferences:${NC} ${DIM}$target_dir${NC}"
+  echo ""
+
+  if read_preferences "$target_dir"; then
+    show_preferences
+    echo ""
+    read -rp "  Change tool selection? [y/N] " confirm
+    if [[ "$confirm" != "y" && "$confirm" != "Y" ]]; then
+      echo ""
+      return
+    fi
+    echo ""
+  else
+    print_info "No preferences file found. Let's set one up."
+    echo ""
+  fi
+
+  prompt_tool_selection
+  write_preferences "$target_dir" "${TARGETS[@]}"
+
+  show_preferences
+  print_success "Saved to $PREFS_FILE"
+  echo ""
+}
+
 # ─── HELP ──────────────────────────────────────────────────────────────────────
 
 cmd_help() {
@@ -438,6 +613,7 @@ cmd_help() {
   echo -e "    ${CYAN}init${NC}     [dir]   Install North Starr skills in a project"
   echo -e "    ${CYAN}update${NC}   [dir]   Update skills (preserves your config)"
   echo -e "    ${CYAN}status${NC}   [dir]   Check setup status"
+  echo -e "    ${CYAN}config${NC}   [dir]   Set which AI tools to generate config for"
   echo -e "    ${CYAN}help${NC}             Show this help message"
   echo -e "    ${CYAN}version${NC}          Show version"
   echo ""
@@ -449,6 +625,7 @@ cmd_help() {
   echo -e "    ${DIM}north-starr init ~/my-project${NC}  # Initialize in specific directory"
   echo -e "    ${DIM}north-starr update${NC}             # Update to latest skills"
   echo -e "    ${DIM}north-starr status${NC}             # Check setup status"
+  echo -e "    ${DIM}north-starr config${NC}             # Set tool preferences"
   echo ""
   echo -e "${BOLD}  After init, use these skills in your AI tool:${NC}"
   echo -e "    /architect  — Define architecture for a new project (before code exists)"
@@ -476,6 +653,9 @@ main() {
       ;;
     status)
       cmd_status "${2:-}"
+      ;;
+    config)
+      cmd_config "${2:-}"
       ;;
     help|--help|-h)
       cmd_help

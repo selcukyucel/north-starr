@@ -35,6 +35,22 @@ This is NOT scaffolding — no code is generated. Only AI tool configuration.
 - A target directory (can be empty)
 - The user has an idea of what they're building (at minimum: stack and project name)
 
+## Tool Target Preferences
+
+Before generating any output, check for `.north-starr.json` in the project root:
+
+```json
+{
+  "version": 1,
+  "targets": ["claude", "copilot", "cursor"]
+}
+```
+
+- If the file exists, only generate artifacts for the listed targets
+- If the file is missing, ask the user which tools they use (as part of Phase 1), save their answer to `.north-starr.json`, then generate only for those targets
+- `AGENTS.md` is always generated regardless of preferences (it's universal)
+- Valid targets: `"claude"`, `"copilot"`, `"cursor"`
+
 ## Workflow
 
 ### Phase 1: Identity (Required)
@@ -57,6 +73,11 @@ Ask these questions **one at a time**, adapting based on answers:
    - "For [stack], the most common patterns are [X, Y, Z]. Which fits, or describe your own?"
    - If the user isn't sure, suggest the default for that stack
    - Accept custom patterns — just document what the user describes
+
+4. **AI tools** (only if `.north-starr.json` is missing)
+   - "Which AI tools do you use? (Claude Code, VS Code Copilot, Cursor — or all?)"
+   - Save the answer to `.north-starr.json` in the project root
+   - If the file already exists, skip this question and use the saved preferences
 
 **After Phase 1:** You have enough to generate useful configuration. Offer to continue to Phase 2 or generate now with smart defaults.
 
@@ -102,13 +123,13 @@ Use `references/stack-conventions.md` to fill in smart defaults for anything the
 
 #### A. Project Context (root-level)
 
-Write to all applicable locations:
+Write to enabled target locations:
 
-- `CLAUDE.md` — Claude Code (auto-loaded)
-- `AGENTS.md` — Universal (works with any AI tool)
-- `.github/copilot-instructions.md` — VS Code Copilot (auto-loaded)
+- `CLAUDE.md` — Claude Code (auto-loaded) — generate if `claude` target is enabled
+- `AGENTS.md` — Universal (works with any AI tool) — always generated
+- `.github/copilot-instructions.md` — VS Code Copilot (auto-loaded) — generate if `copilot` target is enabled
 
-All three get the same content:
+All context files get the same content:
 
 ```markdown
 # [Project Name]
@@ -165,9 +186,9 @@ If any of these files already exist with project-specific content, merge rather 
 
 #### B. Path-Scoped Rules
 
-Generate rules based on the declared architecture and conventions. Create in all applicable formats:
+Generate rules based on the declared architecture and conventions. Create for each enabled target:
 
-**Claude Code** — `.claude/rules/*.md`:
+**Claude Code** — `.claude/rules/*.md` (if `claude` target enabled):
 ```markdown
 ---
 paths: ["glob/pattern/**"]
@@ -177,7 +198,7 @@ paths: ["glob/pattern/**"]
 [Clear, concise instruction based on declared conventions]
 ```
 
-**VS Code Copilot** — `.github/instructions/*.instructions.md`:
+**VS Code Copilot** — `.github/instructions/*.instructions.md` (if `copilot` target enabled):
 ```markdown
 ---
 applyTo: "glob/pattern/**"
@@ -187,7 +208,7 @@ applyTo: "glob/pattern/**"
 [Same instruction content]
 ```
 
-**Cursor** — `.cursor/rules/*.mdc`:
+**Cursor** — `.cursor/rules/*.mdc` (if `cursor` target enabled):
 ```markdown
 ---
 globs: glob/pattern/**
@@ -214,7 +235,9 @@ globs: glob/pattern/**
 
 #### C. Agents
 
-**Claude Code** — `.claude/agents/*.md`:
+Generate agents for each enabled target that supports them:
+
+**Claude Code** — `.claude/agents/*.md` (if `claude` target enabled):
 
 ```yaml
 ---
@@ -226,7 +249,7 @@ memory: project
 ---
 ```
 
-**VS Code Copilot** — `.github/agents/*.agent.md`:
+**VS Code Copilot** — `.github/agents/*.agent.md` (if `copilot` target enabled):
 
 ```yaml
 ---
@@ -284,9 +307,12 @@ Adapt the tasks to the specific stack and architecture.
 
 ## Post-Architect Checklist
 
-- [ ] Project context at root — `CLAUDE.md`, `AGENTS.md`, `.github/copilot-instructions.md`
-- [ ] Path-scoped rules — `.claude/rules/`, `.github/instructions/`, `.cursor/rules/`
-- [ ] At least one project-tuned agent
+- [ ] `.north-starr.json` exists (created if missing during Phase 1)
+- [ ] `AGENTS.md` at root (always)
+- [ ] `CLAUDE.md` at root (if `claude` target enabled)
+- [ ] `.github/copilot-instructions.md` (if `copilot` target enabled)
+- [ ] Path-scoped rules in enabled tool formats
+- [ ] At least one project-tuned agent per enabled tool that supports agents
 - [ ] All sections marked `[DECLARED]`
 - [ ] Startup plan offered
 
@@ -301,23 +327,26 @@ After completing all phases, present:
 **Tech Stack:** [languages, frameworks, tools]
 **Architecture:** [pattern] [DECLARED]
 **Grain:** [easy changes vs. hard changes] [DECLARED]
+**Enabled Tools:** [list from .north-starr.json]
 
 **Files Generated:**
 
 Universal:
 - AGENTS.md — [sections included]
 
-Claude Code:
+[Include only sections for enabled targets:]
+
+Claude Code:                              ← if claude target enabled
 - CLAUDE.md — [sections included]
 - [N] .claude/rules/ files — [list names]
 - [N] .claude/agents/ files — [list names]
 
-VS Code Copilot:
+VS Code Copilot:                          ← if copilot target enabled
 - .github/copilot-instructions.md
 - [N] .github/instructions/ files — [list names]
 - [N] .github/agents/ files — [list names]
 
-Cursor:
+Cursor:                                   ← if cursor target enabled
 - [N] .cursor/rules/ files — [list names]
 
 **All config marked [DECLARED].**
@@ -327,7 +356,7 @@ Run /bootstrap after writing code to validate declarations against reality.
 ## Notes
 
 - This skill is language-agnostic — it uses `references/stack-conventions.md` for smart defaults across 11+ stacks
-- This skill is tool-agnostic — it generates config for Claude Code, VS Code Copilot, and Cursor simultaneously
+- This skill respects tool target preferences — check `.north-starr.json` for enabled targets, or ask and save if missing. Only generate artifacts for enabled tools.
 - Even answering only Phase 1 should produce useful, non-trivial configuration via smart stack-aware defaults
 - The `[DECLARED]` tag is critical — it tells `/bootstrap` to validate rather than regenerate
 - Conversational style — ask questions one at a time, adapt based on answers, offer smart defaults

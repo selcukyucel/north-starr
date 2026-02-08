@@ -97,7 +97,7 @@ This creates `AGENTS.md` — the universal project context file that works with 
 
 ### After `north-starr init` (Homebrew only)
 
-The CLI copies skills and starter context into your project:
+The CLI copies skills and starter context into your project. Only directories for enabled tools are created (see [Tool preferences](#tool-preferences)):
 
 ```
 your-project/
@@ -120,7 +120,7 @@ Plugin users skip this step — skills are already available globally.
 
 ### After `/bootstrap`
 
-The bootstrap skill explores your codebase and generates tool-native config:
+The bootstrap skill explores your codebase and generates tool-native config. Only artifacts for enabled tools are generated (see [Tool preferences](#tool-preferences)):
 
 ```
 your-project/
@@ -192,9 +192,25 @@ brew uninstall north-starr && brew untap selcukyucel/north-starr
 north-starr init            # Install skills in a project
 north-starr update          # Update skills (preserves your config)
 north-starr status          # Check setup status
+north-starr config          # Set which AI tools to generate config for
 north-starr version         # Show version
 north-starr help            # Show help
 ```
+
+### Tool preferences
+
+north-starr stores tool preferences in `.north-starr.json` at the project root:
+
+```json
+{
+  "version": 1,
+  "targets": ["claude"]
+}
+```
+
+Valid targets: `"claude"`, `"copilot"`, `"cursor"`. When this file is present, only artifacts for the listed tools are generated — by the CLI (`init`, `update`) and by skills (`/bootstrap`, `/architect`, `/learn`). This reduces token cost and file clutter for teams that use a single tool.
+
+If the file is missing, all tools are targeted (backward compatible). Run `north-starr config` to set preferences, or they'll be prompted on the first `north-starr init`. `AGENTS.md` is always generated regardless of preferences.
 
 ---
 
