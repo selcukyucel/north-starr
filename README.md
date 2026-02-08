@@ -60,7 +60,12 @@ cd your-project
 north-starr init
 ```
 
-This installs skills to `.github/skills/` and creates `AGENTS.md`. Open Copilot Chat and run `/architect` (new project) or `/bootstrap` (existing code) to generate configuration.
+This installs skills to `.github/skills/` and creates `AGENTS.md`. Skills are auto-activated by Copilot — open Copilot Chat (requires VS Code 1.108+) and type a natural language prompt:
+
+- **New project:** *"Architect this project — define architecture and conventions"*
+- **Existing code:** *"Bootstrap this project — generate configuration from the existing code"*
+
+Copilot matches your prompt to the relevant skill and loads its instructions automatically. No `/` commands needed.
 
 ### Cursor
 
