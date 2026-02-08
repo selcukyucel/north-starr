@@ -1,7 +1,8 @@
 ---
 name: document
-description: Generate a context file for a module or feature by analyzing its actual code. Produces a CLAUDE.md that AI tools use when working in that area. Use when a module has no context file, or when existing documentation is outdated.
+description: Generate a CLAUDE.md context file for a module by analyzing its actual code. Claude Code auto-loads these per directory. This skill is Claude Code-only.
 argument-hint: <module path or name>
+tool: claude
 author: Selcuk Yucel
 ---
 

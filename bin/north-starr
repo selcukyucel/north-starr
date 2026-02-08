@@ -197,6 +197,25 @@ show_preferences() {
   echo -e "  ${BOLD}Enabled tools:${NC} $joined"
 }
 
+# Remove skills that require a specific tool from a target directory
+# Skills with "tool: <name>" in frontmatter are only kept if <name> matches
+remove_tool_specific_skills() {
+  local skills_dest="$1"
+  local allowed_tool="$2"
+  for skill_file in "$skills_dest"/*/SKILL.md; do
+    [[ -f "$skill_file" ]] || continue
+    local tool_line
+    tool_line="$(grep '^tool:' "$skill_file" 2>/dev/null || true)"
+    if [[ -n "$tool_line" ]]; then
+      local required_tool
+      required_tool="$(echo "$tool_line" | sed 's/^tool:[[:space:]]*//')"
+      if [[ "$required_tool" != "$allowed_tool" ]]; then
+        rm -rf "$(dirname "$skill_file")"
+      fi
+    fi
+  done
+}
+
 # Colors
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -284,6 +303,7 @@ cmd_init() {
   if has_target "claude" && [[ -n "$skills_dir" && -d "$skills_dir" ]]; then
     mkdir -p "$target_dir/.claude/skills"
     cp -r "$skills_dir/"* "$target_dir/.claude/skills/"
+    remove_tool_specific_skills "$target_dir/.claude/skills" "claude"
     validate_skills "$target_dir/.claude/skills"
     print_success ".claude/skills/ — Claude Code skills"
   fi
@@ -292,6 +312,7 @@ cmd_init() {
   if has_target "copilot" && [[ -n "$skills_dir" && -d "$skills_dir" ]]; then
     mkdir -p "$target_dir/.github/skills"
     cp -r "$skills_dir/"* "$target_dir/.github/skills/"
+    remove_tool_specific_skills "$target_dir/.github/skills" "copilot"
     validate_skills "$target_dir/.github/skills"
     print_success ".github/skills/ — VS Code Copilot skills"
   fi
@@ -388,6 +409,7 @@ cmd_update() {
   if has_target "claude" && [[ -n "$skills_dir" && -d "$skills_dir" ]]; then
     mkdir -p "$target_dir/.claude/skills"
     cp -r "$skills_dir/"* "$target_dir/.claude/skills/"
+    remove_tool_specific_skills "$target_dir/.claude/skills" "claude"
     validate_skills "$target_dir/.claude/skills"
     print_success "Updated .claude/skills/"
   fi
@@ -396,6 +418,7 @@ cmd_update() {
   if has_target "copilot" && [[ -n "$skills_dir" && -d "$skills_dir" ]]; then
     mkdir -p "$target_dir/.github/skills"
     cp -r "$skills_dir/"* "$target_dir/.github/skills/"
+    remove_tool_specific_skills "$target_dir/.github/skills" "copilot"
     validate_skills "$target_dir/.github/skills"
     print_success "Updated .github/skills/"
   fi
