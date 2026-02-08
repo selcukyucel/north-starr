@@ -1,0 +1,29 @@
+{
+  "name": "north-starr",
+  "owner": {
+    "name": "Selcuk Yucel",
+    "email": ""
+  },
+  "metadata": {
+    "description": "Project bootstrapper for Claude Code — generates CLAUDE.md, rules, and agents from your codebase",
+    "version": "2.3.2"
+  },
+  "plugins": [
+    {
+      "name": "north-starr",
+      "description": "Project bootstrapper for Claude Code — generates CLAUDE.md, rules, and agents from your codebase",
+      "source": "./",
+      "strict": false,
+      "skills": [
+        "./skills/architect",
+        "./skills/bootstrap",
+        "./skills/commit-message-generator",
+        "./skills/document",
+        "./skills/invert",
+        "./skills/learn",
+        "./skills/plan",
+        "./skills/refactoring-analyzer"
+      ]
+    }
+  ]
+}
