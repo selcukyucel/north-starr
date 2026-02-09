@@ -250,6 +250,87 @@ print_error() {
   echo -e "${RED}  ✗${NC} $1"
 }
 
+# ─── MANAGED SECTION INJECTION ─────────────────────────────────────────────────
+
+# Extract managed section names from a template file
+# Managed sections are marked with <!-- [NORTH-STARR:name] --> ... <!-- [/NORTH-STARR:name] -->
+get_managed_sections() {
+  local file="$1"
+  grep -o 'NORTH-STARR:[a-z-]*' "$file" 2>/dev/null | grep -v '^/' | sed 's/NORTH-STARR://' | sort -u
+}
+
+# Extract a managed section (including markers) from a file
+extract_section() {
+  local file="$1"
+  local section="$2"
+  awk -v section="$section" '
+    index($0, "NORTH-STARR:" section "]") && !index($0, "/NORTH-STARR:") { capture=1 }
+    capture { print }
+    index($0, "/NORTH-STARR:" section "]") { capture=0 }
+  ' "$file"
+}
+
+# Inject missing managed sections from template into a customized target file
+# Updates existing sections to latest version. Appends missing ones at the end.
+inject_managed_sections() {
+  local target_file="$1"
+  local template_file="$2"
+  local file_name
+  file_name="$(basename "$target_file")"
+  local injected=false
+
+  for section in $(get_managed_sections "$template_file"); do
+    local new_content
+    new_content="$(extract_section "$template_file" "$section")"
+
+    if [[ -z "$new_content" ]]; then
+      continue
+    fi
+
+    if grep -q "NORTH-STARR:${section}]" "$target_file" 2>/dev/null; then
+      # Section exists — replace in place with the latest version from template
+      local section_file="${target_file}.section"
+      printf '%s\n' "$new_content" > "$section_file"
+
+      awk -v section="$section" -v rfile="$section_file" '
+        index($0, "NORTH-STARR:" section "]") && !index($0, "/NORTH-STARR:") {
+          while ((getline line < rfile) > 0) print line
+          close(rfile)
+          skip=1
+          next
+        }
+        index($0, "/NORTH-STARR:" section "]") { skip=0; next }
+        !skip { print }
+      ' "$target_file" > "${target_file}.tmp"
+
+      mv "${target_file}.tmp" "$target_file"
+      rm -f "$section_file"
+
+      print_success "Updated ${file_name} section: ${section}"
+      injected=true
+    else
+      # Section missing — check if the heading already exists (pre-marker file)
+      local section_heading
+      section_heading="$(printf '%s\n' "$new_content" | grep '^## ' | head -1)"
+
+      if [[ -n "$section_heading" ]] && grep -qF "$section_heading" "$target_file" 2>/dev/null; then
+        # Heading exists without markers — skip to avoid duplication
+        # User should run /bootstrap to get markers, or manually add them
+        print_info "Skipped ${file_name} section: ${section} (heading exists without markers — run /bootstrap to update)"
+      else
+        # Truly new section — append it
+        printf '\n%s\n' "$new_content" >> "$target_file"
+        print_success "Added ${file_name} section: ${section}"
+      fi
+      injected=true
+    fi
+  done
+
+  if [[ "$injected" == "false" ]]; then
+    print_info "Skipped ${file_name} (customized — no new sections to inject)"
+  fi
+}
+
 # ─── INIT ──────────────────────────────────────────────────────────────────────
 
 cmd_init() {
@@ -431,7 +512,8 @@ cmd_update() {
     cp "$template_dir/AGENTS.md" "$target_dir/AGENTS.md"
     print_success "Created AGENTS.md (universal instructions)"
   else
-    print_info "Skipped AGENTS.md (customized — not overwriting)"
+    # Customized — don't overwrite, but inject missing managed sections
+    inject_managed_sections "$target_dir/AGENTS.md" "$template_dir/AGENTS.md"
   fi
 
   # Update starter CLAUDE.md only if not customized
@@ -443,7 +525,8 @@ cmd_update() {
       cp "$template_dir/CLAUDE.md" "$target_dir/CLAUDE.md"
       print_success "Created CLAUDE.md (starter template)"
     else
-      print_info "Skipped CLAUDE.md (customized by bootstrap — not overwriting)"
+      # Customized — don't overwrite, but inject missing managed sections
+      inject_managed_sections "$target_dir/CLAUDE.md" "$template_dir/CLAUDE.md"
     fi
   fi
 

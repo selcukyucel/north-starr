@@ -18,6 +18,7 @@ Run `/architect` (new project) or `/bootstrap` (existing code) to generate proje
 - `/document` — Generate documentation for a module
 - `/learn` — Update configuration from experience
 
+<!-- [NORTH-STARR:how-to-approach-tasks] -->
 ## How to Approach Tasks
 
 **Before starting any task, assess its complexity:**
@@ -34,7 +35,9 @@ Run `/architect` (new project) or `/bootstrap` (existing code) to generate proje
 3. Execute the plan with progress tracking and session notes
 
 **Resuming work:** Always check `.plans/` for active implementation plans before starting new work. If an active plan exists, resume it instead of starting fresh.
+<!-- [/NORTH-STARR:how-to-approach-tasks] -->
 
+<!-- [NORTH-STARR:auto-learn] -->
 ## When to Learn Automatically
 
 **Run `/learn` automatically — do not wait for the user to ask — when any of these signals occur during a session:**
@@ -53,3 +56,4 @@ Run `/architect` (new project) or `/bootstrap` (existing code) to generate proje
 2. Finish the immediate fix or correction first
 3. Then run `/learn` to capture the insight as a pattern or landmine rule
 4. If a pattern or landmine already exists for this area, update it — do not create duplicates. Prompt the user when the update contradicts existing content.
+<!-- [/NORTH-STARR:auto-learn] -->
