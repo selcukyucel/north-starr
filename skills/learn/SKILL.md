@@ -13,11 +13,30 @@ After completing a task, turn what you learned into native artifacts for all con
 
 ## When to Use
 
+### Manual Trigger
 - After any task where something surprised you or went wrong
 - After discovering a pattern worth preserving
 - After stepping on a landmine that wasn't documented
 - After working in a module that had no CLAUDE.md context
 - Skip for routine tasks where nothing new was learned
+
+### Automatic Trigger (run without being asked)
+Run `/learn` automatically when any of these signals occur during a session:
+
+| Signal | What happened | What to capture |
+|--------|--------------|-----------------|
+| **User corrects your approach** | "No, don't do it that way — use X" | **Pattern** — the correct approach |
+| **Same fix requested twice** | User asks to fix the same issue/area again | **Landmine** — the fragile area and root cause |
+| **Your change breaks something** | Tests fail, build breaks, behavior regresses | **Landmine** — what broke and why |
+| **User rejects generated code** | "That's wrong", "revert that", user undoes your change | **Pattern or Landmine** — what was wrong, what's correct |
+| **Undocumented convention discovered** | Code follows a pattern not in any rule | **Pattern** — document it |
+| **Undocumented trap hit** | Something looked safe but caused problems | **Landmine** — document the trap |
+
+**Auto-trigger workflow:**
+1. Detect the signal during normal work
+2. Finish the immediate fix or correction first
+3. Then run `/learn` — start from Step 1 below
+4. The signal itself provides the learning — you don't need the user to describe it
 
 ## Content Depth
 
@@ -144,9 +163,50 @@ Use the shared error handler for all error responses.
 - `[DEPRECATED]` tags are reviewed whenever `/learn` runs — if the old code has been fully migrated, the deprecated rule should be deleted
 - `[SUPERSEDES]` comments are permanent traceability — they stay in the file
 
+### Step 2.7: Handle Existing Patterns and Landmines
+
+Before creating a new pattern or landmine, check whether one already exists for the same area or concern. This prevents duplicates and keeps rules consolidated.
+
+**Actions:**
+
+1. Search existing rules in all enabled tool directories (`.claude/rules/`, `.github/instructions/`, `.cursor/rules/`) for files covering the same topic, module, or concern
+2. Also check module-level `CLAUDE.md` files for related caution sections or pattern notes
+3. Classify what you found:
+
+| Finding | Action |
+|---------|--------|
+| **No existing file** — this is a new concern | Create a new pattern or landmine rule (proceed to Step 3) |
+| **Existing file covers the same concern** — new learning adds depth | **Update the existing file** — append new examples, symptoms, or steps. Do not create a duplicate. |
+| **Existing file covers the same concern** — new learning contradicts it | **Prompt the user** with the conflict (same as Step 2.5 resolution options: Replace, Deprecate, Scope-split, Keep existing) |
+| **Existing file is related but different** — overlapping but distinct concern | Create a new file and add cross-references in the Related section of both files |
+
+**When updating an existing file:**
+- Read the full existing content first
+- Preserve the existing structure (pattern template or landmine template)
+- Add new information in the appropriate section (new symptoms to Symptoms, new code examples to Safe Approach, new mistakes to Common Mistakes, etc.)
+- Update the Changelog at the bottom with a new version entry
+- Update `Last Updated` date
+- **Always prompt the user** before updating an existing file — show what will change and ask for confirmation:
+
+```
+I found an existing [pattern/landmine] that covers this area:
+  → [file path]
+
+The [signal: user correction / repeated fix / etc.] revealed new information:
+  → [what was learned]
+
+I'd like to update the existing file by:
+  → [specific changes: add new symptom, add code example, update Safe Approach, etc.]
+
+Should I:
+1. Update the existing file (recommended)
+2. Create a separate new rule instead
+3. Skip — this isn't worth capturing
+```
+
 ### Step 3: Generate the Artifacts
 
-For each learning, create or update the appropriate file using the resolution determined in Step 2.5:
+For each learning, create or update the appropriate file using the resolution determined in Steps 2.5 and 2.7:
 
 #### New Rule
 
@@ -218,10 +278,13 @@ This keeps the configuration clean over time without losing guidance for code th
 ## Learnings Applied
 
 **Task:** [what was completed]
+**Trigger:** [manual | auto: user correction | auto: repeated fix | auto: change broke something | auto: rejected code | auto: undocumented convention | auto: undocumented trap]
 
-**Updates Made:**
-- [artifact type]: [file path] — [what was added/changed]
-- [artifact type]: [file path] — [what was added/changed]
+**Created:**
+- [artifact type]: [file path] — [what was created]
+
+**Updated (existing):**
+- [artifact type]: [file path] — [what was added/changed in the existing file]
 
 **Conflicts Resolved:**
 - [file path] — [resolution: replaced / deprecated / scope-split / kept existing] — [reason]
@@ -232,7 +295,7 @@ This keeps the configuration clean over time without losing guidance for code th
 **Why:** [brief explanation of what triggered these updates]
 ```
 
-Omit the "Conflicts Resolved" and "Deprecated Rules Cleaned Up" sections if there were none.
+Omit sections that have no entries (Created, Updated, Conflicts Resolved, Deprecated Rules Cleaned Up).
 
 ## Notes
 
@@ -240,10 +303,13 @@ Omit the "Conflicts Resolved" and "Deprecated Rules Cleaned Up" sections if ther
 - This skill respects tool target preferences — check `.north-starr.json` for enabled targets. Only generate artifacts for enabled tools.
 - Every output must be a native artifact for the enabled AI tools (rules, agents, context files) — not a log or template file
 - Read existing files before updating — build on what's there, don't duplicate
+- **Never create a duplicate rule** — always check for existing patterns/landmines covering the same concern before creating new files (Step 2.7)
 - **Never silently replace or delete existing rules** — always prompt the user when new knowledge contradicts existing content
-- Auto-update is fine for additive changes and deepening existing content
+- **Always prompt the user before updating an existing pattern or landmine** — show what will change and let them choose (update, create separate, or skip)
+- Auto-update without prompting is fine only for additive changes to context files (CLAUDE.md, AGENTS.md) that deepen existing content
 - Keep rules and CLAUDE.md content concise — verbose documentation goes stale and wastes context
 - Not every task produces learnings — it's fine to run this and conclude "nothing to update"
+- When auto-triggered, finish the immediate fix first, then capture the learning — don't interrupt the user's flow
 - When unsure whether something deserves a rule vs. a CLAUDE.md note: rules are for constraints that should always be enforced, CLAUDE.md is for context that helps Claude make better decisions
 - `[DEPRECATED]` tags have a lifecycle — they should be cleaned up once the old pattern is fully gone, not left indefinitely
 - When both old and new patterns coexist, prefer **scope-split** over **replace** — old code still needs its rules until it's actually changed

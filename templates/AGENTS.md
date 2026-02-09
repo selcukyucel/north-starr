@@ -34,3 +34,22 @@ Run `/architect` (new project) or `/bootstrap` (existing code) to generate proje
 3. Execute the plan with progress tracking and session notes
 
 **Resuming work:** Always check `.plans/` for active implementation plans before starting new work. If an active plan exists, resume it instead of starting fresh.
+
+## When to Learn Automatically
+
+**Run `/learn` automatically — do not wait for the user to ask — when any of these signals occur during a session:**
+
+| Signal | Example | What to Capture |
+|--------|---------|-----------------|
+| **User corrects your approach** | "No, don't do it that way — use X instead" | **Pattern** — the correct approach so it's followed next time |
+| **Same fix requested twice** | User asks you to fix the same issue or area more than once in a session | **Landmine** — the fragile area and why it keeps breaking |
+| **Your change breaks something** | Tests fail, build breaks, or existing behavior regresses after your edit | **Landmine** — what broke and why, so it's avoided next time |
+| **User rejects generated code** | "That's wrong", "revert that", or user manually undoes your change | **Pattern or Landmine** — capture what was wrong and what's correct |
+| **You discover an undocumented convention** | Code follows a pattern not captured in any rule or context file | **Pattern** — document it before it's forgotten |
+| **You hit a trap not in any landmine rule** | Something looked safe but caused unexpected problems | **Landmine** — document the trap for future sessions |
+
+**How auto-learn works:**
+1. Detect the signal during normal work
+2. Finish the immediate fix or correction first
+3. Then run `/learn` to capture the insight as a pattern or landmine rule
+4. If a pattern or landmine already exists for this area, update it — do not create duplicates. Prompt the user when the update contradicts existing content.
