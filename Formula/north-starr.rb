@@ -1,8 +1,8 @@
 class NorthStarr < Formula
   desc "Your Development Partner — Friction-Free Development for AI coding tools"
   homepage "https://github.com/selcukyucel/north-starr"
-  url "https://github.com/selcukyucel/north-starr/archive/refs/tags/v2.3.9.tar.gz"
-  sha256 "a05a4ce2f7db760f8d9a1bf0f7bc7aab19eb3fa16790697ae5ff7560508ebd39"
+  url "https://github.com/selcukyucel/north-starr/archive/refs/tags/v2.3.10.tar.gz"
+  sha256 "PLACEHOLDER"
   license "MIT"
 
   def install
