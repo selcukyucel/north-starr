@@ -1,159 +1,164 @@
-# north-starr
+<p align="center">
+  <strong style="font-size: 2em;">north-starr</strong>
+</p>
 
-**Your Development Partner. Friction-Free Development.**
+<h3 align="center">Your Development Partner That Reads Your Code, Learns Your Patterns, and Gets Smarter Every Session.</h3>
 
-north-starr is your AI development partner — not a code owner, not a scaffolder, a partner that learns your codebase, remembers your patterns, warns you about landmines, and gets smarter every time you work together.
+<p align="center">
+  Install it. Bootstrap your project. Start giving tasks.<br>
+  Your AI already knows how to operate.
+</p>
 
-It analyzes any codebase and generates tool-native configuration — rules, instructions, context files, and agents — so your AI works effectively from the first task. Then it keeps learning. Every `/learn` invocation captures what you discovered — conventions worth preserving, dangers worth avoiding — and feeds it back into your tools automatically.
+<p align="center">
+  <a href="https://docs.anthropic.com/en/docs/claude-code">Claude Code</a> &middot;
+  <a href="https://code.visualstudio.com/docs/copilot/overview">VS Code Copilot</a> &middot;
+  <a href="https://cursor.sh">Cursor</a> &middot;
+  Any AI tool
+</p>
 
-Supports [Claude Code](https://docs.anthropic.com/en/docs/claude-code), [VS Code Copilot](https://code.visualstudio.com/docs/copilot/overview), [Cursor](https://cursor.sh), and any tool that reads [AGENTS.md](https://github.com/anthropics/agent-protocol).
-
-Language-agnostic. Works for any project — iOS, web, backend, infrastructure, anything.
-
-Agent Linter Score: [agentlinter.com/r/w7Jo9X0qVOV8](https://agentlinter.com/r/w7Jo9X0qVOV8)
-
-[![agentlinter score: 96/100 A+](assets/agentlinter-score.png)](https://agentlinter.com/r/w7Jo9X0qVOV8)
-
----
-
-## What it does
-
-Most AI coding tools start every project cold — no memory, no conventions, no awareness of where the landmines are. north-starr gives them project-specific context by generating:
-
-- **`AGENTS.md`** — universal project context (works with any AI tool)
-- **`CLAUDE.md` files** — architecture, grain, module map, danger zones (auto-loaded by Claude Code)
-- **`.claude/rules/`** + **`.github/instructions/`** + **`.cursor/rules/`** — conventions scoped by file path (auto-enforced)
-- **`.claude/agents/`** + **`.github/agents/`** — project-tuned specialized agents
-
-This configuration is generated from your actual code — not templates. The `/bootstrap` skill explores your codebase, identifies architecture patterns as **pattern rules** (how things are done here) and danger zones as **landmine rules** (what to watch out for), then writes configuration in each tool's native format. After you work, `/learn` captures new patterns and landmines from experience — so your partner gets smarter with every task.
-
-For new projects with no code yet, `/architect` captures your architectural intent and generates the same configuration from declared conventions.
+<p align="center">
+  <a href="https://agentlinter.com/r/w7Jo9X0qVOV8"><img src="assets/agentlinter-score.png" alt="agentlinter score: 96/100 A+" width="200"></a>
+</p>
 
 ---
 
-## Getting Started
+## The problem
 
-Pick your tool and follow the steps.
+AI coding tools start every project cold. No memory. No awareness of your conventions. No idea where the landmines are. They generate plausible code that breaks your patterns, ignores your architecture, and repeats mistakes you've already solved.
 
-### Claude Code
+You end up babysitting the AI instead of building.
 
-**Option A — Plugin (recommended):**
+## What north-starr does
 
+north-starr gives your AI tools **project-specific intelligence** — generated from your actual codebase, not templates.
+
+Run `/bootstrap` once and your AI knows your architecture, your conventions, your danger zones. Work with it. When it learns something new, that knowledge persists. Next session, it's smarter than the last.
+
+**Language-agnostic. Works for any project** — iOS, web, backend, infrastructure, anything.
+
+---
+
+## Three things that matter
+
+### 1. Loyal to your code
+
+north-starr reads your actual codebase. It discovers how *your* project is structured, what patterns *your* team follows, where *your* danger zones are. Nothing is templated or assumed. The configuration it generates reflects reality — your reality.
+
+Every rule, every context file, every agent instruction comes from what's actually in your code.
+
+### 2. Orchestration adapts to complexity
+
+Not every task needs the same level of care. north-starr assesses complexity automatically:
+
+- **Simple tasks** — your AI just works, guided by the rules already in place
+- **Medium tasks** — risk analysis runs automatically before implementation
+- **Complex tasks** — full orchestration kicks in: risk analysis, structured planning, then execution
+
+You don't configure this. Skills trigger based on what the task needs. The AI knows when to be careful and when to move fast.
+
+### 3. AI learns from its own mistakes
+
+When your AI gets corrected, discovers an undocumented convention, or breaks something — north-starr captures that as a **pattern rule** (how things should be done) or a **landmine rule** (what to watch out for). These rules feed directly into how your AI tools operate.
+
+No parallel knowledge system. No external database. Everything becomes native configuration that your tools load automatically on the next task.
+
+The result: **mistakes happen once, not twice.**
+
+---
+
+## Get started in 60 seconds
+
+### Step 1: Install
+
+**Claude Code plugin (recommended):**
 ```
 /plugin marketplace add selcukyucel/north-starr
 /plugin install north-starr
 ```
 
-Skills are available immediately across all your projects — nothing is installed into your project directory. Run `/architect` (new project) or `/bootstrap` (existing code) to generate configuration.
-
-**Option B — Homebrew:**
-
+**Or Homebrew (works with any AI tool):**
 ```bash
-brew tap selcukyucel/north-starr https://github.com/selcukyucel/north-starr.git && brew install north-starr
-cd your-project
-north-starr init
+brew tap selcukyucel/north-starr https://github.com/selcukyucel/north-starr.git
+brew install north-starr
+cd your-project && north-starr init
 ```
 
-This copies skills into your project's `.claude/skills/` directory. Then run `/architect` (new project) or `/bootstrap` (existing code) in Claude Code to generate configuration.
+### Step 2: Bootstrap
 
-### VS Code Copilot
-
-```bash
-brew tap selcukyucel/north-starr https://github.com/selcukyucel/north-starr.git && brew install north-starr
-cd your-project
-north-starr init
+```
+/bootstrap
 ```
 
-This installs skills to `.github/skills/` and creates `AGENTS.md`. Skills are auto-activated by Copilot — open Copilot Chat (requires VS Code 1.108+) and type a natural language prompt:
+That's it. north-starr explores your codebase and generates everything your AI needs — architecture context, pattern rules, landmine rules, module-level context files, specialized agents. All in your tool's native format.
 
-- **New project:** *"Architect this project — define architecture and conventions"*
-- **Existing code:** *"Bootstrap this project — generate configuration from the existing code"*
+For a **new project** with no code yet, use `/architect` instead to declare your intended architecture upfront.
 
-Copilot matches your prompt to the relevant skill and loads its instructions automatically. No `/` commands needed.
+### Step 3: Start working
 
-### Cursor
+Give your AI any task. It now understands your project. Rules fire automatically when touching matching files. Context loads when entering specific modules. Complexity is assessed on every task.
 
-```bash
-brew tap selcukyucel/north-starr https://github.com/selcukyucel/north-starr.git && brew install north-starr
-cd your-project
-north-starr init
-```
-
-This creates `AGENTS.md` and installs skills. Run `/architect` (new project) or `/bootstrap` (existing code) from Cursor's chat to generate `.cursor/rules/` and other configuration.
-
-### Any other AI tool
-
-```bash
-brew tap selcukyucel/north-starr https://github.com/selcukyucel/north-starr.git && brew install north-starr
-cd your-project
-north-starr init
-```
-
-This creates `AGENTS.md` — the universal project context file that works with any AI tool that supports it.
+As you work, your AI partner gets smarter. That's the whole idea.
 
 ---
 
-## What gets generated
-
-### After `north-starr init` (Homebrew only)
-
-The CLI copies skills and starter context into your project. Only directories for enabled tools are created (see [Tool preferences](#tool-preferences)):
+## How it works
 
 ```
-your-project/
-├── AGENTS.md                          # Universal — works with any AI tool
-├── CLAUDE.md                          # Claude Code starter
-├── .claude/skills/                    # Claude Code skills
-│   ├── architect/
-│   ├── bootstrap/
-│   ├── invert/
-│   ├── plan/
-│   ├── document/
-│   ├── learn/
-│   ├── commit-message-generator/
-│   └── refactoring-analyzer/
-└── .github/skills/                    # VS Code Copilot skills (same content)
-    └── ...
+  Install  ─────►  /bootstrap  ─────►  Start working
+                        │                     │
+                        │              AI uses rules &
+                        │              context automatically
+                        │                     │
+                        │               You correct AI
+                        │              or discover things
+                        │                     │
+                        ▼                     ▼
+                  Rules, context        /learn captures
+                  & agents generated     new patterns &
+                  from YOUR code         landmines
+                        │                     │
+                        └─────── Next session ─┘
+                                 AI is smarter
 ```
 
-Plugin users skip this step — skills are already available globally.
+### What gets generated
 
-### After `/bootstrap`
+north-starr produces **tool-native configuration** — not its own format, but the exact files each tool already reads:
 
-The bootstrap skill explores your codebase and generates tool-native config. Only artifacts for enabled tools are generated (see [Tool preferences](#tool-preferences)):
+| What | Purpose |
+|------|---------|
+| `CLAUDE.md` | Architecture, grain, module map, danger zones — auto-loaded by Claude Code |
+| `AGENTS.md` | Universal project context — works with any AI tool |
+| `.claude/rules/` `.github/instructions/` `.cursor/rules/` | Conventions scoped by file path — auto-enforced when touching matching files |
+| `.claude/agents/` `.github/agents/` | Project-tuned specialized agents |
+| Module-level `CLAUDE.md` files | Contextual warnings for specific modules (e.g., `src/payments/CLAUDE.md`) |
 
-```
-your-project/
-├── AGENTS.md                          # Universal project context
-├── CLAUDE.md                          # Claude Code context
-├── src/
-│   ├── payments/CLAUDE.md             # Module-level warnings
-│   └── auth/CLAUDE.md                 # Module-level context
-├── .claude/
-│   ├── rules/                         # Claude Code path-scoped rules
-│   └── agents/                        # Claude Code agents
-├── .github/
-│   ├── copilot-instructions.md        # VS Code Copilot context
-│   ├── instructions/                  # VS Code Copilot path-scoped rules
-│   └── agents/                        # VS Code Copilot agents
-└── .cursor/
-    └── rules/                         # Cursor path-scoped rules
-```
+### The grain concept
 
-After bootstrap, your AI tool auto-loads this configuration. Rules fire when touching matching files. Module context files appear when working in those directories. No ceremony needed.
+Every codebase has a **grain** — a direction that changes flow easily. Adding a new API endpoint might be straightforward. Adding a new data model might require touching 12 files. north-starr identifies this grain and documents it, so your AI knows which changes are safe and which require extra care.
+
+### Validation loop
+
+For new projects, `/architect` marks everything as `[DECLARED]` — intent, not yet verified. When you later run `/bootstrap`, each declaration is validated against real code:
+
+- **CONFIRMED** — code matches, tag removed, convention is a verified fact
+- **DIVERGED** — code differs, you decide which version to keep
+- **NOT YET** — no code exists yet, intent preserved
+
+This loop keeps your AI configuration honest as your project evolves.
 
 ---
 
 ## Skills
 
-| Skill | When to use |
-|-------|-------------|
-| `/architect` | New project with no code yet — define architecture and conventions from intent |
-| `/bootstrap` | First time in an existing project — generates rules, agents, and context files from your code |
-| `/invert` | Before complex tasks — structured risk analysis (what could go wrong?) |
-| `/plan` | For multi-session work — persistent implementation plans with progress tracking |
-| `/document` | When a module needs a context file — generates one from actual code |
-| `/learn` | After completing work — updates rules, agents, or context files from experience |
+| Skill | What it does |
+|-------|--------------|
+| `/bootstrap` | Generates rules, agents, and context from your existing code |
+| `/architect` | Defines architecture and conventions for a new project (before code exists) |
+| `/learn` | Captures patterns and landmines from experience — updates configuration |
+| `/invert` | Risk analysis before complex tasks — what could go wrong? |
+| `/plan` | Persistent implementation plans for multi-session work |
+| `/document` | Generates a context file for a specific module |
 
 ---
 
@@ -184,22 +189,20 @@ north-starr update    # updates skills in current project
 brew uninstall north-starr && brew untap selcukyucel/north-starr
 ```
 
----
-
-## CLI commands
+### CLI reference
 
 ```bash
-north-starr init            # Install skills in a project
-north-starr update          # Update skills (preserves your config)
-north-starr status          # Check setup status
-north-starr config          # Set which AI tools to generate config for
-north-starr version         # Show version
-north-starr help            # Show help
+north-starr init       # Install skills in a project
+north-starr update     # Update skills (preserves your config)
+north-starr status     # Check setup status
+north-starr config     # Set which AI tools to generate config for
+north-starr version    # Show version
+north-starr help       # Show help
 ```
 
 ### Tool preferences
 
-north-starr stores tool preferences in `.north-starr.json` at the project root:
+north-starr only generates artifacts for tools you actually use. Set preferences with `north-starr config` or they're prompted on first `north-starr init`. Stored in `.north-starr.json`:
 
 ```json
 {
@@ -208,65 +211,7 @@ north-starr stores tool preferences in `.north-starr.json` at the project root:
 }
 ```
 
-Valid targets: `"claude"`, `"copilot"`, `"cursor"`. When this file is present, only artifacts for the listed tools are generated — by the CLI (`init`, `update`) and by skills (`/bootstrap`, `/architect`, `/learn`). This reduces token cost and file clutter for teams that use a single tool.
-
-If the file is missing, all tools are targeted (backward compatible). Run `north-starr config` to set preferences, or they'll be prompted on the first `north-starr init`. `AGENTS.md` is always generated regardless of preferences.
-
----
-
-## How it works
-
-### The grain concept
-
-Every codebase has a **grain** — a direction that changes flow easily. Adding a new API endpoint might be straightforward. Adding a new data model might require touching 12 files. The bootstrap skill identifies this grain and documents it, so your AI tool knows which changes are safe and which require extra care.
-
-### A partner that learns
-
-The system improves through use — like a colleague who gets better the longer you work together:
-
-```
-/architect  →  declares intent (new projects)
-     ↓                    or
-/bootstrap  →  generates config from code (existing projects)
-     ↓
-  you work  →  your AI tool uses the config automatically
-     ↓
-/bootstrap  →  validates declared config against reality
-     ↓
-  /learn    →  updates config from what was discovered
-     ↓
-  next task →  your AI tool is smarter than last time
-```
-
-Every learning becomes a native artifact — pattern rules for conventions worth following, landmine rules for dangers worth avoiding. CLAUDE.md for Claude Code, copilot-instructions.md for VS Code Copilot, .cursor/rules for Cursor, AGENTS.md for everything. There's no parallel knowledge system — everything feeds directly into how your tools operate.
-
-### How validation works
-
-The loop between `/architect` and `/bootstrap` is powered by a `[DECLARED]` tag.
-
-When `/architect` generates configuration for a new project, every section and rule is marked `[DECLARED]` — signaling "this is intent, not yet verified against real code." As you write code, your AI tools enforce these declared conventions.
-
-When you run `/bootstrap` later, it detects the `[DECLARED]` tags and validates each one against the actual codebase:
-
-- **CONFIRMED** — code matches the declaration → tag is removed, the convention is now a verified fact
-- **DIVERGED** — code differs from the declaration → both versions are presented, you decide which to keep
-- **NOT YET** — no code exists for this area yet → tag stays, convention remains declared intent
-
-If no `[DECLARED]` tags are found (e.g., you started with `/bootstrap` on an existing codebase), validation is skipped and bootstrap discovers patterns directly from code.
-
-After validation, `/learn` closes the loop — capturing new patterns and dangers discovered during work as rules that your AI tools load automatically on the next task.
-
-### Risk analysis on demand
-
-For complex or high-stakes tasks, `/invert` provides deep structured analysis before you commit to implementation:
-
-- User/consumer impact
-- Technical failure modes
-- Edge cases
-- Architecture and convention risks
-- Observability and recovery
-
-This is optional — for routine tasks, the lightweight risk assessment baked into the project CLAUDE.md is sufficient.
+Valid targets: `"claude"`, `"copilot"`, `"cursor"`. `AGENTS.md` is always generated regardless.
 
 ---
 
@@ -276,12 +221,8 @@ north-starr is inspired by the [Idea Flow](https://leanpub.com/ideaflow) methodo
 
 The core insight: *you don't improve productivity by going faster, you improve it by improving control.* north-starr applies this to AI-assisted development — your AI partner learns your patterns, remembers your landmines, and works with control, not just speed.
 
-### Learn more about Idea Flow
-
-- [*Idea Flow: How to Measure the PAIN in Software Development*](https://leanpub.com/ideaflow) — the book
-- [Idea Flow — Janelle Arty Starr](https://www.youtube.com/watch?v=qqaOpSJKdWc) — talk
-- [Legacy Code Rocks: Idea Flow with Arty Starr](https://legacycoderocks.libsyn.com/idea-flow-with-arty-starr) — podcast
-- [*"The most underrated book in software engineering management"*](https://ericnormand.substack.com/p/the-most-underrated-book-in-software) — Eric Normand
+**Learn more about Idea Flow:**
+[The book](https://leanpub.com/ideaflow) &middot; [Talk](https://www.youtube.com/watch?v=qqaOpSJKdWc) &middot; [Podcast](https://legacycoderocks.libsyn.com/idea-flow-with-arty-starr) &middot; [*"The most underrated book in software engineering management"*](https://ericnormand.substack.com/p/the-most-underrated-book-in-software)
 
 ---
 
