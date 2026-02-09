@@ -1,8 +1,6 @@
 ---
 name: sync
 description: Inject missing North Starr managed sections into existing CLAUDE.md and AGENTS.md after a plugin update. Preserves all project-specific content. Claude Code plugin-only — brew users should run `north-starr update` instead.
-argument-hint:
-tool: claude
 author: Selcuk Yucel
 ---
 

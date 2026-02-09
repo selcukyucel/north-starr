@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-VERSION="2.3.11"
+VERSION="2.3.12"
 NORTH_STARR_HOME="${NORTH_STARR_HOME:-}"
 
 # Resolve where templates live
