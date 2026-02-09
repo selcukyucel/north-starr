@@ -6,7 +6,7 @@
   },
   "metadata": {
     "description": "Project bootstrapper for Claude Code — generates CLAUDE.md, rules, and agents from your codebase",
-    "version": "2.3.10"
+    "version": "2.3.11"
   },
   "plugins": [
     {
@@ -22,7 +22,8 @@
         "./skills/invert",
         "./skills/learn",
         "./skills/plan",
-        "./skills/refactoring-analyzer"
+        "./skills/refactoring-analyzer",
+        "./skills/sync"
       ]
     }
   ]
