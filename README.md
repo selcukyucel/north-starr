@@ -1,8 +1,8 @@
-<p align="center">
-  <strong style="font-size: 2em;">north-starr</strong>
-</p>
+# north-starr
 
 <h3 align="center">Your Development Partner That Reads Your Code, Learns Your Patterns, and Gets Smarter Every Session.</h3>
+
+<p align="center"><em>You don't improve productivity by going faster — you improve it by improving control.</em></p>
 
 <p align="center">
   Install it. Bootstrap your project. Start giving tasks.<br>
@@ -17,7 +17,8 @@
 </p>
 
 <p align="center">
-  <a href="https://agentlinter.com/r/w7Jo9X0qVOV8"><img src="assets/agentlinter-score.png" alt="agentlinter score: 96/100 A+" width="200"></a>
+  <a href="https://agentlinter.com/r/w7Jo9X0qVOV8"><img src="assets/agentlinter-score.png" alt="agentlinter score: 96/100 A+" width="400"></a><br>
+  <a href="https://agentlinter.com/r/w7Jo9X0qVOV8">agentlinter.com/r/w7Jo9X0qVOV8</a>
 </p>
 
 ---
