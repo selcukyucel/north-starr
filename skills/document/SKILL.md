@@ -2,8 +2,6 @@
 name: document
 description: Generate a CLAUDE.md context file for a module by analyzing its actual code. Claude Code auto-loads these per directory. This skill is Claude Code-only.
 argument-hint: <module path or name>
-tool: claude
-author: Selcuk Yucel
 ---
 
 # Document — Generate Module Context File

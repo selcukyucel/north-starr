@@ -1,8 +1,7 @@
 ---
 name: architect
 description: Define architecture and conventions for a new project before code exists. Produces the same AI configuration as /bootstrap (CLAUDE.md, rules, agents, AGENTS.md) but declared from intent rather than discovered from code. Run once at project start, then validate later with /bootstrap.
-argument-hint: [project name or description]
-author: Selcuk Yucel
+argument-hint: "[project name or description]"
 ---
 
 # Architect — Proactive Configuration for New Projects

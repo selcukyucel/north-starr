@@ -1,7 +1,6 @@
 ---
 name: bootstrap
 description: Generate AI tool configuration for an existing project. Explores the codebase and produces context files, path-scoped pattern rules, landmine rules, and agents for Claude Code, VS Code Copilot, and Cursor. Run once per project.
-author: Selcuk Yucel
 ---
 
 # Project Bootstrap — AI Tool Configuration Generator

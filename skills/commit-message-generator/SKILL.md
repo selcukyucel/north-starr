@@ -1,7 +1,6 @@
 ---
 name: commit-message-generator
 description: Generate clear, descriptive git commit messages by analyzing staged changes. Use this skill when the user asks to "generate a commit message", "write a commit message", "create a commit message", or similar requests related to git commits.
-author: Selcuk Yucel
 ---
 
 # Commit Message Generator
