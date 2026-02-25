@@ -23,6 +23,17 @@
 
 ---
 
+## Inspiration
+
+north-starr is inspired by the [Idea Flow](https://leanpub.com/ideaflow) methodology by **Janelle Arty Starr** — a framework for making invisible friction visible in software development.
+
+The core insight: *you don't improve productivity by going faster, you improve it by improving control.* north-starr applies this to AI-assisted development — your AI partner learns your patterns, remembers your landmines, and works with control, not just speed.
+
+**Learn more about Idea Flow:**
+[The book](https://leanpub.com/ideaflow) &middot; [Talk](https://www.youtube.com/watch?v=qqaOpSJKdWc) &middot; [Podcast](https://legacycoderocks.libsyn.com/idea-flow-with-arty-starr) &middot; [*"The most underrated book in software engineering management"*](https://ericnormand.substack.com/p/the-most-underrated-book-in-software)
+
+---
+
 ## The problem
 
 AI coding tools start every project cold. No memory. No awareness of your conventions. No idea where the landmines are. They generate plausible code that breaks your patterns, ignores your architecture, and repeats mistakes you've already solved.
@@ -213,17 +224,6 @@ north-starr only generates artifacts for tools you actually use. Set preferences
 ```
 
 Valid targets: `"claude"`, `"copilot"`, `"cursor"`. `AGENTS.md` is always generated regardless.
-
----
-
-## Inspiration
-
-north-starr is inspired by the [Idea Flow](https://leanpub.com/ideaflow) methodology by **Janelle Arty Starr** — a framework for making invisible friction visible in software development.
-
-The core insight: *you don't improve productivity by going faster, you improve it by improving control.* north-starr applies this to AI-assisted development — your AI partner learns your patterns, remembers your landmines, and works with control, not just speed.
-
-**Learn more about Idea Flow:**
-[The book](https://leanpub.com/ideaflow) &middot; [Talk](https://www.youtube.com/watch?v=qqaOpSJKdWc) &middot; [Podcast](https://legacycoderocks.libsyn.com/idea-flow-with-arty-starr) &middot; [*"The most underrated book in software engineering management"*](https://ericnormand.substack.com/p/the-most-underrated-book-in-software)
 
 ---
 
