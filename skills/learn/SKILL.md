@@ -1,6 +1,6 @@
 ---
 name: learn
-description: After completing a task, capture learnings by updating AI tool configuration. Creates or updates rules, agents, and context files based on what was discovered — in the native format for each tool (Claude Code, VS Code Copilot, Cursor, AGENTS.md). Use after any task where something surprised you, went wrong, or produced a reusable insight.
+description: After completing a task, capture learnings by updating AI tool configuration. Creates or updates rules, agents, and context files based on what was discovered — in the native format for each tool (Claude Code, VS Code Copilot, AGENTS.md). Use after any task where something surprised you, went wrong, or produced a reusable insight.
 ---
 
 # Learn — Update AI Tool Configuration From Experience
@@ -54,7 +54,7 @@ Before generating any output, check for `.north-starr.json` in the project root:
 ```json
 {
   "version": 1,
-  "targets": ["claude", "copilot", "cursor"]
+  "targets": ["claude", "copilot"]
 }
 ```
 
@@ -84,7 +84,7 @@ Map each learning to the right artifact:
 
 | What you learned | Artifact to create/update |
 |---|---|
-| A convention that should always be followed | **Pattern rule** — create in enabled tool formats (`.claude/rules/`, `.github/instructions/`, `.cursor/rules/`) using pattern structure |
+| A convention that should always be followed | **Pattern rule** — create in enabled tool formats (`.claude/rules/`, `.github/instructions/`) using pattern structure |
 | A danger zone or known trap | **Landmine rule** — create in enabled tool formats using landmine structure, plus module-level `CLAUDE.md` Caution section (if `claude` enabled) |
 | A reusable pattern for how things are done | **Pattern rule** — create in enabled tool formats using pattern structure |
 | Architecture understanding deepened | Root context — update `CLAUDE.md` (if `claude` enabled), `AGENTS.md`, `.github/copilot-instructions.md` (if `copilot` enabled) |
@@ -167,7 +167,7 @@ Before creating a new pattern or landmine, check whether one already exists for 
 
 **Actions:**
 
-1. Search existing rules in all enabled tool directories (`.claude/rules/`, `.github/instructions/`, `.cursor/rules/`) for files covering the same topic, module, or concern
+1. Search existing rules in all enabled tool directories (`.claude/rules/`, `.github/instructions/`) for files covering the same topic, module, or concern
 2. Also check module-level `CLAUDE.md` files for related caution sections or pattern notes
 3. Classify what you found:
 
@@ -212,7 +212,6 @@ When a convention, constraint, or danger was discovered, create in each enabled 
 
 - **Claude Code** (`.claude/rules/*.md`): `paths: ["glob/pattern/**"]` — if `claude` target enabled
 - **VS Code Copilot** (`.github/instructions/*.instructions.md`): `applyTo: "glob/pattern/**"` — if `copilot` target enabled
-- **Cursor** (`.cursor/rules/*.mdc`): `globs: glob/pattern/**` — if `cursor` target enabled
 
 The rule body is the same across tools — only the frontmatter differs. Choose the appropriate structure:
 

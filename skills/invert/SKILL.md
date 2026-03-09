@@ -50,7 +50,7 @@ Systematically work through each dimension:
 
 #### D. Architecture & Convention Risks
 - Does this go against the grain? (check grain section in root context files)
-- Does this violate any path-scoped rules (`.claude/rules/`, `.github/instructions/`, `.cursor/rules/`)?
+- Does this violate any path-scoped rules (`.claude/rules/`, `.github/instructions/`)?
 - Does this create coupling between modules that were independent?
 - Does this introduce a pattern inconsistent with existing code?
 
@@ -68,7 +68,7 @@ Rate the overall risk:
 |-------|---------|--------|
 | **LOW** | Well-understood, contained, reversible | Proceed to implementation |
 | **MEDIUM** | Some unknowns, but manageable with care | Plan carefully, validate incrementally |
-| **HIGH** | Significant unknowns, wide blast radius, or irreversible | Run `/plan` to break into tracked pieces, spike first, or clarify requirements |
+| **HIGH** | Significant unknowns, wide blast radius, or irreversible | Run `/layoutplan` to break into tracked pieces, spike first, or clarify requirements |
 
 ### Step 4: Produce Output
 
@@ -115,7 +115,7 @@ Present the analysis:
 
 - This skill is language-agnostic — it works for any project type
 - Read actual code before forming opinions — never invert based on assumptions
-- Root context files (`CLAUDE.md`, `AGENTS.md`) and path-scoped rules (`.claude/rules/`, `.github/instructions/`, `.cursor/rules/`) provide the baseline for convention checks
+- Root context files (`CLAUDE.md`, `AGENTS.md`) and path-scoped rules (`.claude/rules/`, `.github/instructions/`) provide the baseline for convention checks
 - Focus on risks that are **likely and impactful** — don't enumerate every theoretical failure
-- If the analysis reveals HIGH risk, recommend running `/plan` to break the task into tracked, safer pieces rather than proceeding with the full scope
-- The output of this analysis feeds directly into `/plan` — the risks become constraints and dedicated tasks in the implementation plan
+- If the analysis reveals HIGH risk, recommend running `/layoutplan` to break the task into tracked, safer pieces rather than proceeding with the full scope
+- The output of this analysis feeds directly into `/layoutplan` — the risks become constraints and dedicated tasks in the implementation plan

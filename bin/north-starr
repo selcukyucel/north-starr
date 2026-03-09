@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-VERSION="2.3.15"
+VERSION="2.4.0"
 NORTH_STARR_HOME="${NORTH_STARR_HOME:-}"
 
 # Resolve where templates live
@@ -111,7 +111,7 @@ read_preferences() {
   fi
 
   # Default: all tools
-  TARGETS=("claude" "copilot" "cursor")
+  TARGETS=("claude" "copilot")
   return 1
 }
 
@@ -158,12 +158,11 @@ prompt_tool_selection() {
   echo -e "${BOLD}  Select AI tools to configure:${NC}"
   echo ""
 
-  for tool in claude copilot cursor; do
+  for tool in claude copilot; do
     local label
     case "$tool" in
       claude)  label="Claude Code" ;;
       copilot) label="VS Code Copilot" ;;
-      cursor)  label="Cursor" ;;
     esac
 
     read -rp "    Enable ${label}? [Y/n] " answer
@@ -176,7 +175,7 @@ prompt_tool_selection() {
 
   if [[ ${#selected[@]} -eq 0 ]]; then
     print_warn "No tools selected — defaulting to all."
-    selected=("claude" "copilot" "cursor")
+    selected=("claude" "copilot")
   fi
 
   TARGETS=("${selected[@]}")
@@ -189,7 +188,6 @@ show_preferences() {
     case "$t" in
       claude)  labels+=("Claude Code") ;;
       copilot) labels+=("VS Code Copilot") ;;
-      cursor)  labels+=("Cursor") ;;
     esac
   done
   local joined
@@ -443,7 +441,6 @@ cmd_init() {
   local tool_names=()
   has_target "claude"  && tool_names+=("Claude Code")
   has_target "copilot" && tool_names+=("VS Code Copilot")
-  has_target "cursor"  && tool_names+=("Cursor")
   local tool_list
   tool_list="$(IFS=', '; echo "${tool_names[*]}")"
 
@@ -455,7 +452,7 @@ cmd_init() {
   echo -e "    /architect  — Define architecture for a new project (before code exists)"
   echo -e "    /bootstrap  — Generate project config from existing code"
   echo -e "    /invert     — Deep risk analysis before complex tasks"
-  echo -e "    /plan       — Break complex tasks into persistent implementation plans"
+  echo -e "    /layoutplan  — Break complex tasks into persistent implementation plans"
   echo -e "    /document   — Generate documentation for a module"
   echo -e "    /learn      — Update config from experience"
   echo ""
@@ -641,13 +638,6 @@ cmd_status() {
     fi
   fi
 
-  # Check Cursor rules (created by bootstrap)
-  if [[ -d "$target_dir/.cursor/rules" ]]; then
-    local cursor_count=$(find "$target_dir/.cursor/rules" -name "*.mdc" -o -name "*.md" 2>/dev/null | wc -l | tr -d ' ')
-    if [[ "$cursor_count" -gt 0 ]]; then
-      print_success ".cursor/rules/ — ${cursor_count} rules"
-    fi
-  fi
 
   # Check module-level CLAUDE.md files
   local module_claude_count=$(find "$target_dir" -name "CLAUDE.md" -not -path "$target_dir/CLAUDE.md" -not -path "$target_dir/.claude/*" -not -path "*/node_modules/*" -not -path "*/.git/*" 2>/dev/null | wc -l | tr -d ' ')
@@ -724,7 +714,7 @@ cmd_help() {
   echo -e "    ${CYAN}version${NC}          Show version"
   echo ""
   echo -e "${BOLD}  Supported AI tools:${NC}"
-  echo -e "    Claude Code, VS Code Copilot, Cursor, Windsurf"
+  echo -e "    Claude Code, VS Code Copilot"
   echo ""
   echo -e "${BOLD}  Examples:${NC}"
   echo -e "    ${DIM}north-starr init${NC}              # Initialize in current directory"
@@ -737,7 +727,7 @@ cmd_help() {
   echo -e "    /architect  — Define architecture for a new project (before code exists)"
   echo -e "    /bootstrap  — Generate project config from existing code"
   echo -e "    /invert     — Deep risk analysis before complex tasks"
-  echo -e "    /plan       — Break complex tasks into persistent implementation plans"
+  echo -e "    /layoutplan  — Break complex tasks into persistent implementation plans"
   echo -e "    /document   — Generate documentation for a module"
   echo -e "    /learn      — Update config from experience"
   echo ""

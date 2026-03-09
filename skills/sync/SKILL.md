@@ -83,12 +83,12 @@ These are the managed sections that `/sync` injects. Each section below is the *
 | Complexity | Signals | Action |
 |------------|---------|--------|
 | **Low** | Single file, straightforward change, well-understood area | Implement directly |
-| **Medium** | 3+ files, unfamiliar area, non-trivial logic, or integration points | Run `/invert` then `/plan` automatically |
-| **High** | Wide blast radius, irreversible changes, unfamiliar domain, or critical system | Run `/invert` then `/plan` automatically |
+| **Medium** | 3+ files, unfamiliar area, non-trivial logic, or integration points | Run `/invert` then `/layoutplan` automatically |
+| **High** | Wide blast radius, irreversible changes, unfamiliar domain, or critical system | Run `/invert` then `/layoutplan` automatically |
 
 **For Medium and High complexity tasks — do this automatically, don't wait for the user to ask:**
 1. Run `/invert` — identify risks, edge cases, and failure modes
-2. Run `/plan` — break the work into tracked tasks, using invert's risks as constraints
+2. Run `/layoutplan` — break the work into tracked tasks, using invert's risks as constraints
 3. Execute the plan with progress tracking and session notes
 
 **Resuming work:** Always check `.plans/` for active implementation plans before starting new work. If an active plan exists, resume it instead of starting fresh.

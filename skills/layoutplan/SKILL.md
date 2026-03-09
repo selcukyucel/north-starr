@@ -1,5 +1,5 @@
 ---
-name: plan
+name: layoutplan
 description: Break complex tasks into persistent implementation plans that survive session boundaries. Tracks progress, session notes, and architecture decisions so any AI tool can resume where the last session left off. Use after /invert for medium and high complexity tasks.
 argument-hint: <task description> | resume | status
 ---
@@ -17,7 +17,7 @@ Complex tasks exceed AI context windows. When a new session starts, the AI loses
 ```
 /invert  →  identifies risks, edge cases, failure modes
     ↓
-/plan    →  breaks work into tasks, with invert's risks as constraints
+/layoutplan  →  breaks work into tasks, with invert's risks as constraints
     ↓
   work   →  execute tasks, track progress, add session notes
     ↓

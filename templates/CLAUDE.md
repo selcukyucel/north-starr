@@ -14,7 +14,7 @@ Run `/architect` (new project) or `/bootstrap` (existing code) to generate proje
 - `/architect` — Define architecture for a new project (before code exists)
 - `/bootstrap` — Generate project configuration from existing code (run once)
 - `/invert` — Deep risk analysis before complex tasks
-- `/plan` — Break complex tasks into persistent, trackable implementation plans
+- `/layoutplan` — Break complex tasks into persistent, trackable implementation plans
 - `/document` — Generate CLAUDE.md for a module
 - `/learn` — Update rules, agents, and CLAUDE.md from experience
 
@@ -26,12 +26,12 @@ Run `/architect` (new project) or `/bootstrap` (existing code) to generate proje
 | Complexity | Signals | Action |
 |------------|---------|--------|
 | **Low** | Single file, straightforward change, well-understood area | Implement directly |
-| **Medium** | 3+ files, unfamiliar area, non-trivial logic, or integration points | Run `/invert` then `/plan` automatically |
-| **High** | Wide blast radius, irreversible changes, unfamiliar domain, or critical system | Run `/invert` then `/plan` automatically |
+| **Medium** | 3+ files, unfamiliar area, non-trivial logic, or integration points | Run `/invert` then `/layoutplan` automatically |
+| **High** | Wide blast radius, irreversible changes, unfamiliar domain, or critical system | Run `/invert` then `/layoutplan` automatically |
 
 **For Medium and High complexity tasks — do this automatically, don't wait for the user to ask:**
 1. Run `/invert` — identify risks, edge cases, and failure modes
-2. Run `/plan` — break the work into tracked tasks, using invert's risks as constraints
+2. Run `/layoutplan` — break the work into tracked tasks, using invert's risks as constraints
 3. Execute the plan with progress tracking and session notes
 
 **Resuming work:** Always check `.plans/` for active implementation plans before starting new work. If an active plan exists, resume it instead of starting fresh.

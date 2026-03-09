@@ -12,7 +12,6 @@
 <p align="center">
   <a href="https://docs.anthropic.com/en/docs/claude-code">Claude Code</a> &middot;
   <a href="https://code.visualstudio.com/docs/copilot/overview">VS Code Copilot</a> &middot;
-  <a href="https://cursor.sh">Cursor</a> &middot;
   Any AI tool
 </p>
 
@@ -141,7 +140,7 @@ north-starr produces **tool-native configuration** — not its own format, but t
 |------|---------|
 | `CLAUDE.md` | Architecture, grain, module map, danger zones — auto-loaded by Claude Code |
 | `AGENTS.md` | Universal project context — works with any AI tool |
-| `.claude/rules/` `.github/instructions/` `.cursor/rules/` | Conventions scoped by file path — auto-enforced when touching matching files |
+| `.claude/rules/` `.github/instructions/` | Conventions scoped by file path — auto-enforced when touching matching files |
 | `.claude/agents/` `.github/agents/` | Project-tuned specialized agents |
 | Module-level `CLAUDE.md` files | Contextual warnings for specific modules (e.g., `src/payments/CLAUDE.md`) |
 
@@ -169,7 +168,7 @@ This loop keeps your AI configuration honest as your project evolves.
 | `/architect` | Defines architecture and conventions for a new project (before code exists) |
 | `/learn` | Captures patterns and landmines from experience — updates configuration |
 | `/invert` | Risk analysis before complex tasks — what could go wrong? |
-| `/plan` | Persistent implementation plans for multi-session work |
+| `/layoutplan` | Persistent implementation plans for multi-session work |
 | `/document` | Generates a context file for a specific module |
 
 ---
@@ -223,7 +222,7 @@ north-starr only generates artifacts for tools you actually use. Set preferences
 }
 ```
 
-Valid targets: `"claude"`, `"copilot"`, `"cursor"`. `AGENTS.md` is always generated regardless.
+Valid targets: `"claude"`, `"copilot"`. `AGENTS.md` is always generated regardless.
 
 ---
 
