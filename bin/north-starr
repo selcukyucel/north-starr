@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-VERSION="2.4.0"
+VERSION="2.4.1"
 NORTH_STARR_HOME="${NORTH_STARR_HOME:-}"
 
 # Resolve where templates live
@@ -248,6 +248,16 @@ print_error() {
   echo -e "${RED}  ✗${NC} $1"
 }
 
+# Check if a file is still the unmodified starter template (never customized)
+is_starter_template() {
+  local file="$1"
+  # Old starter templates (v2.3.x and earlier)
+  grep -q "Run \`/bootstrap\` to generate" "$file" 2>/dev/null && return 0
+  # New starter templates (v2.5+) — placeholder text not yet replaced
+  grep -q "\[One-sentence project description\]" "$file" 2>/dev/null && return 0
+  return 1
+}
+
 # ─── MANAGED SECTION INJECTION ─────────────────────────────────────────────────
 
 # Extract managed section names from a template file
@@ -327,6 +337,113 @@ inject_managed_sections() {
   if [[ "$injected" == "false" ]]; then
     print_info "Skipped ${file_name} (customized — no new sections to inject)"
   fi
+}
+
+# Reorder managed sections to appear right after the first heading + description.
+# This ensures "How to Approach Tasks" and "Auto Learn" are read before project context.
+reorder_managed_sections() {
+  local target_file="$1"
+  local template_file="$2"
+  local file_name
+  file_name="$(basename "$target_file")"
+
+  # Get the canonical order of managed sections from the template
+  local -a section_order=()
+  while IFS= read -r section; do
+    section_order+=("$section")
+  done < <(grep -o 'NORTH-STARR:[a-z-]*\]' "$template_file" 2>/dev/null | grep -v '/' | sed 's/NORTH-STARR://;s/\]//' | awk '!seen[$0]++')
+
+  if [[ ${#section_order[@]} -eq 0 ]]; then
+    return
+  fi
+
+  # Check if reordering is needed: managed sections should appear before
+  # any of these project context headings
+  local context_headings="^## (Tech Stack|Architecture|Grain|Module Map|Conventions)"
+  local first_context_line=0
+  local last_managed_line=0
+
+  first_context_line=$(grep -n -E "$context_headings" "$target_file" 2>/dev/null | head -1 | cut -d: -f1)
+  for section in "${section_order[@]}"; do
+    local line_num
+    line_num=$(grep -n "NORTH-STARR:${section}]" "$target_file" 2>/dev/null | grep -v '/' | head -1 | cut -d: -f1)
+    if [[ -n "$line_num" ]] && [[ "$line_num" -gt "$last_managed_line" ]]; then
+      last_managed_line=$line_num
+    fi
+  done
+
+  # If no context headings found, or managed sections already before context, skip
+  if [[ "$first_context_line" -eq 0 ]] || [[ "$last_managed_line" -eq 0 ]]; then
+    return
+  fi
+  if [[ "$last_managed_line" -lt "$first_context_line" ]]; then
+    return
+  fi
+
+  # Reordering needed: extract managed sections, remove from current positions,
+  # re-insert before the first context heading
+  local -a managed_blocks=()
+  local temp_file="${target_file}.reorder"
+  cp "$target_file" "$temp_file"
+
+  # Extract each managed section and remove it from temp file
+  for section in "${section_order[@]}"; do
+    if grep -q "NORTH-STARR:${section}]" "$temp_file" 2>/dev/null; then
+      local block
+      block="$(extract_section "$temp_file" "$section")"
+      managed_blocks+=("$block")
+
+      # Remove the managed section (and one blank line before it if present)
+      awk -v section="$section" '
+        index($0, "NORTH-STARR:" section "]") && !index($0, "/NORTH-STARR:") {
+          # Remove preceding blank line if present
+          if (prev_blank) { delete_prev=1 }
+          skip=1
+          next
+        }
+        index($0, "/NORTH-STARR:" section "]") { skip=0; next }
+        skip { next }
+        /^[[:space:]]*$/ { prev_blank=1; prev_line=$0; next }
+        {
+          if (prev_blank && !delete_prev) { print prev_line }
+          prev_blank=0; delete_prev=0
+          print
+        }
+        END { if (prev_blank && !delete_prev) print prev_line }
+      ' "$temp_file" > "${temp_file}.2"
+      mv "${temp_file}.2" "$temp_file"
+    fi
+  done
+
+  if [[ ${#managed_blocks[@]} -eq 0 ]]; then
+    rm -f "$temp_file"
+    return
+  fi
+
+  # Find the insertion point: right before the first context heading
+  first_context_line=$(grep -n -E "$context_headings" "$temp_file" 2>/dev/null | head -1 | cut -d: -f1)
+
+  if [[ -z "$first_context_line" ]] || [[ "$first_context_line" -eq 0 ]]; then
+    # No context headings found after removal — append at end
+    for block in "${managed_blocks[@]}"; do
+      printf '\n%s\n' "$block" >> "$temp_file"
+    done
+  else
+    # Insert managed sections before the first context heading
+    local insert_line=$((first_context_line - 1))
+    {
+      head -n "$insert_line" "$temp_file"
+      for block in "${managed_blocks[@]}"; do
+        printf '\n%s\n'  "$block"
+      done
+      printf '\n'
+      tail -n "+${first_context_line}" "$temp_file"
+    } > "${temp_file}.final"
+    mv "${temp_file}.final" "$temp_file"
+  fi
+
+  mv "$temp_file" "$target_file"
+  print_success "Reordered ${file_name} sections (instructions before project context)"
 }
 
 # ─── INIT ──────────────────────────────────────────────────────────────────────
@@ -502,28 +619,30 @@ cmd_update() {
   fi
 
   # Update AGENTS.md if it's still the starter template (always — universal)
-  if [[ -f "$target_dir/AGENTS.md" ]] && grep -q "Run \`/bootstrap\` to generate" "$target_dir/AGENTS.md" 2>/dev/null; then
+  if [[ -f "$target_dir/AGENTS.md" ]] && is_starter_template "$target_dir/AGENTS.md"; then
     cp "$template_dir/AGENTS.md" "$target_dir/AGENTS.md"
     print_success "Updated AGENTS.md (starter template)"
   elif [[ ! -f "$target_dir/AGENTS.md" ]]; then
     cp "$template_dir/AGENTS.md" "$target_dir/AGENTS.md"
     print_success "Created AGENTS.md (universal instructions)"
   else
-    # Customized — don't overwrite, but inject missing managed sections
+    # Customized — update managed sections and fix ordering
     inject_managed_sections "$target_dir/AGENTS.md" "$template_dir/AGENTS.md"
+    reorder_managed_sections "$target_dir/AGENTS.md" "$template_dir/AGENTS.md"
   fi
 
   # Update starter CLAUDE.md only if not customized
   if has_target "claude"; then
-    if [[ -f "$target_dir/CLAUDE.md" ]] && grep -q "Run \`/bootstrap\` to generate" "$target_dir/CLAUDE.md" 2>/dev/null; then
+    if [[ -f "$target_dir/CLAUDE.md" ]] && is_starter_template "$target_dir/CLAUDE.md"; then
       cp "$template_dir/CLAUDE.md" "$target_dir/CLAUDE.md"
       print_success "Updated CLAUDE.md (starter template)"
     elif [[ ! -f "$target_dir/CLAUDE.md" ]]; then
       cp "$template_dir/CLAUDE.md" "$target_dir/CLAUDE.md"
       print_success "Created CLAUDE.md (starter template)"
     else
-      # Customized — don't overwrite, but inject missing managed sections
+      # Customized — update managed sections and fix ordering
       inject_managed_sections "$target_dir/CLAUDE.md" "$template_dir/CLAUDE.md"
+      reorder_managed_sections "$target_dir/CLAUDE.md" "$template_dir/CLAUDE.md"
     fi
   fi
 
@@ -565,7 +684,7 @@ cmd_status() {
 
   # Check AGENTS.md (universal)
   if [[ -f "$target_dir/AGENTS.md" ]]; then
-    if grep -q "Run \`/bootstrap\` to generate" "$target_dir/AGENTS.md" 2>/dev/null; then
+    if is_starter_template "$target_dir/AGENTS.md"; then
       print_success "AGENTS.md — starter (run /bootstrap to generate project config)"
     else
       print_success "AGENTS.md — project-specific"
@@ -598,7 +717,7 @@ cmd_status() {
 
   # Check CLAUDE.md
   if [[ -f "$target_dir/CLAUDE.md" ]]; then
-    if grep -q "Run \`/bootstrap\` to generate\|Run \`/architect\`" "$target_dir/CLAUDE.md" 2>/dev/null; then
+    if is_starter_template "$target_dir/CLAUDE.md"; then
       print_success "CLAUDE.md — starter"
       bootstrapped=false
     elif grep -q '\[DECLARED\]' "$target_dir/CLAUDE.md" 2>/dev/null; then

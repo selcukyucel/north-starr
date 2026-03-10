@@ -1,40 +1,39 @@
-# North Starr — Friction-Free Development
+# [Project Name]
 
-This project uses [North Starr](https://github.com/selcukyucel/north-starr) skills for Claude Code.
-
-## Getting Started
-
-Run `/architect` (new project) or `/bootstrap` (existing code) to generate project-specific configuration:
-- Root `CLAUDE.md` with architecture, grain, module map, and vocabulary
-- `.claude/rules/` with conventions scoped by file path
-- `.claude/agents/` with a project-tuned explorer agent
-
-## Available Skills
-
-- `/architect` — Define architecture for a new project (before code exists)
-- `/bootstrap` — Generate project configuration from existing code (run once)
-- `/invert` — Deep risk analysis before complex tasks
-- `/layoutplan` — Break complex tasks into persistent, trackable implementation plans
-- `/document` — Generate CLAUDE.md for a module
-- `/learn` — Update rules, agents, and CLAUDE.md from experience
+[One-sentence project description]
 
 <!-- [NORTH-STARR:how-to-approach-tasks] -->
 ## How to Approach Tasks
 
-**Before starting any task, assess its complexity:**
+**CRITICAL — BLOCKING REQUIREMENT: You MUST complete this checklist and show it to the user BEFORE using any code-modifying tool (Edit, Write, Agent with code changes). This is NOT optional. Skipping this step is a rule violation.**
 
-| Complexity | Signals | Action |
-|------------|---------|--------|
-| **Low** | Single file, straightforward change, well-understood area | Implement directly |
-| **Medium** | 3+ files, unfamiliar area, non-trivial logic, or integration points | Run `/invert` then `/layoutplan` automatically |
-| **High** | Wide blast radius, irreversible changes, unfamiliar domain, or critical system | Run `/invert` then `/layoutplan` automatically |
+**Step 1: Print this complexity assessment (mandatory output before ANY code change):**
 
-**For Medium and High complexity tasks — do this automatically, don't wait for the user to ask:**
-1. Run `/invert` — identify risks, edge cases, and failure modes
-2. Run `/layoutplan` — break the work into tracked tasks, using invert's risks as constraints
-3. Execute the plan with progress tracking and session notes
+```
+## Complexity Assessment
+| # | Question                                  | Answer      |
+|---|-------------------------------------------|-------------|
+| 1 | How many files will this change?           | [1-2 / 3+]  |
+| 2 | Am I creating new types or protocols?      | [No / Yes]  |
+| 3 | Is this module unfamiliar to me?           | [No / Yes]  |
+| 4 | Does this require cross-module integration?| [No / Yes]  |
 
-**Resuming work:** Always check `.plans/` for active implementation plans before starting new work. If an active plan exists, resume it instead of starting fresh.
+→ Complexity: [Low / Medium-High]
+→ Action: [State files / Run /invert → /layoutplan]
+```
+
+**Step 2: Follow the action:**
+
+- **If ANY answer is Medium/High** → Run `/invert` then `/layoutplan` BEFORE writing any code. Do not skip. Do not "just start coding."
+- **If ALL answers are Low** → State which files you'll change and wait for user confirmation before proceeding.
+
+**Step 3: Mid-implementation checkpoint:**
+
+If during implementation you discover more files are affected than initially estimated, STOP and run `/invert`.
+
+**REMINDER: Reading/exploring code is allowed before this checklist. The gate is on CODE CHANGES (Edit, Write), not on research (Read, Grep, Glob, Agent with research).**
+
+**Resuming work:** Always check `.plans/` for active implementation plans before starting new work.
 <!-- [/NORTH-STARR:how-to-approach-tasks] -->
 
 <!-- [NORTH-STARR:auto-learn] -->
@@ -57,3 +56,19 @@ Run `/architect` (new project) or `/bootstrap` (existing code) to generate proje
 3. Then run `/learn` to capture the insight as a pattern or landmine rule
 4. If a pattern or landmine already exists for this area, update it — do not create duplicates. Prompt the user when the update contradicts existing content.
 <!-- [/NORTH-STARR:auto-learn] -->
+
+## Tech Stack
+
+[List languages with versions, frameworks, key dependencies, build tools, package manager, test runner, CI/CD — be specific, not generic]
+
+## Architecture
+
+[Name the pattern (MVVM, Clean, etc.), topology (monolith, modular, etc.). List each layer with its responsibility and dependency direction. Include DI approach and state management strategy.]
+
+## Grain
+
+[What changes easily (e.g. adding a new feature screen) vs. what is hard (e.g. changing navigation pattern). State what to avoid going against and why.]
+
+## Module Map
+
+[List each top-level module with one-line purpose. Show key dependencies between modules. Note shared infrastructure.]

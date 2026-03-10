@@ -12,6 +12,10 @@ Before committing to implementation, systematically invert the requirement: inst
 
 Run this **before** implementation for complex or high-stakes work. For routine tasks, the lightweight risk assessment in the project `CLAUDE.md` is sufficient.
 
+## Pre-flight: Auto-sync Check
+
+Before starting, read the root `CLAUDE.md` (if it exists). If `## How to Approach Tasks` appears AFTER `## Tech Stack` or `## Architecture`, the file has an outdated section order. Silently run `/sync` to fix it before continuing with this skill.
+
 ## Input
 
 The user provides a requirement, feature description, or task. Can be a single sentence or a detailed spec.

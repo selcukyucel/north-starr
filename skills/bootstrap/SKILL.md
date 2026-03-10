@@ -40,6 +40,10 @@ Before generating any output, check for `.north-starr.json` in the project root:
 - `AGENTS.md` is always generated regardless of preferences (it's universal)
 - Valid targets: `"claude"`, `"copilot"`
 
+## Pre-flight: Auto-sync Check
+
+Before starting, read the root `CLAUDE.md` (if it exists and is not a starter template). If `## How to Approach Tasks` appears AFTER `## Tech Stack` or `## Architecture`, the file has an outdated section order. Silently run `/sync` to fix it before continuing with this skill.
+
 ## When to Use
 
 - First time working on an existing project with any AI coding tool
@@ -217,58 +221,42 @@ Write the project context to enabled target locations:
 - `AGENTS.md` — Universal (works with any AI tool) — always generated
 - `.github/copilot-instructions.md` — VS Code Copilot (auto-loaded) — generate if `copilot` target is enabled
 
-All context files get the same content:
+All context files get the same content. **Section order matters** — instructional sections (How to Approach Tasks, When to Learn) come FIRST so the AI tool sees them before project context:
 
 ```markdown
 # [Project Name]
 
 [One-sentence project description]
 
-## Tech Stack
-
-[List languages with versions, frameworks, key dependencies, build tools, package manager, test runner, CI/CD — be specific, not generic]
-
-## Architecture
-
-[Name the pattern (MVVM, Clean, etc.), topology (monolith, modular, etc.). List each layer with its responsibility and dependency direction. Include DI approach and state management strategy.]
-
-## Grain
-
-[What changes easily (e.g. adding a new feature screen) vs. what is hard (e.g. changing navigation pattern). State what to avoid going against and why.]
-
-## Module Map
-
-[List each top-level module with one-line purpose. Show key dependencies between modules. Note shared infrastructure.]
-
-## Key Patterns
-
-[Summarize all discovered patterns from Step 3. For each: name, one-line description, which modules use it. Reference the corresponding pattern rule file for full details.]
-
-## Known Landmines
-
-[Summarize all danger zones from Step 4. For each: name, severity (CRITICAL/HIGH/MEDIUM/LOW), one-line description. Reference the corresponding landmine rule file for full details.]
-
-## Vocabulary
-
-[Terms with project-specific meanings. Format: "Term — definition". Only genuinely ambiguous terms.]
-
 <!-- [NORTH-STARR:how-to-approach-tasks] -->
 ## How to Approach Tasks
 
-**Before starting any task, assess its complexity:**
+**CRITICAL — BLOCKING REQUIREMENT: You MUST complete this checklist and show it to the user BEFORE using any code-modifying tool (Edit, Write, Agent with code changes). This is NOT optional. Skipping this step is a rule violation.**
 
-| Complexity | Signals | Action |
-|------------|---------|--------|
-| **Low** | Single file, straightforward change, well-understood area | Implement directly |
-| **Medium** | 3+ files, unfamiliar area, non-trivial logic, or integration points | Run `/invert` then `/layoutplan` automatically |
-| **High** | Wide blast radius, irreversible changes, unfamiliar domain, or critical system | Run `/invert` then `/layoutplan` automatically |
+**Step 1: Print this complexity assessment (mandatory output before ANY code change):**
 
-**For Medium and High complexity tasks — do this automatically, don't wait for the user to ask:**
-1. Run `/invert` — identify risks, edge cases, and failure modes
-2. Run `/layoutplan` — break the work into tracked tasks, using invert's risks as constraints
-3. Execute the plan with progress tracking and session notes
+| # | Question                                  | Answer      |
+|---|-------------------------------------------|-------------|
+| 1 | How many files will this change?           | [1-2 / 3+]  |
+| 2 | Am I creating new types or protocols?      | [No / Yes]  |
+| 3 | Is this module unfamiliar to me?           | [No / Yes]  |
+| 4 | Does this require cross-module integration?| [No / Yes]  |
 
-**Resuming work:** Always check `.plans/` for active implementation plans before starting new work. If an active plan exists, resume it instead of starting fresh.
+→ Complexity: [Low / Medium-High]
+→ Action: [State files / Run /invert → /layoutplan]
+
+**Step 2: Follow the action:**
+
+- **If ANY answer is Medium/High** → Run `/invert` then `/layoutplan` BEFORE writing any code. Do not skip. Do not "just start coding."
+- **If ALL answers are Low** → State which files you'll change and wait for user confirmation before proceeding.
+
+**Step 3: Mid-implementation checkpoint:**
+
+If during implementation you discover more files are affected than initially estimated, STOP and run `/invert`.
+
+**REMINDER: Reading/exploring code is allowed before this checklist. The gate is on CODE CHANGES (Edit, Write), not on research (Read, Grep, Glob, Agent with research).**
+
+**Resuming work:** Always check `.plans/` for active implementation plans before starting new work.
 <!-- [/NORTH-STARR:how-to-approach-tasks] -->
 
 <!-- [NORTH-STARR:auto-learn] -->
@@ -291,6 +279,22 @@ All context files get the same content:
 3. Then run `/learn` to capture the insight as a pattern or landmine rule
 4. If a pattern or landmine already exists for this area, update it — do not create duplicates. Prompt the user when the update contradicts existing content.
 <!-- [/NORTH-STARR:auto-learn] -->
+
+## Tech Stack
+
+[List languages with versions, frameworks, key dependencies, build tools, package manager, test runner, CI/CD — be specific, not generic]
+
+## Architecture
+
+[Name the pattern (MVVM, Clean, etc.), topology (monolith, modular, etc.). List each layer with its responsibility and dependency direction. Include DI approach and state management strategy.]
+
+## Grain
+
+[What changes easily (e.g. adding a new feature screen) vs. what is hard (e.g. changing navigation pattern). State what to avoid going against and why.]
+
+## Module Map
+
+[List each top-level module with one-line purpose. Show key dependencies between modules. Note shared infrastructure.]
 ```
 
 If any of these files already exist with project-specific content, merge rather than overwrite.

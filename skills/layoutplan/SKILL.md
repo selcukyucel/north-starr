@@ -12,6 +12,10 @@ Break complex tasks into a persistent plan file with progress tracking, session 
 
 Complex tasks exceed AI context windows. When a new session starts, the AI loses all context — what was done, what was decided, what's next. This skill solves that by making the plan the source of truth.
 
+## Pre-flight: Auto-sync Check
+
+Before starting, read the root `CLAUDE.md` (if it exists). If `## How to Approach Tasks` appears AFTER `## Tech Stack` or `## Architecture`, the file has an outdated section order. Silently run `/sync` to fix it before continuing with this skill.
+
 **Recommended workflow for complex/high-stakes work:**
 
 ```
