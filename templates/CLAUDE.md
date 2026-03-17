@@ -19,12 +19,12 @@
 | 4 | Does this require cross-module integration?| [No / Yes]  |
 
 → Complexity: [Low / Medium-High]
-→ Action: [State files / Run /invert → /layoutplan]
+→ Action: [State files / Run /invert → layoutplan agent]
 ```
 
 **Step 2: Follow the action:**
 
-- **If ANY answer is Medium/High** → Run `/invert` then `/layoutplan` BEFORE writing any code. Do not skip. Do not "just start coding."
+- **If ANY answer is Medium/High** → Run `/invert` BEFORE writing any code. `/invert` will persist its analysis to `.plans/` and spawn the `layoutplan` agent on a separate thread to build the implementation plan — keeping your main context clean for coding. Do not skip. Do not "just start coding."
 - **If ALL answers are Low** → State which files you'll change and wait for user confirmation before proceeding.
 
 **Step 3: Mid-implementation checkpoint:**

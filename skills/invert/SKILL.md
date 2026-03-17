@@ -115,6 +115,58 @@ Present the analysis:
 - [what to monitor]
 ```
 
+### Step 5: Persist to Disk
+
+After presenting the analysis to the user (and incorporating any feedback), write it to disk so downstream agents can consume it without context loss.
+
+**Actions:**
+1. Create `.plans/` directory if it doesn't exist
+2. Generate a short kebab-case name from the requirement (e.g., `auth-refactor`, `api-pagination`)
+3. Write the full analysis to `.plans/INVERT-<name>.md` using this format:
+
+```markdown
+# Inversion Analysis: <requirement summary>
+
+**Created:** <date>
+**Overall Risk:** <LOW / MEDIUM / HIGH>
+**Modules Affected:** <list>
+**Against the Grain?** <yes/no — why>
+
+## Risks
+
+1. **<risk name>** — [severity]
+   <description>
+
+[...all risks]
+
+## Edge Cases to Handle
+
+- <case>: <what should happen>
+
+## Recommendations
+
+**Before implementing:**
+- <items>
+
+**During implementation:**
+- <items>
+
+**After implementing:**
+- <items>
+```
+
+4. Inform the user: "Analysis saved to `.plans/INVERT-<name>.md`"
+
+### Step 6: Trigger Planning
+
+If the overall risk is MEDIUM or HIGH, prompt the user:
+
+> "Risk is [MEDIUM/HIGH]. I'll spawn the layoutplan agent to build an implementation plan from this analysis. It runs on a separate thread so your main context stays clean."
+
+Then spawn the `layoutplan` agent (if available in `.claude/agents/`). If the agent is not available, fall back to running `/layoutplan` as a skill in the main context.
+
+For LOW risk, inform the user that `/layoutplan` is available if they want structured planning, but it's optional.
+
 ## Notes
 
 - This skill is language-agnostic — it works for any project type

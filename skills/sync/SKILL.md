@@ -86,7 +86,19 @@ After syncing content, check if managed sections appear AFTER project context he
 
 If sections are already in the correct order, skip this step.
 
-### Step 4: Present Summary
+### Step 4: Sync Agents
+
+Check if the North Starr plugin includes agent templates (look for agent `.md` files in the plugin's `templates/claude/agents/` directory).
+
+**Actions:**
+1. For each agent template found:
+   - If `.claude/agents/` doesn't exist in the project, create it
+   - Copy or overwrite the agent file into `.claude/agents/` — agents are managed by North Starr and always updated to the latest version
+2. Report which agents were added or updated
+
+This ensures projects get new agents (like `layoutplan`) without needing to re-run `/bootstrap`.
+
+### Step 5: Present Summary
 
 ```
 ## Sync Complete
@@ -94,6 +106,9 @@ If sections are already in the correct order, skip this step.
 **Files updated:**
 - CLAUDE.md — [added: section-name, section-name] [updated: section-name] [skipped: section-name (no markers)]
 - AGENTS.md — [added: section-name, section-name] [updated: section-name] [skipped: section-name (no markers)]
+
+**Agents:**
+- .claude/agents/layoutplan.md — [added / updated / already current]
 
 **No changes needed:**
 - [file] — all managed sections are up to date
@@ -125,12 +140,12 @@ These are the managed sections that `/sync` injects. Each section below is the *
 | 4 | Does this require cross-module integration?| [No / Yes]  |
 
 → Complexity: [Low / Medium-High]
-→ Action: [State files / Run /invert → /layoutplan]
+→ Action: [State files / Run /invert → layoutplan agent]
 ```
 
 **Step 2: Follow the action:**
 
-- **If ANY answer is Medium/High** → Run `/invert` then `/layoutplan` BEFORE writing any code. Do not skip. Do not "just start coding."
+- **If ANY answer is Medium/High** → Run `/invert` BEFORE writing any code. `/invert` will persist its analysis to `.plans/` and spawn the `layoutplan` agent on a separate thread to build the implementation plan — keeping your main context clean for coding. Do not skip. Do not "just start coding."
 - **If ALL answers are Low** → State which files you'll change and wait for user confirmation before proceeding.
 
 **Step 3: Mid-implementation checkpoint:**

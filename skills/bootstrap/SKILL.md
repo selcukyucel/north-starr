@@ -243,11 +243,11 @@ All context files get the same content. **Section order matters** — instructio
 | 4 | Does this require cross-module integration?| [No / Yes]  |
 
 → Complexity: [Low / Medium-High]
-→ Action: [State files / Run /invert → /layoutplan]
+→ Action: [State files / Run /invert → layoutplan agent]
 
 **Step 2: Follow the action:**
 
-- **If ANY answer is Medium/High** → Run `/invert` then `/layoutplan` BEFORE writing any code. Do not skip. Do not "just start coding."
+- **If ANY answer is Medium/High** → Run `/invert` BEFORE writing any code. `/invert` will persist its analysis to `.plans/` and spawn the `layoutplan` agent on a separate thread to build the implementation plan — keeping your main context clean for coding. Do not skip. Do not "just start coding."
 - **If ALL answers are Low** → State which files you'll change and wait for user confirmation before proceeding.
 
 **Step 3: Mid-implementation checkpoint:**
@@ -426,12 +426,16 @@ tools: codebase
 ---
 ```
 
-The agent prompt should include:
+The explorer agent prompt should include:
 - The discovered architecture and grain
 - Key modules and their relationships
 - Known danger zones to watch for
 
-Generate additional agents only if the project clearly warrants them. Default to one.
+**Layoutplan agent** (always generate for `claude` target):
+
+Copy the layoutplan agent template from North Starr's `templates/claude/agents/layoutplan.md` into the project's `.claude/agents/layoutplan.md`. This agent is spawned by `/invert` to build implementation plans on a separate thread, keeping the main context clean for coding.
+
+Generate additional project-specific agents only if the project clearly warrants them. Default to the explorer + layoutplan agents.
 
 ## Post-Bootstrap Checklist
 
@@ -443,7 +447,8 @@ Generate additional agents only if the project clearly warrants them. Default to
 - [ ] Pattern rules in enabled tool formats — aim for 15-40 depending on project complexity
 - [ ] Landmine rules in enabled tool formats — aim for 5-15 depending on project maturity
 - [ ] `_TEMPLATE.md` in each enabled tool's rules directory for future contributions
-- [ ] At least one project-tuned agent per enabled tool that supports agents
+- [ ] `layoutplan` agent in `.claude/agents/` (if `claude` target enabled)
+- [ ] At least one project-tuned explorer agent per enabled tool that supports agents
 
 ## Output Summary
 

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-VERSION="2.4.1"
+VERSION="2.5.0"
 NORTH_STARR_HOME="${NORTH_STARR_HOME:-}"
 
 # Resolve where templates live
@@ -519,6 +519,18 @@ cmd_init() {
     print_success "CLAUDE.md — Claude Code starter instructions"
   fi
 
+  # Copy agents to .claude/agents/ (Claude Code)
+  if has_target "claude" && [[ -d "$template_dir/claude/agents" ]]; then
+    mkdir -p "$target_dir/.claude/agents"
+    for agent_file in "$template_dir/claude/agents/"*.md; do
+      [[ -f "$agent_file" ]] || continue
+      local agent_name
+      agent_name="$(basename "$agent_file")"
+      cp "$agent_file" "$target_dir/.claude/agents/$agent_name"
+    done
+    print_success ".claude/agents/ — Claude Code agents (layoutplan)"
+  fi
+
   # Migrate from v1.x: clean up old .ai/ structure if user confirms
   if [[ -d "$target_dir/.ai" ]]; then
     echo ""
@@ -643,6 +655,29 @@ cmd_update() {
       # Customized — update managed sections and fix ordering
       inject_managed_sections "$target_dir/CLAUDE.md" "$template_dir/CLAUDE.md"
       reorder_managed_sections "$target_dir/CLAUDE.md" "$template_dir/CLAUDE.md"
+    fi
+  fi
+
+  # Update agents in .claude/agents/ (add new ones, preserve existing)
+  if has_target "claude" && [[ -d "$template_dir/claude/agents" ]]; then
+    mkdir -p "$target_dir/.claude/agents"
+    local agents_updated=0
+    for agent_file in "$template_dir/claude/agents/"*.md; do
+      [[ -f "$agent_file" ]] || continue
+      local agent_name
+      agent_name="$(basename "$agent_file")"
+      if [[ ! -f "$target_dir/.claude/agents/$agent_name" ]]; then
+        cp "$agent_file" "$target_dir/.claude/agents/$agent_name"
+        agents_updated=$((agents_updated + 1))
+        print_success "Added .claude/agents/$agent_name"
+      else
+        # Overwrite with latest version — agents are managed by North Starr
+        cp "$agent_file" "$target_dir/.claude/agents/$agent_name"
+        agents_updated=$((agents_updated + 1))
+      fi
+    done
+    if [[ $agents_updated -gt 0 ]]; then
+      print_success "Updated .claude/agents/ ($agents_updated agent(s))"
     fi
   fi
 
