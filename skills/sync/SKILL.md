@@ -88,13 +88,18 @@ If sections are already in the correct order, skip this step.
 
 ### Step 4: Sync Agents
 
-Check if the North Starr plugin includes agent templates (look for agent `.md` files in the plugin's `templates/claude/agents/` directory).
+Check if the North Starr plugin includes agent templates. Look for agent files in both:
+- `templates/claude/agents/*.md` — Claude Code agents
+- `templates/github/agents/*.agent.md` — VS Code Copilot agents
 
 **Actions:**
-1. For each agent template found:
-   - If `.claude/agents/` doesn't exist in the project, create it
-   - Copy or overwrite the agent file into `.claude/agents/` — agents are managed by North Starr and always updated to the latest version
-2. Report which agents were added or updated
+1. Read `.north-starr.json` to determine which tool targets are enabled
+2. For each enabled target with agent templates:
+   - **Claude Code** (`claude` target): Copy agent files to `.claude/agents/`
+   - **VS Code Copilot** (`copilot` target): Copy agent files to `.github/agents/`
+   - Create the agents directory if it doesn't exist
+   - Overwrite existing agent files — agents are managed by North Starr and always updated to the latest version
+3. Report which agents were added or updated per target
 
 This ensures projects get new agents (like `layoutplan`) without needing to re-run `/bootstrap`.
 
@@ -108,7 +113,8 @@ This ensures projects get new agents (like `layoutplan`) without needing to re-r
 - AGENTS.md — [added: section-name, section-name] [updated: section-name] [skipped: section-name (no markers)]
 
 **Agents:**
-- .claude/agents/layoutplan.md — [added / updated / already current]
+- .claude/agents/layoutplan.md — [added / updated / already current]  ← if claude target
+- .github/agents/layoutplan.agent.md — [added / updated / already current]  ← if copilot target
 
 **No changes needed:**
 - [file] — all managed sections are up to date

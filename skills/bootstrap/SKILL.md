@@ -431,9 +431,12 @@ The explorer agent prompt should include:
 - Key modules and their relationships
 - Known danger zones to watch for
 
-**Layoutplan agent** (always generate for `claude` target):
+**Layoutplan agent** (generate for all enabled targets):
 
-Copy the layoutplan agent template from North Starr's `templates/claude/agents/layoutplan.md` into the project's `.claude/agents/layoutplan.md`. This agent is spawned by `/invert` to build implementation plans on a separate thread, keeping the main context clean for coding.
+Copy the layoutplan agent template into the project's agent directory for each enabled target. This agent is spawned by `/invert` to build implementation plans on a separate thread, keeping the main context clean for coding.
+
+- **Claude Code** — copy from `templates/claude/agents/layoutplan.md` → `.claude/agents/layoutplan.md`
+- **VS Code Copilot** — copy from `templates/github/agents/layoutplan.agent.md` → `.github/agents/layoutplan.agent.md`
 
 Generate additional project-specific agents only if the project clearly warrants them. Default to the explorer + layoutplan agents.
 
@@ -447,7 +450,7 @@ Generate additional project-specific agents only if the project clearly warrants
 - [ ] Pattern rules in enabled tool formats — aim for 15-40 depending on project complexity
 - [ ] Landmine rules in enabled tool formats — aim for 5-15 depending on project maturity
 - [ ] `_TEMPLATE.md` in each enabled tool's rules directory for future contributions
-- [ ] `layoutplan` agent in `.claude/agents/` (if `claude` target enabled)
+- [ ] `layoutplan` agent in `.claude/agents/` (if `claude` target enabled) and/or `.github/agents/` (if `copilot` target enabled)
 - [ ] At least one project-tuned explorer agent per enabled tool that supports agents
 
 ## Output Summary
