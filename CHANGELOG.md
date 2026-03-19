@@ -1,5 +1,14 @@
 # Changelog
 
+## v3.0.1 (2026-03-19)
+
+### Build/Test Command Detection
+
+- **Simplified agents**: Removed bloated fallback detection tables from build and test agents. Agents now only read from `.north-starr.json` — no runtime detection.
+- **CLI detection**: `north-starr update` now auto-detects build and test commands from project config files and prompts to save them to `.north-starr.json`.
+- **Sync detection**: `/sync` now detects missing build/test commands and offers to configure them (Step 3.5).
+- Detection logic is centralized: `/bootstrap` detects during initial setup, `north-starr update` and `/sync` detect during upgrades.
+
 ## v3.0.0 (2026-03-19)
 
 ### TDD Workflow

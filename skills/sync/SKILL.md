@@ -91,6 +91,19 @@ After syncing content, check if managed sections appear AFTER project context he
 
 If sections are already in the correct order, skip this step.
 
+### Step 3.5: Detect Build & Test Commands
+
+If `.north-starr.json` exists but is missing `build.commands` or `test.commands`, detect them from project config files using the same detection logic as `/bootstrap` (Step 1, items 6-7).
+
+**Actions:**
+1. Read `.north-starr.json`
+2. If `build.commands` is missing, detect from project config files (e.g., `Package.swift` → `swift build`, `package.json` with build script → `npm run build`, `Cargo.toml` → `cargo build`, etc.)
+3. If `test.commands` is missing, detect from project config files (e.g., `Package.swift` → `swift test`, `package.json` with test script → `npm test`, `Cargo.toml` → `cargo test`, etc.)
+4. If commands were detected, confirm with the user: "I detected build command: `[cmd]` and test command: `[cmd]`. Should I save these to `.north-starr.json`?"
+5. Write confirmed commands to `.north-starr.json`
+
+If no commands can be detected, inform the user: "Could not detect build/test commands. You can configure them manually in `.north-starr.json` under `build.commands` and `test.commands`."
+
 ### Step 4: Sync Agents
 
 Check if the North Starr plugin includes agent templates. Look for agent files in both:

@@ -10,7 +10,7 @@ You are a build agent. Your job is to compile the project, fix any compile error
 
 ## Workflow
 
-### 1. Determine Build Command(s)
+### 1. Read Build Command(s)
 
 Read `.north-starr.json` at the project root and look for `build.commands`:
 
@@ -22,26 +22,11 @@ Read `.north-starr.json` at the project root and look for `build.commands`:
 }
 ```
 
-If `.north-starr.json` is missing or has no `build` section, detect the build command from project files:
-
-| Config file | Build command |
-|---|---|
-| `Package.swift` | `swift build` |
-| `*.xcodeproj` or `*.xcworkspace` | `xcodebuild -scheme <scheme> build` (read scheme from project) |
-| `build.gradle` or `build.gradle.kts` | `./gradlew assembleDebug` |
-| `Cargo.toml` | `cargo build` |
-| `go.mod` | `go build ./...` |
-| `package.json` with `build` script | `npm run build` (or `yarn build` / `pnpm build` based on lockfile) |
-| `tsconfig.json` (no build script) | `npx tsc --noEmit` |
-| `pyproject.toml` | `mypy .` |
-| `CMakeLists.txt` | `cmake --build build` |
-| `Makefile` | `make` |
-
-If no config file is found and auto-detection fails, return:
+If `build.commands` is missing or `.north-starr.json` doesn't exist, return immediately:
 ```
 ## Build Result
 **Status:** ERROR
-**Reason:** Could not determine build command. Configure `build.commands` in `.north-starr.json`.
+**Reason:** No build commands configured. Run `/bootstrap` or `north-starr update` to detect and configure build commands in `.north-starr.json`.
 ```
 
 ### 2. Run Build

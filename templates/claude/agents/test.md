@@ -32,7 +32,7 @@ When in doubt, **report** rather than fix. A wrong auto-fix is worse than surfac
 
 ## Workflow
 
-### 1. Determine Test Command(s)
+### 1. Read Test Command(s)
 
 Read `.north-starr.json` at the project root and look for `test.commands`:
 
@@ -44,27 +44,11 @@ Read `.north-starr.json` at the project root and look for `test.commands`:
 }
 ```
 
-If `.north-starr.json` is missing or has no `test` section, detect the test command from project files:
-
-| Config file | Test command |
-|---|---|
-| `Package.swift` | `swift test` |
-| `*.xcodeproj` or `*.xcworkspace` | `xcodebuild test -scheme <scheme> -destination 'platform=iOS Simulator,name=iPhone 16,OS=latest'` (read scheme from project) |
-| `build.gradle` or `build.gradle.kts` | `./gradlew test` |
-| `Cargo.toml` | `cargo test` |
-| `go.mod` | `go test ./...` |
-| `package.json` with `test` script | `npm test` (or `yarn test` / `pnpm test` based on lockfile) |
-| `vitest.config.*` | `npx vitest run` |
-| `jest.config.*` | `npx jest` |
-| `pyproject.toml` or `pytest.ini` | `pytest` |
-| `setup.py` or `setup.cfg` | `python -m pytest` |
-| `Makefile` with `test` target | `make test` |
-
-If no config file is found and auto-detection fails, return:
+If `test.commands` is missing or `.north-starr.json` doesn't exist, return immediately:
 ```
 ## Test Result
 **Status:** ERROR
-**Reason:** Could not determine test command. Configure `test.commands` in `.north-starr.json`.
+**Reason:** No test commands configured. Run `/bootstrap` or `north-starr update` to detect and configure test commands in `.north-starr.json`.
 ```
 
 ### 1.5. Check if Tests Exist

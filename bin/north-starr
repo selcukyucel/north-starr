@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-VERSION="3.0.0"
+VERSION="3.0.1"
 NORTH_STARR_HOME="${NORTH_STARR_HOME:-}"
 
 # Resolve where templates live
@@ -154,6 +154,66 @@ write_preferences() {
   "targets": [$json_targets]${build_section}
 }
 EOF
+}
+
+# Detect build command from project config files
+detect_build_command() {
+  local dir="$1"
+  if [[ -f "$dir/Package.swift" ]]; then echo "swift build"
+  elif ls "$dir/"*.xcodeproj &>/dev/null 2>&1 || ls "$dir/"*.xcworkspace &>/dev/null 2>&1; then echo "xcodebuild build"
+  elif [[ -f "$dir/build.gradle" || -f "$dir/build.gradle.kts" ]]; then echo "./gradlew assembleDebug"
+  elif [[ -f "$dir/Cargo.toml" ]]; then echo "cargo build"
+  elif [[ -f "$dir/go.mod" ]]; then echo "go build ./..."
+  elif [[ -f "$dir/package.json" ]] && grep -q '"build"' "$dir/package.json" 2>/dev/null; then
+    if [[ -f "$dir/yarn.lock" ]]; then echo "yarn build"
+    elif [[ -f "$dir/pnpm-lock.yaml" ]]; then echo "pnpm build"
+    else echo "npm run build"
+    fi
+  elif [[ -f "$dir/tsconfig.json" ]]; then echo "npx tsc --noEmit"
+  elif [[ -f "$dir/CMakeLists.txt" ]]; then echo "cmake --build build"
+  elif [[ -f "$dir/Makefile" ]]; then echo "make"
+  fi
+}
+
+# Detect test command from project config files
+detect_test_command() {
+  local dir="$1"
+  if [[ -f "$dir/Package.swift" ]]; then echo "swift test"
+  elif ls "$dir/"*.xcodeproj &>/dev/null 2>&1 || ls "$dir/"*.xcworkspace &>/dev/null 2>&1; then echo "xcodebuild test"
+  elif [[ -f "$dir/build.gradle" || -f "$dir/build.gradle.kts" ]]; then echo "./gradlew test"
+  elif [[ -f "$dir/Cargo.toml" ]]; then echo "cargo test"
+  elif [[ -f "$dir/go.mod" ]]; then echo "go test ./..."
+  elif [[ -f "$dir/package.json" ]] && grep -q '"test"' "$dir/package.json" 2>/dev/null; then
+    if [[ -f "$dir/yarn.lock" ]]; then echo "yarn test"
+    elif [[ -f "$dir/pnpm-lock.yaml" ]]; then echo "pnpm test"
+    else echo "npm test"
+    fi
+  elif [[ -f "$dir/Makefile" ]] && grep -q '^test:' "$dir/Makefile" 2>/dev/null; then echo "make test"
+  fi
+}
+
+# Add build/test commands to existing .north-starr.json
+add_build_test_config() {
+  local prefs_path="$1"
+  local build_cmd="${2:-}"
+  local test_cmd="${3:-}"
+
+  [[ -f "$prefs_path" ]] || return
+
+  local content
+  content="$(cat "$prefs_path")"
+
+  # Add build config if provided and not already present
+  if [[ -n "$build_cmd" ]] && ! grep -q '"build"' "$prefs_path" 2>/dev/null; then
+    content="$(echo "$content" | sed 's/}$/,\n  "build": {\n    "commands": ["'"$build_cmd"'"]\n  }\n}/')"
+  fi
+
+  # Add test config if provided and not already present
+  if [[ -n "$test_cmd" ]] && ! grep -q '"test"' "$prefs_path" 2>/dev/null; then
+    content="$(echo "$content" | sed 's/}$/,\n  "test": {\n    "commands": ["'"$test_cmd"'"]\n  }\n}/')"
+  fi
+
+  echo "$content" > "$prefs_path"
 }
 
 # Check if a target is enabled
@@ -733,6 +793,43 @@ cmd_update() {
       print_success "Removed .claude/skills/$old_skill (replaced in v2)"
     fi
   done
+
+  # Detect build/test commands if not configured
+  local prefs_path="$target_dir/$PREFS_FILE"
+  if [[ -f "$prefs_path" ]]; then
+    local needs_build=false
+    local needs_test=false
+    grep -q '"build"' "$prefs_path" 2>/dev/null || needs_build=true
+    grep -q '"test"' "$prefs_path" 2>/dev/null || needs_test=true
+
+    if [[ "$needs_build" == true || "$needs_test" == true ]]; then
+      echo ""
+      local detected_build=""
+      local detected_test=""
+
+      if [[ "$needs_build" == true ]]; then
+        detected_build="$(detect_build_command "$target_dir")"
+      fi
+      if [[ "$needs_test" == true ]]; then
+        detected_test="$(detect_test_command "$target_dir")"
+      fi
+
+      if [[ -n "$detected_build" || -n "$detected_test" ]]; then
+        echo -e "  ${BOLD}Detected commands:${NC}"
+        [[ -n "$detected_build" ]] && echo -e "    Build: ${CYAN}${detected_build}${NC}"
+        [[ -n "$detected_test" ]] && echo -e "    Test:  ${CYAN}${detected_test}${NC}"
+        echo ""
+        echo -n "  Save to .north-starr.json? [Y/n] "
+        read -r answer
+        if [[ "$answer" != "n" && "$answer" != "N" ]]; then
+          add_build_test_config "$prefs_path" "$detected_build" "$detected_test"
+          print_success "Build/test commands saved to $PREFS_FILE"
+        fi
+      elif [[ "$needs_build" == true || "$needs_test" == true ]]; then
+        echo -e "  ${DIM}Could not detect build/test commands. Configure manually in .north-starr.json.${NC}"
+      fi
+    fi
+  fi
 
   echo ""
   echo -e "${GREEN}${BOLD}  Done!${NC} Skills updated to v${VERSION}."
