@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-VERSION="2.5.1"
+VERSION="3.0.0"
 NORTH_STARR_HOME="${NORTH_STARR_HOME:-}"
 
 # Resolve where templates live
@@ -131,10 +131,27 @@ write_preferences() {
     json_targets+="\"${targets[$i]}\""
   done
 
+  # Preserve existing build config if present
+  local build_section=""
+  if [[ -f "$prefs_path" ]]; then
+    local existing_build
+    existing_build=$(grep -o '"build"[[:space:]]*:[[:space:]]*{[^}]*}' "$prefs_path" 2>/dev/null || true)
+    if [[ -n "$existing_build" ]]; then
+      build_section=",
+  $existing_build"
+    fi
+    local existing_test
+    existing_test=$(grep -o '"test"[[:space:]]*:[[:space:]]*{[^}]*}' "$prefs_path" 2>/dev/null || true)
+    if [[ -n "$existing_test" ]]; then
+      build_section="$build_section,
+  $existing_test"
+    fi
+  fi
+
   cat > "$prefs_path" << EOF
 {
   "version": 1,
-  "targets": [$json_targets]
+  "targets": [$json_targets]${build_section}
 }
 EOF
 }
@@ -528,7 +545,7 @@ cmd_init() {
       agent_name="$(basename "$agent_file")"
       cp "$agent_file" "$target_dir/.claude/agents/$agent_name"
     done
-    print_success ".claude/agents/ — Claude Code agents (layoutplan)"
+    print_success ".claude/agents/ — Claude Code agents (layoutplan, build, test)"
   fi
 
   # Copy agents to .github/agents/ (VS Code Copilot)
@@ -540,7 +557,7 @@ cmd_init() {
       agent_name="$(basename "$agent_file")"
       cp "$agent_file" "$target_dir/.github/agents/$agent_name"
     done
-    print_success ".github/agents/ — VS Code Copilot agents (layoutplan)"
+    print_success ".github/agents/ — VS Code Copilot agents (layoutplan, build, test)"
   fi
 
   # Migrate from v1.x: clean up old .ai/ structure if user confirms

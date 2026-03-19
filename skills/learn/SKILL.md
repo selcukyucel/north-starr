@@ -215,9 +215,9 @@ When a convention, constraint, or danger was discovered, create in each enabled 
 
 The rule body is the same across tools — only the frontmatter differs. Choose the appropriate structure:
 
-**Pattern Rules** — for conventions and reusable approaches. Follow the **full pattern template** from `skills/_references/patterns/_TEMPLATE.md`. Include: Category, When to Use / Not Good For, Problem It Solves, The Pattern (step-by-step with code), Best Practices, Common Mistakes (wrong/fix code), Variations, Related.
+**Pattern Rules** — for conventions and reusable approaches. Follow the **full pattern template** from `skills/_references/patterns/_TEMPLATE.md`. Include: Category, **Virtues** (which of the 7 Code Virtues this pattern serves — see `skills/_references/virtues/code-virtues.md`), When to Use / Not Good For, Problem It Solves, The Pattern (step-by-step with code), Best Practices, Common Mistakes (wrong/fix code), Variations, Related.
 
-**Landmine Rules** — for danger zones and known traps. Follow the **full landmine template** from `skills/_references/landmines/_TEMPLATE.md`. Include: Severity, Category, Quick Summary, Symptoms, Root Cause, The Trap, Safe Approach (Don't/Do with code), Validation, Prevention, Related.
+**Landmine Rules** — for danger zones and known traps. Follow the **full landmine template** from `skills/_references/landmines/_TEMPLATE.md`. Include: Severity, **Threatens** (which of the 7 Code Virtues this landmine endangers), Category, Quick Summary, Symptoms, Root Cause, The Trap, Safe Approach (Don't/Do with code), Validation, Prevention, Related.
 
 **Guidelines:**
 - Scope the glob as narrowly as possible
@@ -276,6 +276,8 @@ This keeps the configuration clean over time without losing guidance for code th
 
 **Task:** [what was completed]
 **Trigger:** [manual | auto: user correction | auto: repeated fix | auto: change broke something | auto: rejected code | auto: undocumented convention | auto: undocumented trap]
+
+**Virtue(s) Protected:** [which of the 7 Code Virtues this learning protects — Working / Unique / Simple / Clear / Easy / Developed / Brief]
 
 **Created:**
 - [artifact type]: [file path] — [what was created]

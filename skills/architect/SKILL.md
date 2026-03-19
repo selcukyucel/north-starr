@@ -148,6 +148,7 @@ All context files get the same content. **Section order matters** — instructio
 
 | # | Question                                  | Answer      |
 |---|-------------------------------------------|-------------|
+| 0 | Is current behavior covered by tests?      | [Yes / No]  |
 | 1 | How many files will this change?           | [1-2 / 3+]  |
 | 2 | Am I creating new types or protocols?      | [No / Yes]  |
 | 3 | Is this module unfamiliar to me?           | [No / Yes]  |
@@ -158,12 +159,33 @@ All context files get the same content. **Section order matters** — instructio
 
 **Step 2: Follow the action:**
 
+- **If Q0 is No** → Write tests for current behavior FIRST. The Working virtue (highest priority) must be preserved before any change.
 - **If ANY answer is Medium/High** → Run `/invert` BEFORE writing any code. `/invert` will persist its analysis to `.plans/` and spawn the `layoutplan` agent on a separate thread to build the implementation plan — keeping your main context clean for coding. Do not skip. Do not "just start coding."
 - **If ALL answers are Low** → State which files you'll change and wait for user confirmation before proceeding.
 
-**Step 3: Mid-implementation checkpoint:**
+**Step 3: Write failing tests first (RED):**
 
+Before writing implementation code, write tests that describe the expected new behavior.
+These tests SHOULD FAIL — they define what "done" looks like.
+Use edge cases and failure modes from the `/invert` analysis if available.
+Skip this step only for: config-only changes, documentation, CI/build scripts, or trivial one-line fixes.
+
+**Step 4: Write code to pass tests (GREEN):**
+
+Write the minimum implementation to make the failing tests pass.
 If during implementation you discover more files are affected than initially estimated, STOP and run `/invert`.
+
+**Step 5: Post-implementation build check:**
+
+After completing code changes, spawn the `build` agent to verify the project compiles.
+The build agent runs on a separate thread — keeping error output out of your main context.
+If the build agent reports failures it cannot fix, address the remaining errors before continuing.
+
+**Step 6: Post-implementation test check:**
+
+After the build passes, spawn the `test` agent to run the full test suite.
+The test agent fixes mechanical breakage (missing imports, renamed methods) automatically.
+Logic/behavior failures are reported back with analysis — you decide whether the test or the code is wrong.
 
 **REMINDER: Reading/exploring code is allowed before this checklist. The gate is on CODE CHANGES (Edit, Write), not on research (Read, Grep, Glob, Agent with research).**
 

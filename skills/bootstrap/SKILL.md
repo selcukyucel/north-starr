@@ -39,6 +39,19 @@ Before generating any output, check for `.north-starr.json` in the project root:
 - If the file is missing, ask the user which tools they use, save their answer to `.north-starr.json`, then generate only for those targets
 - `AGENTS.md` is always generated regardless of preferences (it's universal)
 - Valid targets: `"claude"`, `"copilot"`
+- After confirming build and test commands in Step 1, write them to `.north-starr.json`:
+  ```json
+  {
+    "version": 1,
+    "targets": ["claude", "copilot"],
+    "build": {
+      "commands": ["npm run build"]
+    },
+    "test": {
+      "commands": ["npm test"]
+    }
+  }
+  ```
 
 ## Pre-flight: Auto-sync Check
 
@@ -78,8 +91,43 @@ Generated rules must carry enough depth to be genuinely useful. Use two content 
 3. Identify entry points (main files, app delegates, index files, server entry points)
 4. Check for existing documentation (README, docs/, inline doc comments)
 5. Note the build system, test runner, and deployment mechanism
+6. Detect the build command(s) from project config files:
 
-**Output:** Mental model of project structure. No files written yet.
+| Config file found | Build command |
+|---|---|
+| `Package.swift` | `swift build` |
+| `*.xcodeproj` / `*.xcworkspace` | `xcodebuild -scheme <scheme> -destination 'platform=iOS Simulator,name=iPhone 16,OS=latest' build` (ask user for scheme name) |
+| `build.gradle` / `build.gradle.kts` | `./gradlew assembleDebug` |
+| `Cargo.toml` | `cargo build` |
+| `go.mod` | `go build ./...` |
+| `package.json` with `build` script | `npm run build` / `yarn build` / `pnpm build` (based on lockfile) |
+| `tsconfig.json` (no build script) | `npx tsc --noEmit` |
+| `pyproject.toml` with mypy config | `mypy .` |
+| `CMakeLists.txt` | `cmake --build build` |
+| `Makefile` | `make` |
+
+When multiple config files exist (e.g., full-stack with `package.json` AND `build.gradle`), include all relevant build commands.
+
+Confirm with the user: "I detected the following build command(s): `[commands]`. Is this correct? You can change this later in `.north-starr.json`."
+
+7. Detect the test command(s) from project config files:
+
+| Config file found | Test command |
+|---|---|
+| `Package.swift` | `swift test` |
+| `*.xcodeproj` / `*.xcworkspace` | `xcodebuild test -scheme <scheme> -destination 'platform=iOS Simulator,name=iPhone 16,OS=latest'` (use same scheme as build) |
+| `build.gradle` / `build.gradle.kts` | `./gradlew test` |
+| `Cargo.toml` | `cargo test` |
+| `go.mod` | `go test ./...` |
+| `package.json` with `test` script | `npm test` / `yarn test` / `pnpm test` (based on lockfile) |
+| `vitest.config.*` | `npx vitest run` |
+| `jest.config.*` | `npx jest` |
+| `pyproject.toml` or `pytest.ini` | `pytest` |
+| `Makefile` with `test` target | `make test` |
+
+Confirm with the user: "I detected the following test command(s): `[commands]`. Is this correct?"
+
+**Output:** Mental model of project structure + confirmed build and test command(s). No files written yet.
 
 ### Step 1.5: Validate Declared Config (if present)
 
@@ -237,6 +285,7 @@ All context files get the same content. **Section order matters** — instructio
 
 | # | Question                                  | Answer      |
 |---|-------------------------------------------|-------------|
+| 0 | Is current behavior covered by tests?      | [Yes / No]  |
 | 1 | How many files will this change?           | [1-2 / 3+]  |
 | 2 | Am I creating new types or protocols?      | [No / Yes]  |
 | 3 | Is this module unfamiliar to me?           | [No / Yes]  |
@@ -247,12 +296,33 @@ All context files get the same content. **Section order matters** — instructio
 
 **Step 2: Follow the action:**
 
+- **If Q0 is No** → Write tests for current behavior FIRST. The Working virtue (highest priority) must be preserved before any change.
 - **If ANY answer is Medium/High** → Run `/invert` BEFORE writing any code. `/invert` will persist its analysis to `.plans/` and spawn the `layoutplan` agent on a separate thread to build the implementation plan — keeping your main context clean for coding. Do not skip. Do not "just start coding."
 - **If ALL answers are Low** → State which files you'll change and wait for user confirmation before proceeding.
 
-**Step 3: Mid-implementation checkpoint:**
+**Step 3: Write failing tests first (RED):**
 
+Before writing implementation code, write tests that describe the expected new behavior.
+These tests SHOULD FAIL — they define what "done" looks like.
+Use edge cases and failure modes from the `/invert` analysis if available.
+Skip this step only for: config-only changes, documentation, CI/build scripts, or trivial one-line fixes.
+
+**Step 4: Write code to pass tests (GREEN):**
+
+Write the minimum implementation to make the failing tests pass.
 If during implementation you discover more files are affected than initially estimated, STOP and run `/invert`.
+
+**Step 5: Post-implementation build check:**
+
+After completing code changes, spawn the `build` agent to verify the project compiles.
+The build agent runs on a separate thread — keeping error output out of your main context.
+If the build agent reports failures it cannot fix, address the remaining errors before continuing.
+
+**Step 6: Post-implementation test check:**
+
+After the build passes, spawn the `test` agent to run the full test suite.
+The test agent fixes mechanical breakage (missing imports, renamed methods) automatically.
+Logic/behavior failures are reported back with analysis — you decide whether the test or the code is wrong.
 
 **REMINDER: Reading/exploring code is allowed before this checklist. The gate is on CODE CHANGES (Edit, Write), not on research (Read, Grep, Glob, Agent with research).**
 
@@ -438,7 +508,21 @@ Copy the layoutplan agent template into the project's agent directory for each e
 - **Claude Code** — copy from `templates/claude/agents/layoutplan.md` → `.claude/agents/layoutplan.md`
 - **VS Code Copilot** — copy from `templates/github/agents/layoutplan.agent.md` → `.github/agents/layoutplan.agent.md`
 
-Generate additional project-specific agents only if the project clearly warrants them. Default to the explorer + layoutplan agents.
+**Build agent** (generate for all enabled targets):
+
+Copy the build agent template into the project's agent directory for each enabled target. This agent is spawned after code changes to verify the project compiles on a separate thread, keeping error output out of the main context.
+
+- **Claude Code** — copy from `templates/claude/agents/build.md` → `.claude/agents/build.md`
+- **VS Code Copilot** — copy from `templates/github/agents/build.agent.md` → `.github/agents/build.agent.md`
+
+**Test agent** (generate for all enabled targets):
+
+Copy the test agent template into the project's agent directory for each enabled target. This agent runs the test suite on a separate thread, fixes mechanical test breakage (missing imports, renamed methods), and reports logic/behavior failures back for human decision.
+
+- **Claude Code** — copy from `templates/claude/agents/test.md` → `.claude/agents/test.md`
+- **VS Code Copilot** — copy from `templates/github/agents/test.agent.md` → `.github/agents/test.agent.md`
+
+Generate additional project-specific agents only if the project clearly warrants them. Default to the explorer + layoutplan + build + test agents.
 
 ## Post-Bootstrap Checklist
 
@@ -451,6 +535,10 @@ Generate additional project-specific agents only if the project clearly warrants
 - [ ] Landmine rules in enabled tool formats — aim for 5-15 depending on project maturity
 - [ ] `_TEMPLATE.md` in each enabled tool's rules directory for future contributions
 - [ ] `layoutplan` agent in `.claude/agents/` (if `claude` target enabled) and/or `.github/agents/` (if `copilot` target enabled)
+- [ ] `build` agent in `.claude/agents/` (if `claude` target enabled) and/or `.github/agents/` (if `copilot` target enabled)
+- [ ] `test` agent in `.claude/agents/` (if `claude` target enabled) and/or `.github/agents/` (if `copilot` target enabled)
+- [ ] `build.commands` configured in `.north-starr.json`
+- [ ] `test.commands` configured in `.north-starr.json`
 - [ ] At least one project-tuned explorer agent per enabled tool that supports agents
 
 ## Output Summary

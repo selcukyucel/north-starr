@@ -94,12 +94,18 @@ Agent locations by tool:
    - Key files that will be created or modified
    - Dependencies on other tasks (what must come first)
    - Description sufficient for a fresh session with no prior context
-3. Map risks from `/invert` to specific tasks:
+3. **Structure each task as test-first (TDD):**
+   - First subtask: write failing tests that define the expected behavior (RED)
+   - Subsequent subtasks: implement code to make the tests pass (GREEN)
+   - Final subtask: verify via build and test agents
+   - Skip test-first only for tasks that don't produce testable code (documentation, config, CI/build scripts)
+   - Edge cases from the inversion analysis → specific test cases in the RED step
+4. Map risks from `/invert` to specific tasks:
    - A risk about race conditions → a concurrency-handling task
    - A risk about data loss → a backup/validation subtask
    - A risk about breaking existing behavior → a dedicated test task
-4. Order tasks by dependency — blocked tasks come after their dependencies
-5. Keep the total manageable — if you have more than 6 tasks, group related work
+5. Order tasks by dependency — blocked tasks come after their dependencies
+6. Keep the total manageable — if you have more than 6 tasks, group related work
 
 ### Step 5: Write the Plan File
 

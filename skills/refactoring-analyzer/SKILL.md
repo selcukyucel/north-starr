@@ -152,6 +152,31 @@ Beyond checklist items, look for higher-level refactoring opportunities:
 - Inefficient algorithms or data structures
 - Blocking operations that should be async
 
+### Step 6.5: Virtue Scorecard
+
+Score the analyzed code against the 7 Code Virtues (see `skills/_references/virtues/code-virtues.md`). This provides a positive quality assessment alongside the issue-based findings.
+
+**For each virtue, assign 1-5 stars based on evidence:**
+
+| Virtue | What to Measure | Evidence Sources |
+|--------|----------------|------------------|
+| **Working** | Test coverage, CI status, known bugs | Test files, coverage reports, issue trackers |
+| **Unique** | Duplication level, copy-paste patterns | Duplication analysis from Step 4 |
+| **Simple** | Cyclomatic complexity, entity count, nesting depth | Complexity metrics from Step 4 |
+| **Clear** | Naming quality, self-documenting structure, magic values | Code Clarity checks from Step 4 |
+| **Easy** | How many files/layers a typical change touches | Grain analysis, coupling assessment |
+| **Developed** | Type maturity, abstraction quality, API design | Architecture validation from Step 5 |
+| **Brief** | Verbosity, boilerplate ratio, unnecessary code | Code Organization checks from Step 4 |
+
+**Scoring guide:**
+- ★☆☆☆☆ — Significant problems, this virtue is actively violated
+- ★★☆☆☆ — Below expectations, notable issues
+- ★★★☆☆ — Adequate, some room for improvement
+- ★★★★☆ — Good, minor issues only
+- ★★★★★ — Excellent, this virtue is well-served
+
+The scorecard highlights what to **protect** (high scores) as well as what to **improve** (low scores). This is especially valuable when prioritizing refactoring work — fix the lowest-scoring virtue that has the highest priority number first (Working before Unique before Simple, etc.).
+
 ### Step 7: Generate Report
 
 Create a comprehensive, actionable report with the following structure:
@@ -168,6 +193,19 @@ Create a comprehensive, actionable report with the following structure:
 - **High**: [count]
 - **Medium**: [count]
 - **Low**: [count]
+
+## Virtue Scorecard
+| Virtue      | Score | Evidence |
+|-------------|-------|----------|
+| Working     | [★☆☆☆☆ - ★★★★★] | [brief evidence] |
+| Unique      | [★☆☆☆☆ - ★★★★★] | [brief evidence] |
+| Simple      | [★☆☆☆☆ - ★★★★★] | [brief evidence] |
+| Clear       | [★☆☆☆☆ - ★★★★★] | [brief evidence] |
+| Easy        | [★☆☆☆☆ - ★★★★★] | [brief evidence] |
+| Developed   | [★☆☆☆☆ - ★★★★★] | [brief evidence] |
+| Brief       | [★☆☆☆☆ - ★★★★★] | [brief evidence] |
+
+**Lowest-priority virtue to fix first:** [virtue name — why]
 
 ## Critical Issues
 
@@ -349,7 +387,7 @@ For each finding:
 
 ## References
 
-This skill uses two comprehensive reference documents:
+This skill uses three reference documents:
 
 1. **refactoring-checklist.md**: 15 categories covering universal refactoring opportunities
    - Architecture & Design Patterns
@@ -375,5 +413,10 @@ This skill uses two comprehensive reference documents:
    - Common component patterns (MVC, MVVM, Repository, etc.)
    - Dependency management principles
    - Universal refactoring strategies
+
+3. **`skills/_references/virtues/code-virtues.md`**: The 7 Code Virtues positive quality framework
+   - Priority-ordered virtues: Working, Unique, Simple, Clear, Easy, Developed, Brief
+   - Virtue Scorecard methodology for balanced code assessment
+   - Trade-off resolution when virtues conflict
 
 These references are loaded into context during analysis to ensure comprehensive and accurate findings.

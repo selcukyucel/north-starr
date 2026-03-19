@@ -31,10 +31,26 @@ For each task, identify:
 - Dependencies on other tasks (what must come first)
 - Description sufficient for a fresh session with no prior context
 
+**Structure each task as test-first (TDD):**
+- First subtask: write failing tests that define the expected behavior (RED)
+- Subsequent subtasks: implement code to make the tests pass (GREEN)
+- Final subtask: verify via build and test agents
+
+Example:
+```
+**Subtasks:**
+- [ ] Write tests for [behavior] (RED — tests should fail)
+- [ ] Implement [feature] to pass tests (GREEN)
+- [ ] Verify via build + test agents
+```
+
+Skip test-first only for tasks that don't produce testable code (documentation, config, CI/build scripts).
+
 Map risks from the inversion analysis to specific tasks:
 - A risk about race conditions → a concurrency-handling task
 - A risk about data loss → a backup/validation subtask
 - A risk about breaking existing behavior → a dedicated test task
+- Edge cases from the inversion → specific test cases in the RED step
 
 Order tasks by dependency. Keep the total manageable — if you have more than 6 tasks, group related work.
 

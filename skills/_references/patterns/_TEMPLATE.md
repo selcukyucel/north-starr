@@ -1,6 +1,7 @@
 # Pattern: [Pattern Name]
 
 **Category**: [Architecture / Data / UI / Testing / Integration / Performance]
+**Virtues**: [Working / Unique / Simple / Clear / Easy / Developed / Brief — list the primary virtue(s) this pattern serves]
 **Language/Framework**: [Any / specify if needed]
 **Last Updated**: [Date]
 

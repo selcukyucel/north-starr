@@ -58,6 +58,24 @@ Systematically work through each dimension:
 - Does this create coupling between modules that were independent?
 - Does this introduce a pattern inconsistent with existing code?
 
+#### F. Virtue Trade-offs
+
+Check this change against the 7 Code Virtues (see `skills/_references/virtues/code-virtues.md`) in priority order:
+
+- **Working**: Could this break existing behavior? Are there tests proving current correctness?
+- **Unique**: Does this duplicate logic that already exists elsewhere?
+- **Simple**: Does this add unnecessary entities, relationships, or indirection?
+- **Clear**: Will the result be obvious to the next reader, or puzzling?
+- **Easy**: Will this make future changes harder or easier?
+- **Developed**: Are the abstractions mature and well-placed, or primitive?
+- **Brief**: Is there unnecessary verbosity?
+
+When two virtues conflict, **always preserve the higher-priority one**. Name the tension explicitly in the risk output:
+
+```
+**Virtue Tension:** [lower virtue] would improve, but at the cost of [higher virtue] → preserve [higher virtue]
+```
+
 #### E. Observability & Recovery
 - If this fails in production, how would anyone know?
 - Can the failure be diagnosed from logs/errors alone?
@@ -83,6 +101,7 @@ Present the analysis:
 
 **Modules Affected:** [list]
 **Against the Grain?** [yes/no — why]
+**Virtue Tensions:** [any virtue trade-offs identified, or "none"]
 
 ### Risks
 
@@ -131,6 +150,7 @@ After presenting the analysis to the user (and incorporating any feedback), writ
 **Overall Risk:** <LOW / MEDIUM / HIGH>
 **Modules Affected:** <list>
 **Against the Grain?** <yes/no — why>
+**Virtue Tensions:** <any virtue trade-offs identified, or "none">
 
 ## Risks
 

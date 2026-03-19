@@ -1,6 +1,7 @@
 # Landmine: [Landmine Name]
 
 **Severity**: [CRITICAL / HIGH / MEDIUM / LOW]
+**Threatens**: [Working / Unique / Simple / Clear / Easy / Developed / Brief — list the virtue(s) this landmine endangers]
 **Category**: [Threading / Memory / Performance / Logic / Integration / State]
 **Language/Framework**: [Any / specify if needed]
 **Last Updated**: [Date]
