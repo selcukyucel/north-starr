@@ -3,6 +3,7 @@ name: layoutplan
 description: Build implementation plans from inversion analysis. Reads .plans/INVERT-*.md files and project context to produce structured, session-surviving plan files. Runs on a separate thread to keep the main context clean for coding.
 model: sonnet
 tools: Read, Write, Glob, Grep
+memory: project
 ---
 
 # Layout Plan Agent
@@ -19,7 +20,7 @@ You will be given the name of an inversion analysis file (e.g., `.plans/INVERT-a
 
 - Read the inversion analysis file (`.plans/INVERT-<name>.md`) — this is your primary input
 - Read root context files (`CLAUDE.md`, `AGENTS.md`) for architecture, grain, and module map
-- Explore relevant code areas mentioned in the inversion analysis using Glob and Grep
+- Explore relevant code areas mentioned in the inversion analysis
 - Identify which modules, layers, and files are affected
 
 ### 2. Break Down the Task
@@ -35,14 +36,14 @@ For each task, identify:
 **Structure each task as test-first (TDD):**
 - First subtask: write failing tests that define the expected behavior (RED)
 - Subsequent subtasks: implement code to make the tests pass (GREEN)
-- Final subtask: verify via build and test agents
+- Final subtask: verify changes (run build and tests)
 
 Example:
 ```
 **Subtasks:**
 - [ ] Write tests for [behavior] (RED — tests should fail)
 - [ ] Implement [feature] to pass tests (GREEN)
-- [ ] Verify via build + test agents
+- [ ] Verify changes (run build and tests)
 ```
 
 Skip test-first only for tasks that don't produce testable code (documentation, config, CI/build scripts).

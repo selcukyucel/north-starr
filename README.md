@@ -10,9 +10,8 @@
 </p>
 
 <p align="center">
-  <a href="https://docs.anthropic.com/en/docs/claude-code">Claude Code</a> &middot;
-  <a href="https://code.visualstudio.com/docs/copilot/overview">VS Code Copilot</a> &middot;
-  Any AI tool
+  <a href="https://docs.anthropic.com/en/docs/claude-code">Claude Code</a> (marketplace) &middot;
+  <a href="https://code.visualstudio.com/docs/copilot/overview">VS Code Copilot</a> (Homebrew)
 </p>
 
 <p align="center">
@@ -81,13 +80,13 @@ The result: **mistakes happen once, not twice.**
 
 ### Step 1: Install
 
-**Claude Code plugin (recommended):**
+**Claude Code** (via marketplace):
 ```
 /plugin marketplace add selcukyucel/north-starr
 /plugin install north-starr
 ```
 
-**Or Homebrew (works with any AI tool):**
+**VS Code Copilot** (via Homebrew):
 ```bash
 brew tap selcukyucel/north-starr https://github.com/selcukyucel/north-starr.git
 brew install north-starr
@@ -102,7 +101,7 @@ cd your-project && north-starr init
 
 That's it. north-starr explores your codebase and generates everything your AI needs — architecture context, pattern rules, landmine rules, module-level context files, specialized agents. All in your tool's native format.
 
-For a **new project** with no code yet, use `/architect` instead to declare your intended architecture upfront.
+Works with any project — iOS, web, backend, infrastructure.
 
 ### Step 3: Start working
 
@@ -148,16 +147,6 @@ north-starr produces **tool-native configuration** — not its own format, but t
 
 Every codebase has a **grain** — a direction that changes flow easily. Adding a new API endpoint might be straightforward. Adding a new data model might require touching 12 files. north-starr identifies this grain and documents it, so your AI knows which changes are safe and which require extra care.
 
-### Validation loop
-
-For new projects, `/architect` marks everything as `[DECLARED]` — intent, not yet verified. When you later run `/bootstrap`, each declaration is validated against real code:
-
-- **CONFIRMED** — code matches, tag removed, convention is a verified fact
-- **DIVERGED** — code differs, you decide which version to keep
-- **NOT YET** — no code exists yet, intent preserved
-
-This loop keeps your AI configuration honest as your project evolves.
-
 ---
 
 ## Skills
@@ -165,11 +154,17 @@ This loop keeps your AI configuration honest as your project evolves.
 | Skill | What it does |
 |-------|--------------|
 | `/bootstrap` | Generates rules, agents, and context from your existing code |
-| `/architect` | Defines architecture and conventions for a new project (before code exists) |
-| `/learn` | Captures patterns and landmines from experience — updates configuration |
 | `/invert` | Risk analysis before complex tasks — what could go wrong? |
-| `/layoutplan` | Persistent implementation plans for multi-session work |
-| `/document` | Generates a context file for a specific module |
+| `/learn` | Captures patterns and landmines from experience — updates configuration |
+| `/generate-commit` | Analyzes staged changes and generates commit messages |
+| `/generate-pr` | Generates PR descriptions from git diffs |
+| `/analyze-code` | Analyzes code for refactoring opportunities and code smells |
+| `/report-weekly` | Generates weekly commit reports as markdown and styled HTML |
+| `/sync` | Updates managed sections after a plugin update (Claude Code only) |
+
+| Agent | What it does |
+|-------|--------------|
+| `layoutplan` | Persistent implementation plans for multi-session work — spawned by `/invert` |
 
 ---
 
@@ -200,29 +195,17 @@ north-starr update    # updates skills in current project
 brew uninstall north-starr && brew untap selcukyucel/north-starr
 ```
 
-### CLI reference
+### CLI reference (Homebrew / VS Code Copilot)
 
 ```bash
 north-starr init       # Install skills in a project
 north-starr update     # Update skills (preserves your config)
 north-starr status     # Check setup status
-north-starr config     # Set which AI tools to generate config for
 north-starr version    # Show version
 north-starr help       # Show help
 ```
 
-### Tool preferences
-
-north-starr only generates artifacts for tools you actually use. Set preferences with `north-starr config` or they're prompted on first `north-starr init`. Stored in `.north-starr.json`:
-
-```json
-{
-  "version": 1,
-  "targets": ["claude"]
-}
-```
-
-Valid targets: `"claude"`, `"copilot"`. `AGENTS.md` is always generated regardless.
+The Homebrew CLI generates VS Code Copilot artifacts (`.github/`). Claude Code users should install via the marketplace instead.
 
 ---
 

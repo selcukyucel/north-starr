@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-VERSION="3.0.1"
+VERSION="4.0.0"
 NORTH_STARR_HOME="${NORTH_STARR_HOME:-}"
 
 # Resolve where templates live
@@ -36,7 +36,7 @@ resolve_template_dir() {
   echo ""
 }
 
-# Resolve where skills live (root-level for plugin, or via templates symlink)
+# Resolve where skills live (root-level for plugin, or via templates)
 resolve_skills_dir() {
   local template_dir="$1"
   local parent_dir="$(dirname "$template_dir")"
@@ -44,12 +44,6 @@ resolve_skills_dir() {
   # Root-level skills/ (plugin structure)
   if [[ -d "$parent_dir/skills" ]]; then
     echo "$parent_dir/skills"
-    return
-  fi
-
-  # Symlinked through templates/claude/skills
-  if [[ -d "$template_dir/claude/skills" ]]; then
-    echo "$template_dir/claude/skills"
     return
   fi
 
@@ -87,206 +81,6 @@ validate_skills() {
       print_warn "Missing YAML frontmatter: $(basename "$(dirname "$skill_file")")/SKILL.md"
     elif ! grep -q '^name:' "$skill_file"; then
       print_warn "Missing 'name' field: $(basename "$(dirname "$skill_file")")/SKILL.md"
-    fi
-  done
-}
-
-# ─── TOOL TARGET PREFERENCES ─────────────────────────────────────────────────
-
-PREFS_FILE=".north-starr.json"
-
-# Read tool target preferences from .north-starr.json
-# Sets TARGETS array; defaults to all tools if file missing
-read_preferences() {
-  local dir="${1:-.}"
-  local prefs_path="$dir/$PREFS_FILE"
-  TARGETS=()
-
-  if [[ -f "$prefs_path" ]]; then
-    # Parse targets array from JSON without jq
-    local raw
-    raw="$(grep '"targets"' "$prefs_path" | sed 's/.*\[//;s/\].*//' | tr -d '"' | tr -d ' ')"
-    IFS=',' read -ra TARGETS <<< "$raw"
-    return 0
-  fi
-
-  # Default: all tools
-  TARGETS=("claude" "copilot")
-  return 1
-}
-
-# Write tool target preferences to .north-starr.json
-write_preferences() {
-  local dir="${1:-.}"
-  local prefs_path="$dir/$PREFS_FILE"
-  shift
-  local targets=("$@")
-
-  # Build JSON targets array
-  local json_targets=""
-  for i in "${!targets[@]}"; do
-    if [[ $i -gt 0 ]]; then
-      json_targets+=", "
-    fi
-    json_targets+="\"${targets[$i]}\""
-  done
-
-  # Preserve existing build config if present
-  local build_section=""
-  if [[ -f "$prefs_path" ]]; then
-    local existing_build
-    existing_build=$(grep -o '"build"[[:space:]]*:[[:space:]]*{[^}]*}' "$prefs_path" 2>/dev/null || true)
-    if [[ -n "$existing_build" ]]; then
-      build_section=",
-  $existing_build"
-    fi
-    local existing_test
-    existing_test=$(grep -o '"test"[[:space:]]*:[[:space:]]*{[^}]*}' "$prefs_path" 2>/dev/null || true)
-    if [[ -n "$existing_test" ]]; then
-      build_section="$build_section,
-  $existing_test"
-    fi
-  fi
-
-  cat > "$prefs_path" << EOF
-{
-  "version": 1,
-  "targets": [$json_targets]${build_section}
-}
-EOF
-}
-
-# Detect build command from project config files
-detect_build_command() {
-  local dir="$1"
-  if [[ -f "$dir/Package.swift" ]]; then echo "swift build"
-  elif ls "$dir/"*.xcodeproj &>/dev/null 2>&1 || ls "$dir/"*.xcworkspace &>/dev/null 2>&1; then echo "xcodebuild build"
-  elif [[ -f "$dir/build.gradle" || -f "$dir/build.gradle.kts" ]]; then echo "./gradlew assembleDebug"
-  elif [[ -f "$dir/Cargo.toml" ]]; then echo "cargo build"
-  elif [[ -f "$dir/go.mod" ]]; then echo "go build ./..."
-  elif [[ -f "$dir/package.json" ]] && grep -q '"build"' "$dir/package.json" 2>/dev/null; then
-    if [[ -f "$dir/yarn.lock" ]]; then echo "yarn build"
-    elif [[ -f "$dir/pnpm-lock.yaml" ]]; then echo "pnpm build"
-    else echo "npm run build"
-    fi
-  elif [[ -f "$dir/tsconfig.json" ]]; then echo "npx tsc --noEmit"
-  elif [[ -f "$dir/CMakeLists.txt" ]]; then echo "cmake --build build"
-  elif [[ -f "$dir/Makefile" ]]; then echo "make"
-  fi
-}
-
-# Detect test command from project config files
-detect_test_command() {
-  local dir="$1"
-  if [[ -f "$dir/Package.swift" ]]; then echo "swift test"
-  elif ls "$dir/"*.xcodeproj &>/dev/null 2>&1 || ls "$dir/"*.xcworkspace &>/dev/null 2>&1; then echo "xcodebuild test"
-  elif [[ -f "$dir/build.gradle" || -f "$dir/build.gradle.kts" ]]; then echo "./gradlew test"
-  elif [[ -f "$dir/Cargo.toml" ]]; then echo "cargo test"
-  elif [[ -f "$dir/go.mod" ]]; then echo "go test ./..."
-  elif [[ -f "$dir/package.json" ]] && grep -q '"test"' "$dir/package.json" 2>/dev/null; then
-    if [[ -f "$dir/yarn.lock" ]]; then echo "yarn test"
-    elif [[ -f "$dir/pnpm-lock.yaml" ]]; then echo "pnpm test"
-    else echo "npm test"
-    fi
-  elif [[ -f "$dir/Makefile" ]] && grep -q '^test:' "$dir/Makefile" 2>/dev/null; then echo "make test"
-  fi
-}
-
-# Add build/test commands to existing .north-starr.json
-add_build_test_config() {
-  local prefs_path="$1"
-  local build_cmd="${2:-}"
-  local test_cmd="${3:-}"
-
-  [[ -f "$prefs_path" ]] || return
-
-  local content
-  content="$(cat "$prefs_path")"
-
-  # Add build config if provided and not already present
-  if [[ -n "$build_cmd" ]] && ! grep -q '"build"' "$prefs_path" 2>/dev/null; then
-    content="$(echo "$content" | sed 's/}$/,\n  "build": {\n    "commands": ["'"$build_cmd"'"]\n  }\n}/')"
-  fi
-
-  # Add test config if provided and not already present
-  if [[ -n "$test_cmd" ]] && ! grep -q '"test"' "$prefs_path" 2>/dev/null; then
-    content="$(echo "$content" | sed 's/}$/,\n  "test": {\n    "commands": ["'"$test_cmd"'"]\n  }\n}/')"
-  fi
-
-  echo "$content" > "$prefs_path"
-}
-
-# Check if a target is enabled
-has_target() {
-  local target="$1"
-  for t in "${TARGETS[@]}"; do
-    if [[ "$t" == "$target" ]]; then
-      return 0
-    fi
-  done
-  return 1
-}
-
-# Interactive prompt for tool selection
-# Defaults to [Y/n] (yes) for each tool
-prompt_tool_selection() {
-  local selected=()
-
-  echo -e "${BOLD}  Select AI tools to configure:${NC}"
-  echo ""
-
-  for tool in claude copilot; do
-    local label
-    case "$tool" in
-      claude)  label="Claude Code" ;;
-      copilot) label="VS Code Copilot" ;;
-    esac
-
-    read -rp "    Enable ${label}? [Y/n] " answer
-    if [[ "$answer" != "n" && "$answer" != "N" ]]; then
-      selected+=("$tool")
-    fi
-  done
-
-  echo ""
-
-  if [[ ${#selected[@]} -eq 0 ]]; then
-    print_warn "No tools selected — defaulting to all."
-    selected=("claude" "copilot")
-  fi
-
-  TARGETS=("${selected[@]}")
-}
-
-# Display current target preferences
-show_preferences() {
-  local labels=()
-  for t in "${TARGETS[@]}"; do
-    case "$t" in
-      claude)  labels+=("Claude Code") ;;
-      copilot) labels+=("VS Code Copilot") ;;
-    esac
-  done
-  local joined
-  joined="$(IFS=', '; echo "${labels[*]}")"
-  echo -e "  ${BOLD}Enabled tools:${NC} $joined"
-}
-
-# Remove skills that require a specific tool from a target directory
-# Skills with "tool: <name>" in frontmatter are only kept if <name> matches
-remove_tool_specific_skills() {
-  local skills_dest="$1"
-  local allowed_tool="$2"
-  for skill_file in "$skills_dest"/*/SKILL.md; do
-    [[ -f "$skill_file" ]] || continue
-    local tool_line
-    tool_line="$(grep '^tool:' "$skill_file" 2>/dev/null || true)"
-    if [[ -n "$tool_line" ]]; then
-      local required_tool
-      required_tool="$(echo "$tool_line" | sed 's/^tool:[[:space:]]*//')"
-      if [[ "$required_tool" != "$allowed_tool" ]]; then
-        rm -rf "$(dirname "$skill_file")"
-      fi
     fi
   done
 }
@@ -400,7 +194,6 @@ inject_managed_sections() {
 
       if [[ -n "$section_heading" ]] && grep -qF "$section_heading" "$target_file" 2>/dev/null; then
         # Heading exists without markers — skip to avoid duplication
-        # User should run /bootstrap to get markers, or manually add them
         print_info "Skipped ${file_name} section: ${section} (heading exists without markers — run /bootstrap to update)"
       else
         # Truly new section — append it
@@ -542,7 +335,7 @@ cmd_init() {
   echo ""
 
   # Check for existing files
-  if [[ -d "$target_dir/.claude/skills" || -d "$target_dir/.github/skills" || -f "$target_dir/AGENTS.md" ]]; then
+  if [[ -d "$target_dir/.github/skills" || -f "$target_dir/AGENTS.md" ]]; then
     print_warn "Some North Starr files already exist."
     echo ""
     read -rp "  Overwrite existing files? [y/N] " confirm
@@ -554,62 +347,22 @@ cmd_init() {
     echo ""
   fi
 
-  # Tool target preferences
-  if read_preferences "$target_dir"; then
-    show_preferences
-    echo ""
-  else
-    prompt_tool_selection
-    write_preferences "$target_dir" "${TARGETS[@]}"
-    show_preferences
-    print_success "Saved to $PREFS_FILE"
-    echo ""
-  fi
-
   # Copy AGENTS.md (universal — works with any AI tool, always generated)
   if [[ -f "$template_dir/AGENTS.md" ]]; then
     cp "$template_dir/AGENTS.md" "$target_dir/AGENTS.md"
     print_success "AGENTS.md — universal AI assistant instructions"
   fi
 
-  # Copy skills to .claude/skills/ (Claude Code)
-  if has_target "claude" && [[ -n "$skills_dir" && -d "$skills_dir" ]]; then
-    mkdir -p "$target_dir/.claude/skills"
-    cp -r "$skills_dir/"* "$target_dir/.claude/skills/"
-    remove_tool_specific_skills "$target_dir/.claude/skills" "claude"
-    validate_skills "$target_dir/.claude/skills"
-    print_success ".claude/skills/ — Claude Code skills"
-  fi
-
   # Copy skills to .github/skills/ (VS Code Copilot)
-  if has_target "copilot" && [[ -n "$skills_dir" && -d "$skills_dir" ]]; then
+  if [[ -n "$skills_dir" && -d "$skills_dir" ]]; then
     mkdir -p "$target_dir/.github/skills"
     cp -r "$skills_dir/"* "$target_dir/.github/skills/"
-    remove_tool_specific_skills "$target_dir/.github/skills" "copilot"
     validate_skills "$target_dir/.github/skills"
     print_success ".github/skills/ — VS Code Copilot skills"
   fi
 
-  # Copy starter CLAUDE.md (Claude Code specific)
-  if has_target "claude" && [[ -f "$template_dir/CLAUDE.md" ]]; then
-    cp "$template_dir/CLAUDE.md" "$target_dir/CLAUDE.md"
-    print_success "CLAUDE.md — Claude Code starter instructions"
-  fi
-
-  # Copy agents to .claude/agents/ (Claude Code)
-  if has_target "claude" && [[ -d "$template_dir/claude/agents" ]]; then
-    mkdir -p "$target_dir/.claude/agents"
-    for agent_file in "$template_dir/claude/agents/"*.md; do
-      [[ -f "$agent_file" ]] || continue
-      local agent_name
-      agent_name="$(basename "$agent_file")"
-      cp "$agent_file" "$target_dir/.claude/agents/$agent_name"
-    done
-    print_success ".claude/agents/ — Claude Code agents (layoutplan, build, test)"
-  fi
-
   # Copy agents to .github/agents/ (VS Code Copilot)
-  if has_target "copilot" && [[ -d "$template_dir/github/agents" ]]; then
+  if [[ -d "$template_dir/github/agents" ]]; then
     mkdir -p "$target_dir/.github/agents"
     for agent_file in "$template_dir/github/agents/"*.agent.md; do
       [[ -f "$agent_file" ]] || continue
@@ -617,14 +370,30 @@ cmd_init() {
       agent_name="$(basename "$agent_file")"
       cp "$agent_file" "$target_dir/.github/agents/$agent_name"
     done
-    print_success ".github/agents/ — VS Code Copilot agents (layoutplan, build, test)"
+    print_success ".github/agents/ — VS Code Copilot agents (layoutplan)"
+  fi
+
+  # Copy instructions template
+  if [[ -d "$template_dir/github/instructions" ]]; then
+    mkdir -p "$target_dir/.github/instructions"
+    for instruction_file in "$template_dir/github/instructions/"*; do
+      [[ -f "$instruction_file" ]] || continue
+      cp "$instruction_file" "$target_dir/.github/instructions/"
+    done
+    print_success ".github/instructions/ — pattern/landmine rule templates"
+  fi
+
+  # Migrate from v3.x: notify about .north-starr.json deprecation
+  if [[ -f "$target_dir/.north-starr.json" ]]; then
+    echo ""
+    print_info ".north-starr.json is no longer used in v4.0 and can be safely deleted."
   fi
 
   # Migrate from v1.x: clean up old .ai/ structure if user confirms
   if [[ -d "$target_dir/.ai" ]]; then
     echo ""
     print_warn "Found .ai/ directory from a previous version."
-    print_info "North Starr v2 uses native AI tool primitives instead."
+    print_info "North Starr v4 uses native AI tool primitives instead."
     print_info "Run ${CYAN}/bootstrap${NC} to regenerate project config."
     echo ""
     read -rp "  Remove old .ai/ directory? [y/N] " confirm_ai
@@ -650,30 +419,35 @@ cmd_init() {
     fi
   done
 
+  # Migrate from v3.x: remove architect skill if present
+  for skills_location in "$target_dir/.claude/skills" "$target_dir/.github/skills"; do
+    if [[ -d "$skills_location/architect" ]]; then
+      rm -rf "$skills_location/architect"
+      print_success "Removed $skills_location/architect (removed in v4)"
+    fi
+  done
+
   echo ""
   echo -e "${GREEN}${BOLD}  Done!${NC} North Starr initialized."
   echo ""
   echo -e "  ${BOLD}What's next:${NC}"
-
-  # Build tool list from enabled targets
-  local tool_names=()
-  has_target "claude"  && tool_names+=("Claude Code")
-  has_target "copilot" && tool_names+=("VS Code Copilot")
-  local tool_list
-  tool_list="$(IFS=', '; echo "${tool_names[*]}")"
-
-  echo -e "  ${DIM}1.${NC} Open your AI coding tool (${tool_list})"
-  echo -e "  ${DIM}2.${NC} Run ${CYAN}/architect${NC} (new project) or ${CYAN}/bootstrap${NC} (existing code)"
+  echo -e "  ${DIM}1.${NC} Open VS Code with GitHub Copilot"
+  echo -e "  ${DIM}2.${NC} Run ${CYAN}/bootstrap${NC} to generate project config from existing code"
   echo -e "  ${DIM}3.${NC} Start working — your AI tool auto-loads the generated context"
   echo ""
   echo -e "  ${DIM}Available skills:${NC}"
-  echo -e "    /architect  — Define architecture for a new project (before code exists)"
-  echo -e "    /bootstrap  — Generate project config from existing code"
-  echo -e "    /invert     — Deep risk analysis before complex tasks"
-  echo -e "    /layoutplan  — Break complex tasks into persistent implementation plans"
-  echo -e "    /document   — Generate documentation for a module"
-  echo -e "    /learn      — Update config from experience"
+  echo -e "    /bootstrap             — Generate project config from existing code"
+  echo -e "    /invert                — Deep risk analysis before complex tasks"
+  echo -e "    /learn                 — Update config from experience"
+  echo -e "    /generate-commit        — Generate commit messages"
+  echo -e "    /generate-pr            — Generate PR descriptions"
+  echo -e "    /analyze-code           — Analyze code quality"
+  echo -e "    /report-weekly          — Generate weekly commit reports"
   echo ""
+  echo -e "  ${DIM}Agent (spawned automatically by /invert):${NC}"
+  echo -e "    layoutplan             — Break complex tasks into persistent plans"
+  echo ""
+  echo -e "  ${DIM}For Claude Code users: install via the marketplace instead.${NC}"
   echo -e "  ${DIM}Learn more: https://github.com/selcukyucel/north-starr${NC}"
   echo ""
 }
@@ -696,25 +470,10 @@ cmd_update() {
   echo -e "  ${DIM}$target_dir${NC}"
   echo ""
 
-  # Read tool target preferences
-  read_preferences "$target_dir"
-  show_preferences
-  echo ""
-
-  # Update skills in .claude/skills/
-  if has_target "claude" && [[ -n "$skills_dir" && -d "$skills_dir" ]]; then
-    mkdir -p "$target_dir/.claude/skills"
-    cp -r "$skills_dir/"* "$target_dir/.claude/skills/"
-    remove_tool_specific_skills "$target_dir/.claude/skills" "claude"
-    validate_skills "$target_dir/.claude/skills"
-    print_success "Updated .claude/skills/"
-  fi
-
   # Update skills in .github/skills/
-  if has_target "copilot" && [[ -n "$skills_dir" && -d "$skills_dir" ]]; then
+  if [[ -n "$skills_dir" && -d "$skills_dir" ]]; then
     mkdir -p "$target_dir/.github/skills"
     cp -r "$skills_dir/"* "$target_dir/.github/skills/"
-    remove_tool_specific_skills "$target_dir/.github/skills" "copilot"
     validate_skills "$target_dir/.github/skills"
     print_success "Updated .github/skills/"
   fi
@@ -732,58 +491,35 @@ cmd_update() {
     reorder_managed_sections "$target_dir/AGENTS.md" "$template_dir/AGENTS.md"
   fi
 
-  # Update starter CLAUDE.md only if not customized
-  if has_target "claude"; then
-    if [[ -f "$target_dir/CLAUDE.md" ]] && is_starter_template "$target_dir/CLAUDE.md"; then
-      cp "$template_dir/CLAUDE.md" "$target_dir/CLAUDE.md"
-      print_success "Updated CLAUDE.md (starter template)"
-    elif [[ ! -f "$target_dir/CLAUDE.md" ]]; then
-      cp "$template_dir/CLAUDE.md" "$target_dir/CLAUDE.md"
-      print_success "Created CLAUDE.md (starter template)"
-    else
-      # Customized — update managed sections and fix ordering
-      inject_managed_sections "$target_dir/CLAUDE.md" "$template_dir/CLAUDE.md"
-      reorder_managed_sections "$target_dir/CLAUDE.md" "$template_dir/CLAUDE.md"
-    fi
+  # Update CLAUDE.md managed sections if it exists (for projects that had Claude Code configured)
+  if [[ -f "$target_dir/CLAUDE.md" ]] && ! is_starter_template "$target_dir/CLAUDE.md"; then
+    inject_managed_sections "$target_dir/CLAUDE.md" "$template_dir/AGENTS.md"
+    reorder_managed_sections "$target_dir/CLAUDE.md" "$template_dir/AGENTS.md"
   fi
 
-  # Update agents in .claude/agents/ (add new ones, preserve existing)
-  if has_target "claude" && [[ -d "$template_dir/claude/agents" ]]; then
-    mkdir -p "$target_dir/.claude/agents"
-    local agents_updated=0
-    for agent_file in "$template_dir/claude/agents/"*.md; do
-      [[ -f "$agent_file" ]] || continue
-      local agent_name
-      agent_name="$(basename "$agent_file")"
-      if [[ ! -f "$target_dir/.claude/agents/$agent_name" ]]; then
-        cp "$agent_file" "$target_dir/.claude/agents/$agent_name"
-        agents_updated=$((agents_updated + 1))
-        print_success "Added .claude/agents/$agent_name"
-      else
-        # Overwrite with latest version — agents are managed by North Starr
-        cp "$agent_file" "$target_dir/.claude/agents/$agent_name"
-        agents_updated=$((agents_updated + 1))
-      fi
-    done
-    if [[ $agents_updated -gt 0 ]]; then
-      print_success "Updated .claude/agents/ ($agents_updated agent(s))"
-    fi
-  fi
-
-  # Update agents in .github/agents/ (VS Code Copilot)
-  if has_target "copilot" && [[ -d "$template_dir/github/agents" ]]; then
+  # Update agents in .github/agents/
+  if [[ -d "$template_dir/github/agents" ]]; then
     mkdir -p "$target_dir/.github/agents"
-    local copilot_agents_updated=0
+    local agents_updated=0
     for agent_file in "$template_dir/github/agents/"*.agent.md; do
       [[ -f "$agent_file" ]] || continue
       local agent_name
       agent_name="$(basename "$agent_file")"
       cp "$agent_file" "$target_dir/.github/agents/$agent_name"
-      copilot_agents_updated=$((copilot_agents_updated + 1))
+      agents_updated=$((agents_updated + 1))
     done
-    if [[ $copilot_agents_updated -gt 0 ]]; then
-      print_success "Updated .github/agents/ ($copilot_agents_updated agent(s))"
+    if [[ $agents_updated -gt 0 ]]; then
+      print_success "Updated .github/agents/ ($agents_updated agent(s))"
     fi
+  fi
+
+  # Update instructions template
+  if [[ -d "$template_dir/github/instructions" ]]; then
+    mkdir -p "$target_dir/.github/instructions"
+    for instruction_file in "$template_dir/github/instructions/"_TEMPLATE*; do
+      [[ -f "$instruction_file" ]] || continue
+      cp "$instruction_file" "$target_dir/.github/instructions/"
+    done
   fi
 
   # Remove old skills from v1.x (deleted + renamed)
@@ -794,41 +530,28 @@ cmd_update() {
     fi
   done
 
-  # Detect build/test commands if not configured
-  local prefs_path="$target_dir/$PREFS_FILE"
-  if [[ -f "$prefs_path" ]]; then
-    local needs_build=false
-    local needs_test=false
-    grep -q '"build"' "$prefs_path" 2>/dev/null || needs_build=true
-    grep -q '"test"' "$prefs_path" 2>/dev/null || needs_test=true
-
-    if [[ "$needs_build" == true || "$needs_test" == true ]]; then
-      echo ""
-      local detected_build=""
-      local detected_test=""
-
-      if [[ "$needs_build" == true ]]; then
-        detected_build="$(detect_build_command "$target_dir")"
-      fi
-      if [[ "$needs_test" == true ]]; then
-        detected_test="$(detect_test_command "$target_dir")"
-      fi
-
-      if [[ -n "$detected_build" || -n "$detected_test" ]]; then
-        echo -e "  ${BOLD}Detected commands:${NC}"
-        [[ -n "$detected_build" ]] && echo -e "    Build: ${CYAN}${detected_build}${NC}"
-        [[ -n "$detected_test" ]] && echo -e "    Test:  ${CYAN}${detected_test}${NC}"
-        echo ""
-        echo -n "  Save to .north-starr.json? [Y/n] "
-        read -r answer
-        if [[ "$answer" != "n" && "$answer" != "N" ]]; then
-          add_build_test_config "$prefs_path" "$detected_build" "$detected_test"
-          print_success "Build/test commands saved to $PREFS_FILE"
-        fi
-      elif [[ "$needs_build" == true || "$needs_test" == true ]]; then
-        echo -e "  ${DIM}Could not detect build/test commands. Configure manually in .north-starr.json.${NC}"
-      fi
+  # Remove architect skill (removed in v4)
+  for skills_location in "$target_dir/.claude/skills" "$target_dir/.github/skills"; do
+    if [[ -d "$skills_location/architect" ]]; then
+      rm -rf "$skills_location/architect"
+      print_success "Removed $skills_location/architect (removed in v4)"
     fi
+  done
+
+  # Remove old build/test agents (removed in v4)
+  for agent_dir in "$target_dir/.claude/agents" "$target_dir/.github/agents"; do
+    for old_agent in "build.md" "test.md" "build.agent.md" "test.agent.md"; do
+      if [[ -f "$agent_dir/$old_agent" ]]; then
+        rm "$agent_dir/$old_agent"
+        print_success "Removed $agent_dir/$old_agent (removed in v4)"
+      fi
+    done
+  done
+
+  # Migrate from v3.x: notify about .north-starr.json deprecation
+  if [[ -f "$target_dir/.north-starr.json" ]]; then
+    echo ""
+    print_info ".north-starr.json is no longer used in v4.0 and can be safely deleted."
   fi
 
   echo ""
@@ -848,14 +571,6 @@ cmd_status() {
   echo -e "${BOLD}  Project status:${NC} ${DIM}$target_dir${NC}"
   echo ""
 
-  # Show tool target preferences
-  if read_preferences "$target_dir"; then
-    show_preferences
-  else
-    echo -e "  ${BOLD}Enabled tools:${NC} all ${DIM}(no .north-starr.json — run ${CYAN}north-starr config${DIM} to set)${NC}"
-  fi
-  echo ""
-
   local initialized=true
   local bootstrapped=true
 
@@ -871,35 +586,38 @@ cmd_status() {
     initialized=false
   fi
 
-  # Check Claude Code skills
-  if [[ -d "$target_dir/.claude/skills" ]]; then
-    local claude_skill_count=$(find "$target_dir/.claude/skills" -name "SKILL.md" 2>/dev/null | wc -l | tr -d ' ')
-    print_success ".claude/skills/ — ${claude_skill_count} skills (Claude Code)"
-  else
-    print_info ".claude/skills/ — not installed"
-  fi
-
   # Check VS Code Copilot skills
   if [[ -d "$target_dir/.github/skills" ]]; then
     local github_skill_count=$(find "$target_dir/.github/skills" -name "SKILL.md" 2>/dev/null | wc -l | tr -d ' ')
     print_success ".github/skills/ — ${github_skill_count} skills (VS Code Copilot)"
   else
     print_info ".github/skills/ — not installed"
-  fi
-
-  # Check if at least one skill location exists
-  if [[ ! -d "$target_dir/.claude/skills" && ! -d "$target_dir/.github/skills" ]]; then
     initialized=false
   fi
 
-  # Check CLAUDE.md
+  # Check VS Code Copilot agents
+  if [[ -d "$target_dir/.github/agents" ]]; then
+    local agent_count=$(find "$target_dir/.github/agents" -name "*.agent.md" 2>/dev/null | wc -l | tr -d ' ')
+    print_success ".github/agents/ — ${agent_count} agents"
+  fi
+
+  # Check VS Code Copilot instructions (created by bootstrap)
+  if [[ -f "$target_dir/.github/copilot-instructions.md" ]]; then
+    print_success ".github/copilot-instructions.md — Copilot instructions"
+  fi
+
+  if [[ -d "$target_dir/.github/instructions" ]]; then
+    local instruction_count=$(find "$target_dir/.github/instructions" -name "*.instructions.md" 2>/dev/null | wc -l | tr -d ' ')
+    if [[ "$instruction_count" -gt 0 ]]; then
+      print_success ".github/instructions/ — ${instruction_count} scoped rules"
+    fi
+  fi
+
+  # Check CLAUDE.md (might exist from previous Claude Code setup)
   if [[ -f "$target_dir/CLAUDE.md" ]]; then
     if is_starter_template "$target_dir/CLAUDE.md"; then
       print_success "CLAUDE.md — starter"
       bootstrapped=false
-    elif grep -q '\[DECLARED\]' "$target_dir/CLAUDE.md" 2>/dev/null; then
-      local declared_count=$(grep -c '\[DECLARED\]' "$target_dir/CLAUDE.md" 2>/dev/null || echo 0)
-      print_success "CLAUDE.md — architected (${declared_count} declared sections — run /bootstrap to validate)"
     else
       print_success "CLAUDE.md — project-specific"
     fi
@@ -913,41 +631,19 @@ cmd_status() {
     bootstrapped=false
   fi
 
-  # Check Claude Code agents (created by bootstrap)
-  if [[ -d "$target_dir/.claude/agents" ]]; then
-    local agent_count=$(find "$target_dir/.claude/agents" -name "*.md" 2>/dev/null | wc -l | tr -d ' ')
-    print_success ".claude/agents/ — ${agent_count} agents"
-  else
-    bootstrapped=false
-  fi
-
-  # Check VS Code Copilot instructions (created by bootstrap)
-  if [[ -f "$target_dir/.github/copilot-instructions.md" ]]; then
-    print_success ".github/copilot-instructions.md — Copilot instructions"
-  fi
-
-  # Check VS Code Copilot file-scoped instructions (created by bootstrap)
-  if [[ -d "$target_dir/.github/instructions" ]]; then
-    local instruction_count=$(find "$target_dir/.github/instructions" -name "*.instructions.md" 2>/dev/null | wc -l | tr -d ' ')
-    if [[ "$instruction_count" -gt 0 ]]; then
-      print_success ".github/instructions/ — ${instruction_count} scoped rules"
-    fi
-  fi
-
-
   # Check module-level CLAUDE.md files
   local module_claude_count=$(find "$target_dir" -name "CLAUDE.md" -not -path "$target_dir/CLAUDE.md" -not -path "$target_dir/.claude/*" -not -path "*/node_modules/*" -not -path "*/.git/*" 2>/dev/null | wc -l | tr -d ' ')
   if [[ "$module_claude_count" -gt 0 ]]; then
     print_success "Module CLAUDE.md — ${module_claude_count} files"
   fi
 
-  # Warn about old v1.x artifacts
-  if [[ -d "$target_dir/.ai" ]]; then
+  # Warn about deprecated artifacts
+  if [[ -f "$target_dir/.north-starr.json" ]]; then
     echo ""
-    print_warn ".ai/ directory found (v1.x artifact — can be removed)"
+    print_warn ".north-starr.json found (deprecated in v4 — can be safely deleted)"
   fi
-  if [[ -f "$target_dir/IDEAFLOW_AGENTIC_WORKFLOW.md" ]]; then
-    print_warn "IDEAFLOW_AGENTIC_WORKFLOW.md found (v1.x artifact — can be removed)"
+  if [[ -d "$target_dir/.ai" ]]; then
+    print_warn ".ai/ directory found (v1.x artifact — can be removed)"
   fi
 
   echo ""
@@ -955,43 +651,10 @@ cmd_status() {
   if [[ "$initialized" == "false" ]]; then
     print_info "Run ${BOLD}north-starr init${NC} to install North Starr."
   elif [[ "$bootstrapped" == "false" ]]; then
-    echo -e "  ${YELLOW}${BOLD}Skills installed.${NC} Run ${CYAN}/architect${NC} (new project) or ${CYAN}/bootstrap${NC} (existing code) to generate config."
+    echo -e "  ${YELLOW}${BOLD}Skills installed.${NC} Run ${CYAN}/bootstrap${NC} to generate config from existing code."
   else
     echo -e "  ${GREEN}${BOLD}North Starr is fully configured.${NC}"
   fi
-  echo ""
-}
-
-# ─── CONFIG ────────────────────────────────────────────────────────────────────
-
-cmd_config() {
-  local target_dir
-  target_dir="$(resolve_target_dir "${1:-}")"
-
-  print_banner
-
-  echo -e "${BOLD}  Tool target preferences:${NC} ${DIM}$target_dir${NC}"
-  echo ""
-
-  if read_preferences "$target_dir"; then
-    show_preferences
-    echo ""
-    read -rp "  Change tool selection? [y/N] " confirm
-    if [[ "$confirm" != "y" && "$confirm" != "Y" ]]; then
-      echo ""
-      return
-    fi
-    echo ""
-  else
-    print_info "No preferences file found. Let's set one up."
-    echo ""
-  fi
-
-  prompt_tool_selection
-  write_preferences "$target_dir" "${TARGETS[@]}"
-
-  show_preferences
-  print_success "Saved to $PREFS_FILE"
   echo ""
 }
 
@@ -1005,27 +668,30 @@ cmd_help() {
   echo -e "    ${CYAN}init${NC}     [dir]   Install North Starr skills in a project"
   echo -e "    ${CYAN}update${NC}   [dir]   Update skills (preserves your config)"
   echo -e "    ${CYAN}status${NC}   [dir]   Check setup status"
-  echo -e "    ${CYAN}config${NC}   [dir]   Set which AI tools to generate config for"
   echo -e "    ${CYAN}help${NC}             Show this help message"
   echo -e "    ${CYAN}version${NC}          Show version"
   echo ""
-  echo -e "${BOLD}  Supported AI tools:${NC}"
-  echo -e "    Claude Code, VS Code Copilot"
+  echo -e "${BOLD}  Distribution:${NC}"
+  echo -e "    VS Code Copilot → Install via Homebrew (this CLI)"
+  echo -e "    Claude Code     → Install via the marketplace"
   echo ""
   echo -e "${BOLD}  Examples:${NC}"
   echo -e "    ${DIM}north-starr init${NC}              # Initialize in current directory"
   echo -e "    ${DIM}north-starr init ~/my-project${NC}  # Initialize in specific directory"
   echo -e "    ${DIM}north-starr update${NC}             # Update to latest skills"
   echo -e "    ${DIM}north-starr status${NC}             # Check setup status"
-  echo -e "    ${DIM}north-starr config${NC}             # Set tool preferences"
   echo ""
   echo -e "${BOLD}  After init, use these skills in your AI tool:${NC}"
-  echo -e "    /architect  — Define architecture for a new project (before code exists)"
-  echo -e "    /bootstrap  — Generate project config from existing code"
-  echo -e "    /invert     — Deep risk analysis before complex tasks"
-  echo -e "    /layoutplan  — Break complex tasks into persistent implementation plans"
-  echo -e "    /document   — Generate documentation for a module"
-  echo -e "    /learn      — Update config from experience"
+  echo -e "    /bootstrap             — Generate project config from existing code"
+  echo -e "    /invert                — Deep risk analysis before complex tasks"
+  echo -e "    /learn                 — Update config from experience"
+  echo -e "    /generate-commit        — Generate commit messages"
+  echo -e "    /generate-pr            — Generate PR descriptions"
+  echo -e "    /analyze-code           — Analyze code quality"
+  echo -e "    /report-weekly          — Generate weekly commit reports"
+  echo ""
+  echo -e "${BOLD}  Agent (spawned automatically by /invert):${NC}"
+  echo -e "    layoutplan             — Break complex tasks into persistent plans"
   echo ""
   echo -e "  ${DIM}https://github.com/selcukyucel/north-starr${NC}"
   echo ""
@@ -1045,9 +711,6 @@ main() {
       ;;
     status)
       cmd_status "${2:-}"
-      ;;
-    config)
-      cmd_config "${2:-}"
       ;;
     help|--help|-h)
       cmd_help

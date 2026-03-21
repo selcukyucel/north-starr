@@ -1,0 +1,63 @@
+name: Validate
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: CLI runs
+        run: |
+          chmod +x bin/north-starr
+          bin/north-starr version
+          bin/north-starr help
+
+      - name: Skills have valid frontmatter
+        run: |
+          errors=0
+          for skill in skills/*/SKILL.md; do
+            [ -f "$skill" ] || continue
+            name=$(basename "$(dirname "$skill")")
+            if ! head -1 "$skill" | grep -q '^---$'; then
+              echo "ERROR: $name/SKILL.md missing YAML frontmatter"
+              errors=$((errors + 1))
+            elif ! grep -q '^name:' "$skill"; then
+              echo "ERROR: $name/SKILL.md missing 'name' field"
+              errors=$((errors + 1))
+            fi
+          done
+          [ $errors -eq 0 ] && echo "All skills valid" || exit 1
+
+      - name: Marketplace skills match directories
+        run: |
+          errors=0
+          for path in $(grep -o '\./skills/[^"]*' .claude-plugin/marketplace.json); do
+            dir="${path#./}"
+            if [ ! -d "$dir" ]; then
+              echo "ERROR: marketplace.json references $path but directory does not exist"
+              errors=$((errors + 1))
+            fi
+          done
+          [ $errors -eq 0 ] && echo "All marketplace paths valid" || exit 1
+
+      - name: Agent templates exist
+        run: |
+          test -f templates/claude/agents/layoutplan.md || { echo "ERROR: Claude Code layoutplan agent missing"; exit 1; }
+          test -f templates/github/agents/layoutplan.agent.md || { echo "ERROR: Copilot layoutplan agent missing"; exit 1; }
+          test -f templates/CLAUDE.md || { echo "ERROR: CLAUDE.md template missing"; exit 1; }
+          test -f templates/AGENTS.md || { echo "ERROR: AGENTS.md template missing"; exit 1; }
+          echo "All templates valid"
+
+      - name: No placeholder SHA in Formula (on main only)
+        if: github.event_name == 'push'
+        run: |
+          if grep -q 'PLACEHOLDER' Formula/north-starr.rb; then
+            echo "WARNING: Formula contains placeholder SHA256 (will be updated on release)"
+          fi

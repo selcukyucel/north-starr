@@ -1,0 +1,62 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract version from tag
+        id: version
+        run: echo "version=${GITHUB_REF#refs/tags/}" >> "$GITHUB_OUTPUT"
+
+      - name: Download release tarball and calculate SHA256
+        id: sha
+        run: |
+          url="https://github.com/${{ github.repository }}/archive/refs/tags/${{ steps.version.outputs.version }}.tar.gz"
+          echo "Downloading $url"
+          curl -sL "$url" -o release.tar.gz
+          sha=$(shasum -a 256 release.tar.gz | awk '{print $1}')
+          echo "sha256=$sha" >> "$GITHUB_OUTPUT"
+          echo "SHA256: $sha"
+
+      - name: Update Formula
+        run: |
+          sed -i "s|sha256 \".*\"|sha256 \"${{ steps.sha.outputs.sha256 }}\"|" Formula/north-starr.rb
+          sed -i "s|url \".*\"|url \"https://github.com/${{ github.repository }}/archive/refs/tags/${{ steps.version.outputs.version }}.tar.gz\"|" Formula/north-starr.rb
+
+      - name: Update CLI version
+        run: |
+          sed -i "s/^VERSION=\".*\"/VERSION=\"${GITHUB_REF#refs/tags/v}\"/" bin/north-starr
+
+      - name: Update marketplace version
+        run: |
+          version="${GITHUB_REF#refs/tags/v}"
+          sed -i "s/\"version\": \".*\"/\"version\": \"$version\"/g" .claude-plugin/marketplace.json
+
+      - name: Commit and push
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add Formula/north-starr.rb bin/north-starr .claude-plugin/marketplace.json
+          git diff --cached --quiet && echo "No changes to commit" && exit 0
+          git commit -m "Release ${{ steps.version.outputs.version }}: update formula sha256 and versions"
+          git push origin main
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.version.outputs.version }}
+          generate_release_notes: true

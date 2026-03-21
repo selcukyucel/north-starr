@@ -1,5 +1,58 @@
 # Changelog
 
+## v4.0.0 (2026-03-21)
+
+### Agentic Flow Architecture
+
+north-starr adopts the battle-tested agentic flow approach. The entire project has been restructured to match this proven workflow pattern.
+
+### Distribution Simplification
+
+- **Claude Code** → install via the marketplace (`/plugin install north-starr`)
+- **VS Code Copilot** → install via Homebrew (`brew install north-starr`)
+- Removed `.north-starr.json` — distribution channel determines the tool, no config needed
+- Removed `north-starr config` command
+
+### Added
+
+- **`/generate-pr`** — generates pull request descriptions from git diffs against target branch
+- **`/report-weekly`** — generates weekly commit reports as markdown and styled HTML
+- **Release automation** — GitHub Actions workflow tags, calculates SHA256, and updates the Homebrew formula automatically
+
+### Renamed
+
+- `/commit-message-generator` → **`/generate-commit`**
+- `/refactoring-analyzer` → **`/analyze-code`**
+
+### Removed
+
+- **`/architect` skill** — use `/bootstrap` on existing code instead
+- **`/document` skill** — removed
+- **`/layoutplan` skill** — now an agent-only (spawned by `/invert`, available for both Claude Code and Copilot)
+- **Build agent** — removed (users run build/test directly)
+- **Test agent** — removed (users run build/test directly)
+- **`.north-starr.json`** — no longer needed; existing files are safely ignored with a deprecation notice
+
+### Tool-Aware Approval Gates
+
+- `CLAUDE.md` uses plain text prompts for user approval ("What would you like to do next?")
+- `AGENTS.md` uses `vscode_askQuestions` for interactive approval gates in VS Code Copilot
+- Both files share the same project context, only the managed sections differ
+- Bootstrap generates both `CLAUDE.md` and `AGENTS.md` with their respective approval styles
+
+### Simplified Workflow
+
+- "How to Approach Tasks" managed section is more concise (matches agentic flow style)
+- Post-implementation flow now prompts: "Generate commit message", "Generate PR description", "Run /learn", or "Done"
+- Added `.github/instructions/_TEMPLATE.instructions.md` for pattern/landmine rules
+- Layoutplan agent template available for both Claude Code (`.claude/agents/layoutplan.md`) and Copilot (`.github/agents/layoutplan.agent.md`)
+
+### Migration
+
+- `north-starr update` automatically removes old architect skill, build/test agents
+- `.north-starr.json` files are safely ignored with a deprecation notice
+- Existing rules, context files, and project config are preserved
+
 ## v3.0.1 (2026-03-19)
 
 ### Build/Test Command Detection

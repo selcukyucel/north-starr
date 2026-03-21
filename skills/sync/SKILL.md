@@ -43,7 +43,6 @@ The sync process:
 Read the root context files in the project:
 - `CLAUDE.md` — always (if it exists)
 - `AGENTS.md` — always (if it exists)
-- `.github/copilot-instructions.md` — if `copilot` target is enabled in `.north-starr.json` (if it exists)
 
 If a file doesn't exist, skip it.
 
@@ -91,35 +90,13 @@ After syncing content, check if managed sections appear AFTER project context he
 
 If sections are already in the correct order, skip this step.
 
-### Step 3.5: Detect Build & Test Commands
-
-If `.north-starr.json` exists but is missing `build.commands` or `test.commands`, detect them from project config files using the same detection logic as `/bootstrap` (Step 1, items 6-7).
-
-**Actions:**
-1. Read `.north-starr.json`
-2. If `build.commands` is missing, detect from project config files (e.g., `Package.swift` → `swift build`, `package.json` with build script → `npm run build`, `Cargo.toml` → `cargo build`, etc.)
-3. If `test.commands` is missing, detect from project config files (e.g., `Package.swift` → `swift test`, `package.json` with test script → `npm test`, `Cargo.toml` → `cargo test`, etc.)
-4. If commands were detected, confirm with the user: "I detected build command: `[cmd]` and test command: `[cmd]`. Should I save these to `.north-starr.json`?"
-5. Write confirmed commands to `.north-starr.json`
-
-If no commands can be detected, inform the user: "Could not detect build/test commands. You can configure them manually in `.north-starr.json` under `build.commands` and `test.commands`."
-
 ### Step 4: Sync Agents
 
-Check if the North Starr plugin includes agent templates. Look for agent files in both:
-- `templates/claude/agents/*.md` — Claude Code agents
-- `templates/github/agents/*.agent.md` — VS Code Copilot agents
+Check if the layoutplan agent exists in the project's agent directory. If not, copy it from the plugin templates:
 
-**Actions:**
-1. Read `.north-starr.json` to determine which tool targets are enabled
-2. For each enabled target with agent templates:
-   - **Claude Code** (`claude` target): Copy agent files to `.claude/agents/`
-   - **VS Code Copilot** (`copilot` target): Copy agent files to `.github/agents/`
-   - Create the agents directory if it doesn't exist
-   - Overwrite existing agent files — agents are managed by North Starr and always updated to the latest version
-3. Report which agents were added or updated per target
+- `.claude/agents/layoutplan.md` — create if missing, update if outdated
 
-This ensures projects get new agents (like `layoutplan`) without needing to re-run `/bootstrap`.
+Create the agents directory if it doesn't exist.
 
 ### Step 5: Present Summary
 
@@ -129,15 +106,9 @@ This ensures projects get new agents (like `layoutplan`) without needing to re-r
 **Files updated:**
 - CLAUDE.md — [added: section-name, section-name] [updated: section-name] [skipped: section-name (no markers)]
 - AGENTS.md — [added: section-name, section-name] [updated: section-name] [skipped: section-name (no markers)]
-- .github/copilot-instructions.md — [added / updated / skipped / not found]  ← if copilot target
 
 **Agents:**
-- .claude/agents/layoutplan.md — [added / updated / already current]  ← if claude target
-- .claude/agents/build.md — [added / updated / already current]  ← if claude target
-- .claude/agents/test.md — [added / updated / already current]  ← if claude target
-- .github/agents/layoutplan.agent.md — [added / updated / already current]  ← if copilot target
-- .github/agents/build.agent.md — [added / updated / already current]  ← if copilot target
-- .github/agents/test.agent.md — [added / updated / already current]  ← if copilot target
+- .claude/agents/layoutplan.md — [added / updated / already current]
 
 **No changes needed:**
 - [file] — all managed sections are up to date
@@ -147,90 +118,81 @@ This ensures projects get new agents (like `layoutplan`) without needing to re-r
 
 ## Canonical Sections
 
-These are the managed sections that `/sync` injects. Each section below is the **single source of truth** — what gets written into CLAUDE.md and AGENTS.md.
+These are the managed sections that `/sync` injects. CLAUDE.md and AGENTS.md get **different variants** of the `how-to-approach-tasks` section — CLAUDE.md uses plain text prompts while AGENTS.md uses `vscode_askQuestions`.
 
-### Section: `how-to-approach-tasks`
+### Section: `how-to-approach-tasks` (CLAUDE.md variant)
+
+Use this version when syncing `CLAUDE.md`:
 
 ```markdown
 <!-- [NORTH-STARR:how-to-approach-tasks] -->
 ## How to Approach Tasks
 
-**CRITICAL — BLOCKING REQUIREMENT: You MUST complete this checklist and show it to the user BEFORE using any code-modifying tool (Edit, Write, Agent with code changes). This is NOT optional. Skipping this step is a rule violation.**
+Before ANY code change, print this assessment:
 
-**Step 1: Print this complexity assessment (mandatory output before ANY code change):**
+| # | Question | Answer |
+|---|----------|--------|
+| 0 | Is current behavior covered by tests? | Yes / No |
+| 1 | How many files will this change? | 1-2 / 3+ |
+| 2 | Am I creating new types or protocols? | No / Yes |
+| 3 | Does this require cross-module integration? | No / Yes |
 
-```
-## Complexity Assessment
-| # | Question                                  | Answer      |
-|---|-------------------------------------------|-------------|
-| 0 | Is current behavior covered by tests?      | [Yes / No]  |
-| 1 | How many files will this change?           | [1-2 / 3+]  |
-| 2 | Am I creating new types or protocols?      | [No / Yes]  |
-| 3 | Is this module unfamiliar to me?           | [No / Yes]  |
-| 4 | Does this require cross-module integration?| [No / Yes]  |
+**Rules:**
+- **Fast-path**: 1 file, no new types, no cross-module impact, existing test coverage → state the file and proceed. No table needed.
+- Q0 = No → Write tests for current behavior FIRST
+- Q1 = 3+ OR Q2/Q3 = Yes → Run `/invert` automatically. Once the inversion analysis is ready, ask "Proceed with layout plan?" before spawning the `layoutplan` agent. Do not proceed without approval.
+- All Low → State files and wait for confirmation
 
-→ Complexity: [Low / Medium-High]
-→ Action: [State files / Run /invert → layoutplan agent]
-```
+**Workflow:** RED (failing tests) → GREEN (implementation) → Completion summary listing files modified → Ask the user: "What would you like to do next?" with options: Generate commit message, Generate PR description, Run /learn (capture learnings), or Done. Do not run any of these automatically — wait for the user's choice.
 
-**Step 2: Follow the action:**
+**Todo discipline:** Never create a todo item for verification steps like "run tests", "build project", or "verify changes". Testing and building are implicit parts of the implementation workflow, not standalone tasks.
 
-- **If Q0 is No** → Write tests for current behavior FIRST. The Working virtue (highest priority) must be preserved before any change.
-- **If ANY answer is Medium/High** → Run `/invert` BEFORE writing any code. `/invert` will persist its analysis to `.plans/` and spawn the `layoutplan` agent on a separate thread to build the implementation plan — keeping your main context clean for coding. Do not skip. Do not "just start coding."
-- **If ALL answers are Low** → State which files you'll change and wait for user confirmation before proceeding.
-
-**Step 3: Write failing tests first (RED):**
-
-Before writing implementation code, write tests that describe the expected new behavior.
-These tests SHOULD FAIL — they define what "done" looks like.
-Use edge cases and failure modes from the `/invert` analysis if available.
-Skip this step only for: config-only changes, documentation, CI/build scripts, or trivial one-line fixes.
-
-**Step 4: Write code to pass tests (GREEN):**
-
-Write the minimum implementation to make the failing tests pass.
-If during implementation you discover more files are affected than initially estimated, STOP and run `/invert`.
-
-**Step 5: Post-implementation build check:**
-
-After completing code changes, spawn the `build` agent to verify the project compiles.
-The build agent runs on a separate thread — keeping error output out of your main context.
-If the build agent reports failures it cannot fix, address the remaining errors before continuing.
-
-**Step 6: Post-implementation test check:**
-
-After the build passes, spawn the `test` agent to run the full test suite.
-The test agent fixes mechanical breakage (missing imports, renamed methods) automatically.
-Logic/behavior failures are reported back with analysis — you decide whether the test or the code is wrong.
-
-**REMINDER: Reading/exploring code is allowed before this checklist. The gate is on CODE CHANGES (Edit, Write), not on research (Read, Grep, Glob, Agent with research).**
-
-**Resuming work:** Always check `.plans/` for active implementation plans before starting new work.
+Skip test-first for: config, docs, CI, trivial one-line fixes.
+If more files are affected than estimated mid-implementation, STOP and run `/invert`.
+Always check `.plans/` for active plans before starting new work.
 <!-- [/NORTH-STARR:how-to-approach-tasks] -->
 ```
 
-### Section: `auto-learn`
+### Section: `how-to-approach-tasks` (AGENTS.md variant)
+
+Use this version when syncing `AGENTS.md`:
+
+```markdown
+<!-- [NORTH-STARR:how-to-approach-tasks] -->
+## How to Approach Tasks
+
+Before ANY code change, print this assessment:
+
+| # | Question | Answer |
+|---|----------|--------|
+| 0 | Is current behavior covered by tests? | Yes / No |
+| 1 | How many files will this change? | 1-2 / 3+ |
+| 2 | Am I creating new types or protocols? | No / Yes |
+| 3 | Does this require cross-module integration? | No / Yes |
+
+**Rules:**
+- **Fast-path**: 1 file, no new types, no cross-module impact, existing test coverage → state the file and proceed. No table needed.
+- Q0 = No → Write tests for current behavior FIRST
+- Q1 = 3+ OR Q2/Q3 = Yes → Run `/invert` automatically. Once the inversion analysis is ready, use `vscode_askQuestions` to ask "Proceed with layout plan?" (options: "Yes, run layoutplan", "No, let me review first"). Once the plan is ready, use `vscode_askQuestions` again to ask "Plan is ready. Start implementation?" (options: "Yes, start coding", "No, I want to adjust the plan"). Do not proceed without approval at each gate.
+- All Low → State files and wait for confirmation
+
+**Workflow:** RED (failing tests) → GREEN (implementation) → Completion summary listing files modified → Use `vscode_askQuestions` to prompt the developer with options: "Generate commit message", "Generate PR description", "Run /learn (capture learnings)", "Done". Do not run any of these automatically — wait for the developer's choice. If the developer chooses "Generate commit message", generate it, then use `vscode_askQuestions` again to ask "Commit message generated. What next?" with options: "Generate PR description", "Run /learn (capture learnings)", "Done".
+
+**Todo discipline:** Never create a todo item for verification steps like "run tests", "build project", or "verify changes". Testing and building are implicit parts of the implementation workflow, not standalone tasks.
+
+Skip test-first for: config, docs, CI, trivial one-line fixes.
+If more files are affected than estimated mid-implementation, STOP and run `/invert`.
+Always check `.plans/` for active plans before starting new work.
+<!-- [/NORTH-STARR:how-to-approach-tasks] -->
+```
+
+### Section: `auto-learn` (same for both files)
 
 ```markdown
 <!-- [NORTH-STARR:auto-learn] -->
 ## When to Learn Automatically
 
-**Run `/learn` automatically — do not wait for the user to ask — when any of these signals occur during a session:**
-
-| Signal | Example | What to Capture |
-|--------|---------|-----------------|
-| **User corrects your approach** | "No, don't do it that way — use X instead" | **Pattern** — the correct approach so it's followed next time |
-| **Same fix requested twice** | User asks you to fix the same issue or area more than once in a session | **Landmine** — the fragile area and why it keeps breaking |
-| **Your change breaks something** | Tests fail, build breaks, or existing behavior regresses after your edit | **Landmine** — what broke and why, so it's avoided next time |
-| **User rejects generated code** | "That's wrong", "revert that", or user manually undoes your change | **Pattern or Landmine** — capture what was wrong and what's correct |
-| **You discover an undocumented convention** | Code follows a pattern not captured in any rule or context file | **Pattern** — document it before it's forgotten |
-| **You hit a trap not in any landmine rule** | Something looked safe but caused unexpected problems | **Landmine** — document the trap for future sessions |
-
-**How auto-learn works:**
-1. Detect the signal during normal work
-2. Finish the immediate fix or correction first
-3. Then run `/learn` to capture the insight as a pattern or landmine rule
-4. If a pattern or landmine already exists for this area, update it — do not create duplicates. Prompt the user when the update contradicts existing content.
+Run `/learn` automatically when: user corrects your approach, same fix requested twice, your change breaks something, user rejects generated code, you discover an undocumented convention, or you hit a trap not in any landmine rule. Finish the immediate fix first, then capture the insight.
 <!-- [/NORTH-STARR:auto-learn] -->
 ```
 

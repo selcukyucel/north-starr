@@ -1,5 +1,5 @@
 ---
-name: refactoring-analyzer
+name: analyze-code
 description: Analyze code modules and files for refactoring opportunities, code smells, and architectural pattern violations in any language or framework. Use this skill when the user asks to "analyze code smells", "find refactoring opportunities", "check for code quality issues", or "review architecture" for a specific module or file.
 ---
 

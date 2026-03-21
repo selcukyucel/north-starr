@@ -5,25 +5,24 @@
     "email": ""
   },
   "metadata": {
-    "description": "Project bootstrapper for Claude Code — generates CLAUDE.md, rules, and agents from your codebase",
-    "version": "2.5.1"
+    "description": "Agentic development workflow for Claude Code — skills, agents, and project context from your codebase",
+    "version": "4.0.0"
   },
   "plugins": [
     {
       "name": "north-starr",
-      "description": "Project bootstrapper for Claude Code — generates CLAUDE.md, rules, and agents from your codebase",
+      "description": "Agentic development workflow for Claude Code — skills, agents, and project context from your codebase",
       "source": "./",
       "strict": false,
       "skills": [
-        "./skills/architect",
         "./skills/bootstrap",
-        "./skills/commit-message-generator",
-        "./skills/document",
+        "./skills/generate-commit",
         "./skills/invert",
         "./skills/learn",
-        "./skills/layoutplan",
-        "./skills/refactoring-analyzer",
-        "./skills/sync"
+        "./skills/generate-pr",
+        "./skills/analyze-code",
+        "./skills/sync",
+        "./skills/report-weekly"
       ]
     }
   ]

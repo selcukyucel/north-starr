@@ -47,22 +47,6 @@ Generated rules must carry enough depth to be genuinely useful. Use two content 
 - **Context files** (CLAUDE.md, AGENTS.md, copilot-instructions.md): MUST stay under **100 lines** (max 125 if critical context would be lost). Split into multiple scoped files rather than exceeding.
 - **Pattern and landmine rules**: Should be as detailed as the templates require — typically **50-150 lines**. Depth and working code examples matter more than brevity.
 
-## Tool Target Preferences
-
-Before generating any output, check for `.north-starr.json` in the project root:
-
-```json
-{
-  "version": 1,
-  "targets": ["claude", "copilot"]
-}
-```
-
-- If the file exists, only generate artifacts for the listed targets
-- If the file is missing, generate for all tools (backward compatible)
-- "All formats" throughout this skill means **enabled target formats only**
-- `AGENTS.md` is always updated regardless of preferences (it's universal)
-
 ## Workflow
 
 ### Step 1: Identify What Was Learned
@@ -299,7 +283,7 @@ Omit sections that have no entries (Created, Updated, Conflicts Resolved, Deprec
 ## Notes
 
 - This skill is language-agnostic — works for any project type
-- This skill respects tool target preferences — check `.north-starr.json` for enabled targets. Only generate artifacts for enabled tools.
+- Generate artifacts for the current AI tool in use (Claude Code or VS Code Copilot).
 - Every output must be a native artifact for the enabled AI tools (rules, agents, context files) — not a log or template file
 - Read existing files before updating — build on what's there, don't duplicate
 - **Never create a duplicate rule** — always check for existing patterns/landmines covering the same concern before creating new files (Step 2.7)

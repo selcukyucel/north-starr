@@ -34,14 +34,14 @@ For each task, identify:
 **Structure each task as test-first (TDD):**
 - First subtask: write failing tests that define the expected behavior (RED)
 - Subsequent subtasks: implement code to make the tests pass (GREEN)
-- Final subtask: verify via build and test agents
+- Final subtask: verify changes (run build and tests)
 
 Example:
 ```
 **Subtasks:**
 - [ ] Write tests for [behavior] (RED — tests should fail)
 - [ ] Implement [feature] to pass tests (GREEN)
-- [ ] Verify via build + test agents
+- [ ] Verify changes (run build and tests)
 ```
 
 Skip test-first only for tasks that don't produce testable code (documentation, config, CI/build scripts).
