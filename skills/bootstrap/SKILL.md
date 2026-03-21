@@ -336,6 +336,32 @@ tools: codebase
 
 The layoutplan agent is spawned by `/invert` to build implementation plans on a separate thread, keeping the main context clean for coding.
 
+Generate the storymap agent for the current tool:
+
+**Claude Code** — `.claude/agents/storymap.md`:
+
+```yaml
+---
+name: storymap
+description: Decompose PRDs into epics and user stories. Reads .plans/PRD-*.md files and produces structured story maps with dependencies and priorities. Runs on a separate thread.
+model: opus
+tools: Read, Write, Glob, Grep
+memory: project
+---
+```
+
+**VS Code Copilot** — `.github/agents/storymap.agent.md`:
+
+```yaml
+---
+name: storymap
+description: Decompose PRDs into epics and user stories. Reads .plans/PRD-*.md files and produces structured story maps with dependencies and priorities. Runs on a separate thread.
+tools: codebase
+---
+```
+
+The storymap agent is spawned by `/decompose` to break down PRDs into prioritized, dependency-mapped user stories on a separate thread.
+
 Generate additional project-specific agents only if the project clearly warrants them (e.g., an explorer agent for very large codebases).
 
 ## Post-Bootstrap Checklist
@@ -348,6 +374,7 @@ Generate additional project-specific agents only if the project clearly warrants
 - [ ] Landmine rules in the current tool's format — aim for 5-15 depending on project maturity
 - [ ] `_TEMPLATE.md` in the rules directory for future contributions
 - [ ] `layoutplan` agent in the current tool's agent directory
+- [ ] `storymap` agent in the current tool's agent directory
 - [ ] At least one project-tuned explorer agent (optional, for large codebases)
 
 ## Output Summary

@@ -370,7 +370,7 @@ cmd_init() {
       agent_name="$(basename "$agent_file")"
       cp "$agent_file" "$target_dir/.github/agents/$agent_name"
     done
-    print_success ".github/agents/ — VS Code Copilot agents (layoutplan)"
+    print_success ".github/agents/ — VS Code Copilot agents"
   fi
 
   # Copy instructions template

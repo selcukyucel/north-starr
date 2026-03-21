@@ -74,6 +74,20 @@ Before any code change, the AI prints this assessment:
 
 No configuration needed. This is built into every project north-starr bootstraps.
 
+### PRD decomposition
+
+For full product specs, `/decompose` breaks the work into manageable pieces before the complexity gate kicks in:
+
+```
+PRD received
+    │
+    ▼
+/decompose → storymap agent → .plans/STORIES-<name>.md
+    │                              (+ optional GitHub Issues)
+    ▼
+Pick a story → /invert → layoutplan → Implement
+```
+
 ---
 
 ## Install
@@ -105,7 +119,7 @@ All output is **tool-native** — the exact files each tool already reads:
 | Universal context | `AGENTS.md` | `AGENTS.md` |
 | Pattern rules | `.claude/rules/*.md` | `.github/instructions/*.instructions.md` |
 | Landmine rules | `.claude/rules/*.md` | `.github/instructions/*.instructions.md` |
-| Agents | `.claude/agents/layoutplan.md` | `.github/agents/layoutplan.agent.md` |
+| Agents | `.claude/agents/layoutplan.md`, `storymap.md` | `.github/agents/layoutplan.agent.md`, `storymap.agent.md` |
 | Module context | `CLAUDE.md` per module | — |
 
 Pattern rules document **how things are done** in your codebase. Landmine rules document **what to watch out for**. Both are scoped by file path — they fire only when the AI touches matching files.
@@ -131,11 +145,13 @@ Mistakes happen once, not twice.
 | Skill | What it does |
 |-------|--------------|
 | `/invert` | Risk analysis — systematically identifies what could go wrong before implementation |
+| `/decompose` | Decomposes a PRD into prioritized, dependency-mapped epics and user stories. Optionally creates GitHub Issues. |
 | `/learn` | Captures patterns and landmines from experience into native rules |
 
 | Agent | What it does |
 |-------|--------------|
 | `layoutplan` | Builds multi-session implementation plans from `/invert` analysis. Runs on a separate thread. |
+| `storymap` | Decomposes PRDs into epics and user stories with dependencies and priorities. Spawned by `/decompose`. |
 
 ### Project setup
 

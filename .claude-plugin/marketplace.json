@@ -22,7 +22,8 @@
         "./skills/generate-pr",
         "./skills/analyze-code",
         "./skills/sync",
-        "./skills/report-weekly"
+        "./skills/report-weekly",
+        "./skills/decompose"
       ]
     }
   ]

@@ -92,11 +92,13 @@ If sections are already in the correct order, skip this step.
 
 ### Step 4: Sync Agents
 
-Check if the layoutplan agent exists in the project's agent directory. If not, copy it from the plugin templates:
+Sync all agent definitions from the plugin's `templates/claude/agents/` directory into the project's `.claude/agents/` directory:
 
-- `.claude/agents/layoutplan.md` — create if missing, update if outdated
+1. List all `.md` files in the plugin's `templates/claude/agents/` directory
+2. For each agent file found, copy it to `.claude/agents/` — create if missing, update if outdated
+3. Create the `.claude/agents/` directory if it doesn't exist
 
-Create the agents directory if it doesn't exist.
+Current agents: `layoutplan.md`, `storymap.md`
 
 ### Step 5: Present Summary
 
@@ -109,6 +111,7 @@ Create the agents directory if it doesn't exist.
 
 **Agents:**
 - .claude/agents/layoutplan.md — [added / updated / already current]
+- .claude/agents/storymap.md — [added / updated / already current]
 
 **No changes needed:**
 - [file] — all managed sections are up to date
