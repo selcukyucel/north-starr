@@ -1,7 +1,7 @@
 ---
 name: layoutplan
 description: Build implementation plans from inversion analysis. Reads .plans/INVERT-*.md files and project context to produce structured, session-surviving plan files. Runs on a separate thread to keep the main context clean for coding.
-model: sonnet
+model: opus
 tools: Read, Write, Glob, Grep
 memory: project
 ---
