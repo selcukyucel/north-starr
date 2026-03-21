@@ -1,13 +1,8 @@
 # north-starr
 
-<h3 align="center">Your Development Partner That Reads Your Code, Learns Your Patterns, and Gets Smarter Every Session.</h3>
+<h3 align="center">Agentic Development Workflow for AI Coding Tools</h3>
 
 <p align="center"><em>You don't improve productivity by going faster — you improve it by improving control.</em></p>
-
-<p align="center">
-  Install it. Bootstrap your project. Start giving tasks.<br>
-  Your AI already knows how to operate.
-</p>
 
 <p align="center">
   <a href="https://docs.anthropic.com/en/docs/claude-code">Claude Code</a> (marketplace) &middot;
@@ -23,189 +18,188 @@
 
 ## Inspiration
 
-north-starr is inspired by the [Idea Flow](https://leanpub.com/ideaflow) methodology by **Janelle Arty Starr** — a framework for making invisible friction visible in software development.
+north-starr is inspired by [Idea Flow](https://leanpub.com/ideaflow) by **Janelle Arty Starr** — a framework for making invisible friction visible in software development.
 
 The core insight: *you don't improve productivity by going faster, you improve it by improving control.* north-starr applies this to AI-assisted development — your AI partner learns your patterns, remembers your landmines, and works with control, not just speed.
 
-**Learn more about Idea Flow:**
 [The book](https://leanpub.com/ideaflow) &middot; [Talk](https://www.youtube.com/watch?v=qqaOpSJKdWc) &middot; [Podcast](https://legacycoderocks.libsyn.com/idea-flow-with-arty-starr) &middot; [*"The most underrated book in software engineering management"*](https://ericnormand.substack.com/p/the-most-underrated-book-in-software)
 
 ---
 
-## The problem
+## How it works
 
-AI coding tools start every project cold. No memory. No awareness of your conventions. No idea where the landmines are. They generate plausible code that breaks your patterns, ignores your architecture, and repeats mistakes you've already solved.
+Every task goes through a complexity gate. Simple tasks flow fast. Complex tasks get automatic risk analysis and structured planning. The AI decides — you approve.
 
-You end up babysitting the AI instead of building.
+```
+Task given
+    │
+    ▼
+Complexity Assessment
+    │
+    ├─ Low ──────────► State files → Wait for approval → Code
+    │
+    ├─ Medium/High ──► /invert (risk analysis)
+    │                      │
+    │                      ▼
+    │                  layoutplan agent (separate thread)
+    │                      │
+    │                      ▼
+    │                  Approval gate → Code
+    │
+    ▼
+RED (failing tests) → GREEN (implementation)
+    │
+    ▼
+Completion menu:
+    ├─ /generate-commit
+    ├─ /generate-pr
+    ├─ /learn (capture patterns & landmines)
+    └─ Done
+```
 
-## What north-starr does
+### The complexity gate
 
-north-starr gives your AI tools **project-specific intelligence** — generated from your actual codebase, not templates.
+Before any code change, the AI prints this assessment:
 
-Run `/bootstrap` once and your AI knows your architecture, your conventions, your danger zones. Work with it. When it learns something new, that knowledge persists. Next session, it's smarter than the last.
+| # | Question | Answer |
+|---|----------|--------|
+| 0 | Is current behavior covered by tests? | Yes / No |
+| 1 | How many files will this change? | 1-2 / 3+ |
+| 2 | Am I creating new types or protocols? | No / Yes |
+| 3 | Does this require cross-module integration? | No / Yes |
 
-**Language-agnostic. Works for any project** — iOS, web, backend, infrastructure, anything.
+- **All low** → state the files and proceed
+- **Q0 = No** → write tests for current behavior first
+- **Any medium/high** → run `/invert` automatically, then plan before coding
+
+No configuration needed. This is built into every project north-starr bootstraps.
 
 ---
 
-## Three things that matter
+## Install
 
-### 1. Loyal to your code
-
-north-starr reads your actual codebase. It discovers how *your* project is structured, what patterns *your* team follows, where *your* danger zones are. Nothing is templated or assumed. The configuration it generates reflects reality — your reality.
-
-Every rule, every context file, every agent instruction comes from what's actually in your code.
-
-### 2. Orchestration adapts to complexity
-
-Not every task needs the same level of care. north-starr assesses complexity automatically:
-
-- **Simple tasks** — your AI just works, guided by the rules already in place
-- **Medium tasks** — risk analysis runs automatically before implementation
-- **Complex tasks** — full orchestration kicks in: risk analysis, structured planning, then execution
-
-You don't configure this. Skills trigger based on what the task needs. The AI knows when to be careful and when to move fast.
-
-### 3. AI learns from its own mistakes
-
-When your AI gets corrected, discovers an undocumented convention, or breaks something — north-starr captures that as a **pattern rule** (how things should be done) or a **landmine rule** (what to watch out for). These rules feed directly into how your AI tools operate.
-
-No parallel knowledge system. No external database. Everything becomes native configuration that your tools load automatically on the next task.
-
-The result: **mistakes happen once, not twice.**
-
----
-
-## Get started in 60 seconds
-
-### Step 1: Install
-
-**Claude Code** (via marketplace):
+**Claude Code** (marketplace):
 ```
 /plugin marketplace add selcukyucel/north-starr
 /plugin install north-starr
 ```
 
-**VS Code Copilot** (via Homebrew):
+**VS Code Copilot** (Homebrew):
 ```bash
 brew tap selcukyucel/north-starr https://github.com/selcukyucel/north-starr.git
 brew install north-starr
 cd your-project && north-starr init
 ```
 
-### Step 2: Bootstrap
-
-```
-/bootstrap
-```
-
-That's it. north-starr explores your codebase and generates everything your AI needs — architecture context, pattern rules, landmine rules, module-level context files, specialized agents. All in your tool's native format.
-
-Works with any project — iOS, web, backend, infrastructure.
-
-### Step 3: Start working
-
-Give your AI any task. It now understands your project. Rules fire automatically when touching matching files. Context loads when entering specific modules. Complexity is assessed on every task.
-
-As you work, your AI partner gets smarter. That's the whole idea.
+Then run `/bootstrap` — north-starr explores your codebase and generates everything your AI needs.
 
 ---
 
-## How it works
+## What `/bootstrap` generates
 
-```
-  Install  ─────►  /bootstrap  ─────►  Start working
-                        │                     │
-                        │              AI uses rules &
-                        │              context automatically
-                        │                     │
-                        │               You correct AI
-                        │              or discover things
-                        │                     │
-                        ▼                     ▼
-                  Rules, context        /learn captures
-                  & agents generated     new patterns &
-                  from YOUR code         landmines
-                        │                     │
-                        └─────── Next session ─┘
-                                 AI is smarter
-```
+All output is **tool-native** — the exact files each tool already reads:
 
-### What gets generated
+| Artifact | Claude Code | VS Code Copilot |
+|----------|-------------|-----------------|
+| Project context | `CLAUDE.md` | `.github/copilot-instructions.md` |
+| Universal context | `AGENTS.md` | `AGENTS.md` |
+| Pattern rules | `.claude/rules/*.md` | `.github/instructions/*.instructions.md` |
+| Landmine rules | `.claude/rules/*.md` | `.github/instructions/*.instructions.md` |
+| Agents | `.claude/agents/layoutplan.md` | `.github/agents/layoutplan.agent.md` |
+| Module context | `CLAUDE.md` per module | — |
 
-north-starr produces **tool-native configuration** — not its own format, but the exact files each tool already reads:
-
-| What | Purpose |
-|------|---------|
-| `CLAUDE.md` | Architecture, grain, module map, danger zones — auto-loaded by Claude Code |
-| `AGENTS.md` | Universal project context — works with any AI tool |
-| `.claude/rules/` `.github/instructions/` | Conventions scoped by file path — auto-enforced when touching matching files |
-| `.claude/agents/` `.github/agents/` | Project-tuned specialized agents |
-| Module-level `CLAUDE.md` files | Contextual warnings for specific modules (e.g., `src/payments/CLAUDE.md`) |
-
-### The grain concept
-
-Every codebase has a **grain** — a direction that changes flow easily. Adding a new API endpoint might be straightforward. Adding a new data model might require touching 12 files. north-starr identifies this grain and documents it, so your AI knows which changes are safe and which require extra care.
+Pattern rules document **how things are done** in your codebase. Landmine rules document **what to watch out for**. Both are scoped by file path — they fire only when the AI touches matching files.
 
 ---
 
-## Skills
+## The learning loop
+
+When your AI gets corrected, discovers a convention, or breaks something — `/learn` captures it as a pattern or landmine rule. These rules feed directly into how the AI operates next session.
+
+```
+You correct AI → /learn captures it → Rule created → AI follows it next time
+```
+
+Mistakes happen once, not twice.
+
+---
+
+## Skills & Agents
+
+### Workflow skills (triggered automatically by the complexity gate)
 
 | Skill | What it does |
 |-------|--------------|
-| `/bootstrap` | Generates rules, agents, and context from your existing code |
-| `/invert` | Risk analysis before complex tasks — what could go wrong? |
-| `/learn` | Captures patterns and landmines from experience — updates configuration |
-| `/generate-commit` | Analyzes staged changes and generates commit messages |
-| `/generate-pr` | Generates PR descriptions from git diffs |
-| `/analyze-code` | Analyzes code for refactoring opportunities and code smells |
-| `/report-weekly` | Generates weekly commit reports as markdown and styled HTML |
-| `/sync` | Updates managed sections after a plugin update (Claude Code only) |
+| `/invert` | Risk analysis — systematically identifies what could go wrong before implementation |
+| `/learn` | Captures patterns and landmines from experience into native rules |
 
 | Agent | What it does |
 |-------|--------------|
-| `layoutplan` | Persistent implementation plans for multi-session work — spawned by `/invert` |
+| `layoutplan` | Builds multi-session implementation plans from `/invert` analysis. Runs on a separate thread. |
+
+### Project setup
+
+| Skill | What it does |
+|-------|--------------|
+| `/bootstrap` | Generates rules, agents, and context from your existing codebase |
+| `/sync` | Updates managed sections after a plugin update (Claude Code only) |
+
+### Productivity
+
+| Skill | What it does |
+|-------|--------------|
+| `/generate-commit` | Analyzes staged changes and generates commit messages |
+| `/generate-pr` | Generates PR descriptions from git diffs |
+| `/analyze-code` | Finds refactoring opportunities, code smells, and architecture violations |
+| `/report-weekly` | Generates weekly commit reports as markdown and styled HTML |
+
+---
+
+## The 7 Code Virtues
+
+All patterns, landmines, and refactoring analysis are guided by the Code Virtues — prioritized top to bottom. Higher virtues win when they conflict.
+
+| # | Virtue | Opposite | Meaning |
+|---|--------|----------|---------|
+| 1 | **Working** | incomplete | Functions correctly; tests prove it |
+| 2 | **Unique** | duplicated | One source of truth; no copy-paste |
+| 3 | **Simple** | complex | Fewer entities, operations, relationships |
+| 4 | **Clear** | puzzling | Intent obvious to reader |
+| 5 | **Easy** | difficult | Adding/modifying code is not arduous |
+| 6 | **Developed** | primitive | Mature abstractions, well-designed types |
+| 7 | **Brief** | chatty | Concise without sacrificing higher virtues |
+
+---
+
+## The grain concept
+
+Every codebase has a **grain** — a direction that changes flow easily. Adding a new API endpoint might be straightforward. Adding a new data model might require touching 12 files. north-starr identifies this grain so your AI knows which changes are safe and which require extra care.
 
 ---
 
 ## Update & Uninstall
 
-### Update
-
-**Plugin:**
+**Claude Code:**
 ```
-/plugin update north-starr
-```
-
-**Homebrew:**
-```bash
-brew update && brew upgrade north-starr
-north-starr update    # updates skills in current project
-```
-
-### Uninstall
-
-**Plugin:**
-```
-/plugin uninstall north-starr
+/plugin update north-starr        # update
+/plugin uninstall north-starr     # uninstall
 ```
 
 **Homebrew:**
 ```bash
-brew uninstall north-starr && brew untap selcukyucel/north-starr
+brew upgrade north-starr          # update CLI
+north-starr update                # update skills in current project
+brew uninstall north-starr        # uninstall
 ```
 
-### CLI reference (Homebrew / VS Code Copilot)
+### CLI reference (Homebrew only)
 
 ```bash
 north-starr init       # Install skills in a project
 north-starr update     # Update skills (preserves your config)
 north-starr status     # Check setup status
 north-starr version    # Show version
-north-starr help       # Show help
 ```
-
-The Homebrew CLI generates VS Code Copilot artifacts (`.github/`). Claude Code users should install via the marketplace instead.
 
 ---
 
@@ -215,7 +209,7 @@ The Homebrew CLI generates VS Code Copilot artifacts (`.github/`). Claude Code u
 
 ## Contributing
 
-Contributions are welcome! If you've improved skills, found edge cases, or adapted north-starr for specific workflows, please open a PR.
+Contributions welcome. If you've improved skills, found edge cases, or adapted north-starr for specific workflows, open a PR.
 
 ## License
 
