@@ -1,0 +1,8 @@
+{
+  "name": "north-starr",
+  "description": "Agentic development workflow for Claude Code — skills, agents, and project context from your codebase",
+  "author": {
+    "name": "Selcuk Yucel",
+    "email": ""
+  }
+}
