@@ -68,67 +68,58 @@ If a project tracking URL pattern is documented in AGENTS.md or CLAUDE.md, use i
 
 If no ticket is found, leave a placeholder: `<!-- Add ticket link here -->`
 
-### 4. Detect PR Template
-
-Check for an existing PR template in the repository:
-1. `.github/PULL_REQUEST_TEMPLATE.md`
-2. `.github/pull_request_template.md`
-3. `docs/pull_request_template.md`
-
-If found, use that template's structure. If not found, use the generic template below.
-
-### 5. Generate Validation Steps
+### 4. Generate Validation Steps
 
 Based on the changes, generate concrete steps for local validation:
 - If UI changes: include steps to navigate to the affected screen and verify the visual change
 - If behavior changes: include steps to trigger the behavior and verify the outcome
 - If refactor/migration: include steps to verify existing behavior is unchanged
 
-### 6. Fill the PR Template
+### 5. Fill the PR Template
 
-If no project-specific template was found, use this generic structure:
+Use this template:
 
 ```markdown
-# Description
+## Summary
+<!-- What does this PR do? One or two sentences max. -->
 
-> [1-2 sentence summary of the PR's purpose and impact]
+## Motivation / Context
+<!-- WHY are these changes being made? Link to ticket/issue if applicable. -->
+Closes #
 
-# Ticket
+## Type of Change
+- [ ] New feature
+- [ ] Bug fix
+- [ ] Refactoring (no functional changes)
+- [ ] Performance improvement
+- [ ] Documentation / CI/CD
 
-[Ticket ID/URL or placeholder]
+## Changes Made
+<!-- Bullet points of key changes. Not every file — just the meaningful decisions. -->
+-
+-
 
-# Changes
+## How to Test
+<!-- Step-by-step so a reviewer can verify it works. -->
+1.
+2.
 
-[Bulleted list of specific changes made, grouped by area if the PR touches multiple modules]
+## Review Focus
+<!-- Tell reviewers WHERE you want their attention most. -->
+-
 
-<!-- Include the before/after table only if UI changes were made -->
-<!--
-<table>
-<tr>
-<td>Before</td>
-<td>After</td>
-</tr>
-<td><img src="URL_TO_BEFORE_IMAGE" width="350"></td>
-<td><img src="URL_TO_AFTER_IMAGE" width="350"></td>
-</tr>
-</table>
--->
-
-## How to Validate Locally
-
-> [Numbered steps to validate the changes]
+## Screenshots / Demo
+<!-- For UI changes: before/after screenshots or screen recordings. -->
 
 ## Checklist
-
-- [x/  ] Tests added/updated for introduced changes
-- [x/  ] Documentation has been added or updated as necessary
-
-## Further Comments
-
-[Optional: migration notes, known limitations, follow-up work, or context for reviewers]
+- [ ] Self-reviewed my own code
+- [ ] No new warnings/errors introduced
+- [ ] Tests added or updated
+- [ ] Existing tests pass locally
+- [ ] Docs updated if needed
 ```
 
-### 7. Present the Output
+### 6. Present the Output
 
 Output the generated PR description in a fenced markdown block.
 
@@ -145,7 +136,7 @@ If UI changes were detected, remind the user to add before/after screenshots by 
 
 - **Be specific, not generic** — "Add battery optimization toggle to Energy Settings" not "Update feature"
 - **Match project vocabulary** — use terms from AGENTS.md or CLAUDE.md context files
-- **Reference modules by name** — "Updates `UserDomain` client and `Profile` feature component"
+- **Reference modules by name** — "Updates `User` client and `Profile` feature component"
 - **Checklist accuracy** — mark the test checkbox as checked only if the diff actually contains test changes
 - **Keep descriptions scannable** — use bullet points, keep paragraphs short
 - **Validation steps should be actionable** — "Open the app > Navigate to Settings > Tap Profile" not "Test the feature"
@@ -158,36 +149,45 @@ If UI changes were detected, remind the user to add before/after screenshots by 
 **Changes:** New history screen, new API endpoint
 
 ```markdown
-# Description
+## Summary
+Add user activity history screen showing past events with timestamps and details.
 
-> Add user activity history screen showing past events with timestamps and details.
+## Motivation / Context
+Users need visibility into their past activity for auditing and personal tracking.
+Closes #5678
 
-# Ticket
+## Type of Change
+- [x] New feature
+- [ ] Bug fix
+- [ ] Refactoring (no functional changes)
+- [ ] Performance improvement
+- [ ] Documentation / CI/CD
 
-PROJ-5678
-
-# Changes
-
+## Changes Made
 - Add `HistoryListView` displaying events in a chronological list
-- Add `/api/history` endpoint to `UserClient`
+- Add `/api/history` endpoint to `User`
 - Add `HistoryEvent` model with JSON decoding
-- Add unit tests for the history service and snapshot tests for the view
+- Cursor-based pagination matching the API contract (limited to 90 days)
 
-## How to Validate Locally
+## How to Test
+1. Build and run the app on simulator
+2. Navigate to Profile → Activity History
+3. Verify event list loads with timestamps
+4. Scroll to bottom to verify pagination loads more events
 
-> 1. Build and run the app on simulator
-> 2. Navigate to Profile → Activity History
-> 3. Verify event list loads with timestamps
-> 4. Scroll to bottom to verify pagination loads more events
+## Review Focus
+- Pagination logic in `HistoryListView` — edge case handling for empty history
+- JSON decoding of `HistoryEvent` — nullable fields
+
+## Screenshots / Demo
+<!-- Add screenshots of the history screen -->
 
 ## Checklist
-
-- [x] Tests added/updated for introduced changes
-- [ ] Documentation has been added or updated as necessary
-
-## Further Comments
-
-Pagination uses cursor-based approach matching the API contract. History is limited to 90 days per API spec.
+- [x] Self-reviewed my own code
+- [x] No new warnings/errors introduced
+- [x] Tests added or updated
+- [x] Existing tests pass locally
+- [ ] Docs updated if needed
 ```
 
 ### Example 2: Bug Fix PR
@@ -196,30 +196,42 @@ Pagination uses cursor-based approach matching the API contract. History is limi
 **Changes:** Fix nil handling in data loader
 
 ```markdown
-# Description
+## Summary
+Fix crash when loading profile for users without premium subscription.
 
-> Fix crash when loading profile for users without premium subscription.
+## Motivation / Context
+Users without premium subscriptions hit a nil dereference on the profile screen.
+Closes #9012
 
-# Ticket
+## Type of Change
+- [ ] New feature
+- [x] Bug fix
+- [ ] Refactoring (no functional changes)
+- [ ] Performance improvement
+- [ ] Documentation / CI/CD
 
-PROJ-9012
-
-# Changes
-
-- Add nil check for `profile.premiumDetails` in `ProfileLoader`
-- Update `UserProfile` model to make `premiumDetails` optional
+## Changes Made
+- Add nil check for `profile.details` in `ProfileLoader`
+- Update `UserProfile` model to make `premiumdetails` optional
 - Add test case for users without premium subscription
 
-## How to Validate Locally
+## How to Test
+1. Build and run the app on simulator
+2. Log in as a user without premium subscription
+3. Navigate to Profile
+4. Verify the screen loads without crashing
+5. Verify premium features are appropriately hidden
 
-> 1. Build and run the app on simulator
-> 2. Log in as a user without premium subscription
-> 3. Navigate to Profile
-> 4. Verify the screen loads without crashing
-> 5. Verify premium features are appropriately hidden
+## Review Focus
+- Optionality change on `UserProfile.premiumDetails` — ensure callers handle nil
+
+## Screenshots / Demo
+<!-- N/A — no UI changes -->
 
 ## Checklist
-
-- [x] Tests added/updated for introduced changes
-- [ ] Documentation has been added or updated as necessary
+- [x] Self-reviewed my own code
+- [x] No new warnings/errors introduced
+- [x] Tests added or updated
+- [x] Existing tests pass locally
+- [ ] Docs updated if needed
 ```

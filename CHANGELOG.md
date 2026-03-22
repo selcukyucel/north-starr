@@ -1,5 +1,12 @@
 # Changelog
 
+## v4.2.1 (2026-03-22)
+
+### Changed
+
+- **`/generate-pr`** — replaced generic PR template with a structured format (Summary, Motivation/Context, Type of Change, Changes Made, How to Test, Review Focus, Screenshots/Demo, Checklist)
+- Removed automatic PR template detection — the skill now always uses the built-in template
+
 ## v4.2.0 (2026-03-22)
 
 ### Plugin Auto-Discovery
