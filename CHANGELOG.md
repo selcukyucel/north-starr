@@ -1,5 +1,37 @@
 # Changelog
 
+## v4.2.0 (2026-03-22)
+
+### Plugin Auto-Discovery
+
+- Added root-level `agents/` directory and `plugin.json` for Claude Code auto-discovery — agents (layoutplan, storymap) are now picked up automatically when the plugin is installed
+- Fixed plugin manifest conflict by setting `strict: true` in marketplace entry
+
+### Storymap Agent Improvements
+
+- Replaced project-specific example with generic `PRD-my-feature` in storymap agent for broader applicability
+
+## v4.1.1 (2026-03-22)
+
+### Patch
+
+- Clean release of `/decompose` skill and storymap agent (version bump only)
+
+## v4.1.0 (2026-03-21)
+
+### Added
+
+- **`/decompose` skill** — decomposes PRDs into prioritized, dependency-mapped epics and user stories
+- **Storymap agent** — thread-isolated agent for PRD-to-backlog workflows, available for both Claude Code (`.claude/agents/storymap.md`) and VS Code Copilot (`.github/agents/storymap.agent.md`)
+- `/sync` now handles all agents (layoutplan, storymap) instead of only layoutplan
+- Rewrote README for agentic workflow with Inspiration section upfront
+
+## v4.0.1 (2026-03-21)
+
+### Changed
+
+- Layoutplan agent now uses Opus model for higher quality plan generation
+
 ## v4.0.0 (2026-03-21)
 
 ### Agentic Flow Architecture
