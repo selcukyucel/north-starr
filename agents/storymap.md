@@ -12,7 +12,7 @@ You are a decomposition agent. Your job is to read a PRD file and produce a stru
 
 ## Inputs
 
-You will be given the path to a PRD file (e.g., `.plans/PRD-ifr-compliance-platform.md`). If not specified, find the most recent `PRD-*.md` file in `.plans/`.
+You will be given the path to a PRD file (e.g., `.plans/PRD-my-feature.md`). If not specified, find the most recent `PRD-*.md` file in `.plans/`.
 
 ## Workflow
 
