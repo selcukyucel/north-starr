@@ -13,7 +13,7 @@
       "name": "north-starr",
       "description": "Agentic development workflow for Claude Code — skills, agents, and project context from your codebase",
       "source": "./",
-      "strict": false,
+      "strict": true,
       "skills": [
         "./skills/bootstrap",
         "./skills/generate-commit",
