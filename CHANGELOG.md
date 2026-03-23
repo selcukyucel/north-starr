@@ -1,5 +1,17 @@
 # Changelog
 
+## v4.3.0 (2026-03-23)
+
+### Added
+
+- **Chief AI Product Owner agent (`chief-ai-po`)** — reads AI project PRDs and produces story maps with inverted failure modes, 5 mandatory AI safety stories (SA.1–SA.5), graceful degradation criteria, and human oversight checkpoints
+- Agent available for both Claude Code (`.claude/agents/`) and VS Code Copilot (`.github/agents/`)
+
+### Changed
+
+- **`/decompose` skill** — now auto-detects AI projects (3+ keyword matches) and offers routing to `chief-ai-po`, `storymap`, or both
+- Decompose summary output includes AI-specific metrics (pre-mortem risks, safety stories, oversight checkpoints, degradation coverage)
+
 ## v4.2.1 (2026-03-22)
 
 ### Changed

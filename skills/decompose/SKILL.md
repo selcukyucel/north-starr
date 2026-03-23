@@ -38,6 +38,7 @@ Do a lightweight scan of the PRD to identify:
 - **Delivery phases** — timelines or release milestones if present
 - **Technical architecture** — stack, components, integrations mentioned
 - **Scope indicators** — count of distinct features, workflows, user types
+- **AI project indicators** — scan for keywords: AI, ML, model, LLM, GPT, inference, training, embeddings, RAG, vector, prompt, hallucination, confidence, fine-tuning, NLP, neural, agent, orchestration. If 3+ distinct indicators found, flag as AI project.
 
 ### Step 3: Present Scope Summary & Confirm
 
@@ -53,8 +54,20 @@ Estimated epics:       [range]
 Estimated stories:     [range]
 Delivery phases:       [list if present]
 Technical stack:       [brief summary if present]
+AI Project:           [Yes / No]
 
+[If AI Project = Yes:]
+This PRD describes an AI project. The chief-ai-po agent will produce AI-augmented stories
+with inverted failure modes, safety stories, and graceful degradation criteria.
+
+Options:
+  1. chief-ai-po only — AI-augmented stories (recommended for AI-native projects)
+  2. storymap only — standard stories (no AI-specific analysis)
+  3. Both — storymap first, then chief-ai-po augments with AI layer
+
+[If AI Project = No:]
 The storymap agent will run on a separate thread to decompose this PRD.
+
 Proceed?
 ```
 
@@ -81,23 +94,30 @@ Wait for user approval before continuing.
 
 This serves as the input file for the `storymap` agent and as a permanent record.
 
-### Step 5: Spawn the Storymap Agent
+### Step 5: Spawn the Decomposition Agent
 
-Spawn the `storymap` agent (available in `.claude/agents/` or `.github/agents/`) on a separate thread to keep the main context clean.
+Choose the agent based on AI project detection and the user's selection from Step 3.
 
-Pass the agent the PRD file path:
+**Option 1 — chief-ai-po only (AI projects):**
+Spawn the `chief-ai-po` agent on a separate thread:
+
+> "Decompose `.plans/PRD-<name>.md` into AI-augmented epics and user stories. Write output to `.plans/STORIES-AI-<name>.md`."
+
+The agent will produce stories with inverted failure modes, 5 mandatory AI safety stories (SA.1-SA.5), human oversight checkpoints, and graceful degradation criteria on every AI-touching story.
+
+**Option 2 — storymap only (non-AI projects, or user choice):**
+Spawn the `storymap` agent on a separate thread:
 
 > "Decompose `.plans/PRD-<name>.md` into epics and user stories. Write output to `.plans/STORIES-<name>.md`."
 
-The agent will:
-- Read the PRD file
-- Identify epics by theme/workflow
-- Decompose each epic into user stories with acceptance criteria
-- Map dependencies at both epic and story level
-- Assign priorities (from the PRD's scheme or derived)
-- Estimate sizes (S/M/L/XL)
-- Flag complex stories as "invert candidates"
-- Write the complete story map to `.plans/STORIES-<name>.md`
+The agent will identify epics, decompose into user stories with acceptance criteria, map dependencies, assign priorities, estimate sizes, and flag invert candidates.
+
+**Option 3 — Both (storymap then chief-ai-po):**
+Spawn `storymap` first. After it completes and writes `.plans/STORIES-<name>.md`, spawn `chief-ai-po`:
+
+> "Augment `.plans/PRD-<name>.md` with AI-specific analysis. The base story map is at `.plans/STORIES-<name>.md`. Write output to `.plans/STORIES-AI-<name>.md`."
+
+The chief-ai-po agent will read both files and produce an AI-augmented version that cross-references existing stories rather than duplicating them.
 
 ### Step 6: Present Results & Offer GitHub Issues
 
@@ -105,7 +125,7 @@ The agent will:
 
 Once the agent completes:
 
-1. Read `.plans/STORIES-<name>.md` and present a summary
+1. Read the output file (`.plans/STORIES-<name>.md` or `.plans/STORIES-AI-<name>.md`) and present a summary
 2. **Immediately ask** the user whether to create GitHub Issues
 
 Present this as a single message:
@@ -124,6 +144,18 @@ Suggested starting stories (no dependencies):
   • S2.1 — <title> [size] [invert candidate?]
 
 Full story map: .plans/STORIES-<name>.md
+```
+
+If chief-ai-po was used, add these lines to the summary:
+
+```
+AI Analysis:
+  Pre-mortem risks:              [count]
+  AI safety stories (SA.1-SA.5): 5
+  Human oversight checkpoints:   [count]
+  Graceful degradation coverage: [count]/[total] stories
+
+Full AI story map: .plans/STORIES-AI-<name>.md
 ```
 
 Then ask:
