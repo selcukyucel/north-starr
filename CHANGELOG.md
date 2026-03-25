@@ -1,5 +1,24 @@
 # Changelog
 
+## v4.4.1 (2026-03-25)
+
+### Plugin Cache Staleness Fix
+
+**Action required for existing Claude Code users:** Claude Code caches the plugin locally and does not auto-update when a new version is released. If you installed north-starr before v4.4.1, run this once to get the latest version:
+
+```bash
+cd ~/.claude/plugins/marketplaces/north-starr && git fetch origin && git reset --hard origin/main && cd -
+rm -rf ~/.claude/plugins/cache/north-starr
+```
+
+Then restart Claude Code (or run `/plugin install north-starr`), and run `/sync` in your projects. **You only need to do this once** — from v4.4.1 onward, `/sync` detects stale caches automatically.
+
+### Added
+
+- **`/sync` staleness detection (Step 0)** — before syncing, `/sync` now fetches from origin and compares HEAD vs origin/main. If the plugin cache is behind, it warns and stops — preventing silent stale syncs that report "already current" with outdated templates
+- **`north-starr cache-update` CLI command** — automates the marketplace fetch + install cache clear in a single command. Replaces the manual 4-step post-release workaround
+- Updated `.claude/rules/plugin-release-cache.md` with automated fix instructions
+
 ## v4.4.0 (2026-03-25)
 
 ### Autoimprove — Systematic Skill Optimization
