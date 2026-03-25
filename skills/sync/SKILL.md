@@ -40,6 +40,45 @@ The sync process:
 
 ## Workflow
 
+### Step 0: Check Plugin Freshness
+
+Before syncing, check whether the installed plugin is stale. This prevents syncing against outdated templates that silently serve old content.
+
+1. **Locate the marketplace cache:** Check if `~/.claude/plugins/marketplaces/north-starr/` exists (this is where Claude Code caches the plugin repo).
+
+2. **Fetch and compare:** Run these commands via Bash:
+   ```bash
+   cd ~/.claude/plugins/marketplaces/north-starr && git fetch origin 2>/dev/null && git rev-parse HEAD && git rev-parse origin/main
+   ```
+
+3. **Evaluate freshness:**
+   - If the directory doesn't exist → skip this check (user may have installed differently)
+   - If `HEAD` equals `origin/main` → plugin is current, proceed to Step 1
+   - If `HEAD` is behind `origin/main` → the plugin cache is stale
+
+4. **If stale**, present this warning and stop:
+   ```
+   ⚠ Your North Starr plugin cache is stale.
+   The installed version is behind the latest release. Syncing now would
+   use outdated templates — your agents and managed sections would not
+   actually update.
+
+   Run these commands to update, then re-run /sync:
+
+     cd ~/.claude/plugins/marketplaces/north-starr && git reset --hard origin/main && cd -
+     rm -rf ~/.claude/plugins/cache/north-starr
+
+   Then reload plugins (restart Claude Code or run /plugin install north-starr).
+   ```
+
+   Do NOT proceed with the sync. The user must update the cache first, otherwise `/sync` silently syncs stale content and reports "already current."
+
+5. **Version cross-check (optional):** If `.claude-plugin/marketplace.json` is readable, compare its `metadata.version` with the version in the marketplace cache's `marketplace.json`. Log the versions in the sync preview for transparency:
+   ```
+   Plugin version: 4.4.0 (installed) vs 4.5.0 (latest) — STALE
+   Plugin version: 4.5.0 (installed) vs 4.5.0 (latest) — current
+   ```
+
 ### Step 1: Read Existing Files
 
 Read the root context files in the project:

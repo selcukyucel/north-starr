@@ -12,19 +12,30 @@ After every release (tag push + CI workflow), the local Claude Code plugin
 marketplace cache does NOT auto-update. Users (including us) will still see
 the old version until the cache is refreshed.
 
-## Post-release steps (run locally after CI completes)
+## Automated fix
+
+Run the CLI command:
 
 ```bash
-# 1. Pull the CI-generated version-bump commit
+git pull origin main && north-starr cache-update
+```
+
+This fetches the latest marketplace commit, resets the local clone, and
+clears the install cache. Then restart Claude Code (or `/plugin install
+north-starr`) and run `/sync` in consuming projects.
+
+`/sync` also detects staleness automatically — if the plugin cache is behind
+`origin/main`, it warns and stops before syncing stale templates.
+
+## Manual fallback
+
+If `north-starr cache-update` isn't available (older CLI version):
+
+```bash
 git pull origin main
-
-# 2. Refresh the marketplace cache so `/plugin install` sees the new version
 cd ~/.claude/plugins/marketplaces/north-starr && git fetch origin && git reset --hard origin/main && cd -
-
-# 3. Clear the stale plugin install cache
 rm -rf ~/.claude/plugins/cache/north-starr
-
-# 4. In any consuming project, re-run:  /plugin install north-starr
+# then /plugin install north-starr + /sync
 ```
 
 ## Why this matters

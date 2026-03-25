@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-VERSION="4.4.0"
+VERSION="4.4.1"
 NORTH_STARR_HOME="${NORTH_STARR_HOME:-}"
 
 # Resolve where templates live
@@ -658,6 +658,70 @@ cmd_status() {
   echo ""
 }
 
+# ─── CACHE-UPDATE ─────────────────────────────────────────────────────────────
+
+cmd_cache_update() {
+  print_banner
+
+  echo -e "${BOLD}  Updating Claude Code plugin cache...${NC}"
+  echo ""
+
+  local marketplace_dir="$HOME/.claude/plugins/marketplaces/north-starr"
+  local cache_dir="$HOME/.claude/plugins/cache/north-starr"
+
+  # Step 1: Update marketplace clone
+  if [[ -d "$marketplace_dir" ]]; then
+    cd "$marketplace_dir"
+    git fetch origin 2>/dev/null
+
+    local local_sha remote_sha
+    local_sha="$(git rev-parse HEAD 2>/dev/null)"
+    remote_sha="$(git rev-parse origin/main 2>/dev/null)"
+
+    if [[ "$local_sha" == "$remote_sha" ]]; then
+      print_success "Marketplace cache is already current"
+      local installed_version
+      installed_version="$(grep -o '"version": *"[^"]*"' .claude-plugin/marketplace.json 2>/dev/null | head -1 | sed 's/.*"version": *"//;s/"//')"
+      if [[ -n "$installed_version" ]]; then
+        print_info "Version: v${installed_version}"
+      fi
+      cd - > /dev/null
+      echo ""
+      return
+    fi
+
+    git reset --hard origin/main > /dev/null 2>&1
+    print_success "Marketplace cache updated"
+
+    local new_version
+    new_version="$(grep -o '"version": *"[^"]*"' .claude-plugin/marketplace.json 2>/dev/null | head -1 | sed 's/.*"version": *"//;s/"//')"
+    if [[ -n "$new_version" ]]; then
+      print_info "Version: v${new_version}"
+    fi
+
+    cd - > /dev/null
+  else
+    print_warn "Marketplace cache not found at $marketplace_dir"
+    print_info "Install the plugin first: /plugin install north-starr"
+    echo ""
+    return 1
+  fi
+
+  # Step 2: Clear stale install cache
+  if [[ -d "$cache_dir" ]]; then
+    rm -rf "$cache_dir"
+    print_success "Cleared install cache"
+  else
+    print_info "No install cache to clear"
+  fi
+
+  echo ""
+  echo -e "${GREEN}${BOLD}  Done!${NC} Plugin cache updated."
+  echo -e "  ${DIM}Restart Claude Code or run /plugin install north-starr to pick up the new version.${NC}"
+  echo -e "  ${DIM}Then run /sync in your project to update managed sections and agents.${NC}"
+  echo ""
+}
+
 # ─── HELP ──────────────────────────────────────────────────────────────────────
 
 cmd_help() {
@@ -665,11 +729,12 @@ cmd_help() {
   echo -e "${BOLD}  Usage:${NC} north-starr <command> [directory]"
   echo ""
   echo -e "${BOLD}  Commands:${NC}"
-  echo -e "    ${CYAN}init${NC}     [dir]   Install North Starr skills in a project"
-  echo -e "    ${CYAN}update${NC}   [dir]   Update skills (preserves your config)"
-  echo -e "    ${CYAN}status${NC}   [dir]   Check setup status"
-  echo -e "    ${CYAN}help${NC}             Show this help message"
-  echo -e "    ${CYAN}version${NC}          Show version"
+  echo -e "    ${CYAN}init${NC}           [dir]   Install North Starr skills in a project"
+  echo -e "    ${CYAN}update${NC}         [dir]   Update skills (preserves your config)"
+  echo -e "    ${CYAN}status${NC}         [dir]   Check setup status"
+  echo -e "    ${CYAN}cache-update${NC}           Refresh Claude Code plugin cache"
+  echo -e "    ${CYAN}help${NC}                   Show this help message"
+  echo -e "    ${CYAN}version${NC}                Show version"
   echo ""
   echo -e "${BOLD}  Distribution:${NC}"
   echo -e "    VS Code Copilot → Install via Homebrew (this CLI)"
@@ -711,6 +776,9 @@ main() {
       ;;
     status)
       cmd_status "${2:-}"
+      ;;
+    cache-update)
+      cmd_cache_update
       ;;
     help|--help|-h)
       cmd_help
