@@ -40,11 +40,12 @@ Run `/learn` automatically when any of these signals occur during a session:
 
 Generated rules must carry enough depth to be genuinely useful. Use two content structures from the project's knowledge base:
 
-- **Pattern structure** (`skills/_references/patterns/_TEMPLATE.md`) — for conventions and reusable approaches. Follow the full template: When to Use, Problem It Solves, Core Approach with step-by-step code examples, Best Practices, Common Mistakes with wrong/fix code, Variations, Related patterns and landmines.
-- **Landmine structure** (`skills/_references/landmines/_TEMPLATE.md`) — for danger zones and known traps. Follow the full template: Severity, Symptoms, Root Cause, The Trap, Safe Approach (Don't/Do with code), Validation, Prevention, Related patterns and landmines.
+- **Pattern structure** (`skills/_references/patterns/_TEMPLATE.md`) — for conventions and reusable approaches. Follow the full template: Virtues (which code virtues it serves), When to Use, Problem It Solves, Core Approach with step-by-step code examples, Complete Example, Best Practices, Common Mistakes with wrong/fix code, Variations, Testing This Pattern, Performance Considerations, Related patterns and landmines, Changelog.
+- **Landmine structure** (`skills/_references/landmines/_TEMPLATE.md`) — for danger zones and known traps. Follow the full template: Severity with evidence, Threatens (which code virtues it endangers), Symptoms, Root Cause, The Trap, Safe Approach (Don't/Do with code), Validation, Real-World Impact (cite specific instances), Prevention, Related patterns and landmines, Origin, Changelog.
+- **Code Virtues** (`skills/_references/virtues/code-virtues.md`) — the 7 code virtues (Working, Unique, Simple, Clear, Easy, Developed, Brief) used to tag patterns and landmines.
 
 **Line limits:**
-- **Context files** (CLAUDE.md, AGENTS.md, copilot-instructions.md): MUST stay under **100 lines** (max 125 if critical context would be lost). Split into multiple scoped files rather than exceeding.
+- **Context files** (CLAUDE.md, AGENTS.md): MUST stay under **100 lines** (max 125 if critical context would be lost). Split into multiple scoped files rather than exceeding.
 - **Pattern and landmine rules**: Should be as detailed as the templates require — typically **50-150 lines**. Depth and working code examples matter more than brevity.
 
 ## Workflow
@@ -71,10 +72,10 @@ Map each learning to the right artifact:
 | A convention that should always be followed | **Pattern rule** — create in enabled tool formats (`.claude/rules/`, `.github/instructions/`) using pattern structure |
 | A danger zone or known trap | **Landmine rule** — create in enabled tool formats using landmine structure, plus module-level `CLAUDE.md` Caution section (if `claude` enabled) |
 | A reusable pattern for how things are done | **Pattern rule** — create in enabled tool formats using pattern structure |
-| Architecture understanding deepened | Root context — update `CLAUDE.md` (if `claude` enabled), `AGENTS.md`, `.github/copilot-instructions.md` (if `copilot` enabled) |
+| Architecture understanding deepened | Root context — update `CLAUDE.md` (if `claude` enabled), `AGENTS.md` |
 | A new term was clarified | Root context — update Vocabulary section in enabled context files |
 | The explorer agent needs more context | Agent files — update `.claude/agents/` (if `claude` enabled) and/or `.github/agents/` (if `copilot` enabled) |
-| A recurring task type was identified | Suggest creating a new skill |
+| A recurring task type was identified | Suggest creating a new skill — criteria: you've done the same multi-step workflow 2+ times in different contexts, it has a consistent input/output shape, and it would benefit from a reusable prompt. Present the suggestion with: name, what it would do, what inputs it takes, estimated steps. Don't create the skill — just suggest it. |
 
 ### Step 2.5: Detect Conflicts With Existing Configuration
 
@@ -199,13 +200,13 @@ When a convention, constraint, or danger was discovered, create in each enabled 
 
 The rule body is the same across tools — only the frontmatter differs. Choose the appropriate structure:
 
-**Pattern Rules** — for conventions and reusable approaches. Follow the **full pattern template** from `skills/_references/patterns/_TEMPLATE.md`. Include: Category, **Virtues** (which of the 7 Code Virtues this pattern serves — see `skills/_references/virtues/code-virtues.md`), When to Use / Not Good For, Problem It Solves, The Pattern (step-by-step with code), Best Practices, Common Mistakes (wrong/fix code), Variations, Related.
+**Pattern Rules** — for conventions and reusable approaches. Follow the **full pattern template** from `skills/_references/patterns/_TEMPLATE.md`. Include: Category, **Virtues** (which code virtues it serves), When to Use / Not Good For, Problem It Solves, The Pattern (step-by-step with code from the actual codebase), Complete Example, Best Practices, Common Mistakes (wrong/fix code), Variations, Testing This Pattern (with test code), Performance Considerations, Related (with relationship types: Composes with, Alternative to, Prevents, Misapplication causes), Changelog.
 
-**Landmine Rules** — for danger zones and known traps. Follow the **full landmine template** from `skills/_references/landmines/_TEMPLATE.md`. Include: Severity, **Threatens** (which of the 7 Code Virtues this landmine endangers), Category, Quick Summary, Symptoms, Root Cause, The Trap, Safe Approach (Don't/Do with code), Validation, Prevention, Related.
+**Landmine Rules** — for danger zones and known traps. Follow the **full landmine template** from `skills/_references/landmines/_TEMPLATE.md`. Include: Severity with evidence justification, **Threatens** (which code virtues it endangers), Category, Quick Summary, Symptoms, Root Cause, The Trap, Safe Approach (Don't/Do with code from the actual codebase), Validation (with grep/search commands), Real-World Impact (cite specific files/instances), Prevention, Related (Safe Patterns, Other Landmines, Caused by misapplying), Origin, Changelog.
 
 **Guidelines:**
-- Scope the glob as narrowly as possible
-- Include code examples — abstract rules without code are not actionable
+- Scope the glob as narrowly as possible — **anti-patterns:** `**/*`, `**/src/**`, `**/*.py`. **Good:** `**/src/api/routes/**/*.ts`, `**/models/**/*repository*`. Include file naming conventions in the glob when applicable.
+- Include code examples from the actual codebase — abstract rules without code are not actionable. No placeholder names like `MyService` or `doSomething()` unless the project uses them.
 - State the rule as a clear instruction, not a description
 - Include the "why" — it helps AI tools apply the rule correctly
 - Name the file after the concern: `api-error-handling.md`, `sync-race-condition.md`
@@ -225,7 +226,6 @@ When project-level understanding changed, update root context files for enabled 
 
 - `CLAUDE.md` — Claude Code (if `claude` target enabled)
 - `AGENTS.md` — Universal (always)
-- `.github/copilot-instructions.md` — VS Code Copilot (if `copilot` target enabled)
 
 For each:
 - Update the specific section (Architecture, Grain, Module Map, Vocabulary)
@@ -252,6 +252,20 @@ After generating new artifacts, check whether any `[DEPRECATED]` tags in the pro
 4. If the old pattern still exists — leave the `[DEPRECATED]` tag in place
 
 This keeps the configuration clean over time without losing guidance for code that still needs it.
+
+### Step 3.7: Validate Generated Artifacts
+
+Before presenting the summary, verify all generated/updated artifacts are correct:
+
+1. **Path glob check** — For each new or updated rule, verify the path glob matches at least one real file in the project. Run a quick glob match. If zero files match, the glob is wrong — fix it before proceeding. Anti-patterns: `**/*`, `**/src/**`, or `**/*.ext` that match everything.
+
+2. **Line limit check** — If any context file (CLAUDE.md, AGENTS.md) was updated, count its lines. If over 100 (or 125 max), split content into a scoped rule or module-level file instead.
+
+3. **Cross-reference integrity** — For each new rule created, verify its Related section links to at least one existing rule. Then update the linked rules' Related sections to link back (bidirectional). If an existing rule's Related section doesn't mention the new rule, add it.
+
+4. **Template completeness** — For each new pattern rule, verify it has ALL sections from the reference template. For each new landmine rule, same check. Missing sections should be filled, not skipped.
+
+5. **Code example audit** — Every code example must use the project's actual types, imports, and conventions — not generic placeholders.
 
 ### Step 4: Present Summary
 

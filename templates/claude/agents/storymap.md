@@ -39,7 +39,7 @@ For each epic, write **user stories** that together deliver the epic's capabilit
 - **Be completable in a single AI session** — the story + its context (files, tests, inversion analysis) must fit comfortably within ~200K tokens. If a story would require loading 10+ files or spanning multiple modules, break it down further. AI quality degrades with context rot well before the window fills.
 - **Be self-contained enough** to serve as input to `/invert` for risk analysis
 - **Use "As a... I want... so that..." format** — identify the right user role
-- **Have testable acceptance criteria** — checkboxes, specific and verifiable
+- **Have testable acceptance criteria** — each criterion must be verifiable by running code, reading output, or inspecting a file. Never use vague criteria like "follows design system", "matches patterns", "is consistent with", or "follows best practices" — instead name the specific elements (e.g., "uses FordPass `PrimaryButton` component for CTA" instead of "follows FordPass design system").
 - **Include technical notes** — brief pointers to implementation approach, APIs, components
 
 Assign story IDs: `S1.1` (epic 1, story 1), `S1.2`, `S2.1`, etc.

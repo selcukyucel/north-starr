@@ -55,6 +55,11 @@ jobs:
           git commit -m "Release ${{ steps.version.outputs.version }}: update formula sha256 and versions"
           git push origin main
 
+      - name: Move tag to include release commit
+        run: |
+          git tag -f ${{ steps.version.outputs.version }}
+          git push origin ${{ steps.version.outputs.version }} --force
+
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:

@@ -22,14 +22,34 @@ Use this skill when the user requests:
 
 ### 1. Determine the Date Range
 
-Ask or infer the date window. Default to "since this Monday" (current ISO week). Resolve the exact date for `--since`:
+The user may specify a range or use defaults. Supported inputs:
+
+| User says | Date range |
+|-----------|-----------|
+| (nothing / "this week") | Monday of current week → today |
+| "last week" | Previous Monday → previous Sunday |
+| "last 7 days" / "past week" | 7 days ago → today |
+| "this sprint" | Ask for sprint start date |
+| "since March 1" / custom date | Parse the date → today |
+| "March 1 to March 15" | Custom range |
+
+Resolve to explicit ISO dates. Use a cross-platform date command:
 
 ```bash
-# Find Monday of the current week
+# macOS
 date -v-monday "+%Y-%m-%d"
+# Linux
+date -d 'last monday' "+%Y-%m-%d"
 ```
 
-Use explicit ISO dates with `--since` to avoid ambiguity (e.g., `--since='2026-03-09 00:00:00'`).
+**Cross-platform approach:** Try the macOS syntax first. If it fails (exit code != 0), fall back to the Linux syntax. Or simply ask the user to confirm the resolved date:
+
+```
+Report period: 2026-03-23 (Mon) → 2026-03-25 (today)
+Proceed?
+```
+
+Use explicit ISO dates with `--since` and `--until` to avoid ambiguity (e.g., `--since='2026-03-23 00:00:00' --until='2026-03-26 00:00:00'`).
 
 ### 2. Collect Git Data
 
@@ -55,7 +75,9 @@ git log --no-merges --since='YYYY-MM-DD 00:00:00' --format='' --shortstat | awk 
 git log --no-merges --since='YYYY-MM-DD 00:00:00' --format='%ad' --date=short | sort | uniq -c
 
 # Commit type breakdown (conventional commit prefix)
-git log --no-merges --since='YYYY-MM-DD 00:00:00' --format='%s' | grep -oE '^[a-z]+' | sort | uniq -c | sort -rn
+# Only match actual conventional commit prefixes, not arbitrary first words
+git log --no-merges --since='YYYY-MM-DD 00:00:00' --format='%s' | grep -oE '^(feat|fix|docs|refactor|test|chore|ci|perf|build|style|revert)(\(.+\))?[!]?:' | grep -oE '^[a-z]+' | sort | uniq -c | sort -rn
+# Note: commits not matching conventional format are categorized as "other"
 
 # Contributor leaderboard
 git log --no-merges --since='YYYY-MM-DD 00:00:00' --format='%aN' | sort | uniq -c | sort -rn
@@ -71,7 +93,36 @@ git log --no-merges --since='YYYY-MM-DD 00:00:00' --name-only --format='' | grep
 - Use `grep -oE` + `cut` instead of `sed -E` for extracting commit type prefixes
 - Use `awk` without named captures (BSD awk limitation)
 
+**Optional: PR/merge activity** — If `gh` CLI is available and authenticated, also collect PR data:
+
+```bash
+# Check if gh is available
+gh auth status 2>/dev/null
+
+# If authenticated, get merged PRs in the date range
+gh pr list --state merged --search "merged:>=YYYY-MM-DD" --json number,title,author,mergedAt,additions,deletions,reviewDecision --limit 50
+
+# Get open PRs for "in progress" section
+gh pr list --state open --json number,title,author,createdAt,isDraft --limit 20
+```
+
+If `gh` is not available or not authenticated, skip PR data silently — the report works fine with commits only. When PR data is available, add these sections to the report:
+- **Merged PRs** — count, list with title/author/review status
+- **Open PRs** — count, list with draft status
+- **Review coverage** — percentage of merged PRs that had an approved review
+
 ### 3. Analyze and Group Changes
+
+**Previous period comparison:** Also collect the same key metrics for the equivalent previous period (e.g., if reporting Mon-Fri this week, also get Mon-Fri last week). Only need totals — not full detail:
+
+```bash
+# Previous period commit count (for trend comparison)
+git rev-list --no-merges --count --since='PREV-START' --until='PREV-END' HEAD
+# Previous period contributor count
+git log --no-merges --since='PREV-START' --until='PREV-END' --format='%aN' | sort -u | wc -l
+```
+
+Use these to show trends in the Key Metrics section: `12 commits (↑ 20% vs last week)`, `3 contributors (→ same)`, `+450 / -120 lines (↓ 30%)`. If the previous period had zero activity, show "N/A" instead of a percentage.
 
 Group commits by workstream (ticket key prefix) and create descriptive summaries:
 
@@ -82,7 +133,9 @@ Group commits by workstream (ticket key prefix) and create descriptive summaries
 
 ### 4. Write the Markdown Report
 
-Create `Documentation/weekly-report-YYYY-MM-DD.md` with these sections:
+**Output directory:** Check if any of these exist: `Documentation/`, `docs/`, `reports/`. Use the first match. If none exist, create `Documentation/`. The user can also specify a custom output directory.
+
+Create `<output-dir>/weekly-report-YYYY-MM-DD.md` with these sections:
 
 1. **Header** — Window, branch, scope
 2. **Executive Summary** — 2-3 sentence overview
@@ -99,7 +152,7 @@ Create `Documentation/weekly-report-YYYY-MM-DD.md` with these sections:
 
 ### 5. Generate the HTML Report
 
-Create `Documentation/weekly-report-YYYY-MM-DD.html` as a self-contained single-page report:
+Create `<output-dir>/weekly-report-YYYY-MM-DD.html` as a self-contained single-page report:
 
 **Layout structure:**
 - **Header** — Dark gradient (`#1a1a2e` → `#16213e`) with title, subtitle (date range, week number, branch badge), and stats-bar (commits, contributors, insertions in green, deletions in red)
@@ -132,7 +185,7 @@ Create `Documentation/weekly-report-YYYY-MM-DD.html` as a self-contained single-
 
 ### 6. Verify Output
 
-- Confirm both files exist in `Documentation/`
+- Confirm both files exist in the output directory
 - Open the HTML in a browser to verify layout renders correctly
 - Ensure all commit counts in area breakdowns sum to the total
 - Check that bar chart percentages are relative to their section's maximum

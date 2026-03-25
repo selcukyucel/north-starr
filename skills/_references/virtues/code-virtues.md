@@ -98,3 +98,14 @@ The ordering isn't about importance — all virtues matter. It's about which to 
 | **Patterns** (conventions) | **Unique, Clear, Easy** | Good patterns eliminate duplication, improve clarity, and make changes easier |
 | **Landmines** (danger zones) | **Working** (primarily) | Most landmines describe ways code can stop Working |
 | **Complexity Assessment** | **Simple** | The checklist gates complexity — a proxy for the Simple virtue |
+
+## Where Virtues Are Used
+
+Virtues are referenced by the following templates and skills:
+
+- **Pattern rules** (`skills/_references/patterns/_TEMPLATE.md`) — `**Virtues**:` field tags which virtues the pattern serves
+- **Landmine rules** (`skills/_references/landmines/_TEMPLATE.md`) — `**Threatens**:` field tags which virtues the landmine endangers
+- **`/bootstrap`** — tags every generated pattern and landmine rule with virtues
+- **`/learn`** — tags captured learnings with the virtue they protect
+- **`/analyze-code`** — uses the Virtue Scorecard to rate analyzed code
+- **`/invert`** — names competing virtues when risks involve quality trade-offs

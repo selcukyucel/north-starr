@@ -21,11 +21,13 @@ After updating the North Starr plugin, inject any new or updated managed section
 
 Managed sections are wrapped in marker comments:
 ```markdown
-<!-- [NORTH-STARR:section-name] -->
+<!-- [NORTH-STARR:section-name v1.2] -->
 ## Section Content
 ...
 <!-- [/NORTH-STARR:section-name] -->
 ```
+
+The open marker includes an optional version tag (e.g., `v1.2`). When syncing, the version in the canonical section is compared to the version in the file. If versions match, the content is assumed current and skipped. If versions differ (or no version exists), content comparison is used as fallback.
 
 The sync process:
 1. Reads your existing CLAUDE.md and AGENTS.md
@@ -54,9 +56,31 @@ For each managed section defined in the **Canonical Sections** below, apply the 
 
 | Current state of target file | Action |
 |------------------------------|--------|
-| Section exists with `<!-- [NORTH-STARR:name] -->` markers | **Replace** everything between the open and close markers (inclusive) with the canonical version below |
+| Section exists with markers AND content is **identical** to canonical | **Skip** — already up to date, no write needed |
+| Section exists with markers AND content **differs** from canonical | **Replace** everything between the open and close markers (inclusive) with the canonical version below |
 | Section heading (e.g. `## How to Approach Tasks`) exists but WITHOUT markers | **Skip** — tell the user: "Section exists without markers. Run `/bootstrap` to get marker support, or manually wrap the section with markers." |
 | Section is completely absent | **Append** the canonical version at the end of the file |
+
+**Comparison:** Compare the existing content (between markers) with the canonical version. Normalize whitespace before comparing — trailing newlines and minor formatting differences should not trigger an unnecessary rewrite.
+
+**Dry-run preview:** Before writing any changes, collect all planned actions (replace, append, skip) and present them as a summary:
+
+```
+Sync preview:
+  CLAUDE.md:
+    how-to-approach-tasks — UPDATE (content differs)
+    auto-learn — SKIP (already current)
+  AGENTS.md:
+    how-to-approach-tasks — APPEND (section missing)
+    auto-learn — APPEND (section missing)
+  Agents:
+    chief-ai-po.md — ADD (new)
+    layoutplan.md — SKIP (identical)
+
+Apply changes? (y/n)
+```
+
+Wait for user confirmation before writing. If the user runs `/sync` with `--force` or says "just do it", skip the preview.
 
 ### Step 3: Reorder Sections
 
@@ -92,13 +116,30 @@ If sections are already in the correct order, skip this step.
 
 ### Step 4: Sync Agents
 
-Sync all agent definitions from the plugin's `templates/claude/agents/` directory into the project's `.claude/agents/` directory:
+Sync agent definitions for each enabled tool:
 
-1. List all `.md` files in the plugin's `templates/claude/agents/` directory
-2. For each agent file found, copy it to `.claude/agents/` — create if missing, update if outdated
-3. Create the `.claude/agents/` directory if it doesn't exist
+**Claude Code** — from `templates/claude/agents/` into `.claude/agents/`:
+1. List all `.md` files in `templates/claude/agents/`
+2. For each agent, copy to `.claude/agents/` — create if missing, update if content differs, skip if identical
+3. Create `.claude/agents/` if it doesn't exist
 
-Current agents: `layoutplan.md`, `storymap.md`
+**VS Code Copilot** — from `templates/github/agents/` into `.github/agents/` (only if `.github/agents/` exists or AGENTS.md references Copilot):
+1. List all `.agent.md` files in `templates/github/agents/`
+2. For each agent, copy to `.github/agents/` — create if missing, update if content differs, skip if identical
+3. Create `.github/agents/` if it doesn't exist
+
+**Do not hardcode the agent list.** Dynamically list all files in the template directories. This ensures new agents added in future plugin versions are automatically synced. Current agents as of v4.3.0: `layoutplan`, `storymap`, `chief-ai-po`.
+
+### Step 4b: Validate Sync Results
+
+After syncing, verify the files weren't corrupted:
+
+1. **Marker integrity** — Every `<!-- [NORTH-STARR:name] -->` open marker must have a matching `<!-- [/NORTH-STARR:name] -->` close marker. If any are orphaned, warn the user.
+2. **No duplicate headings** — Check that no `##` heading appears more than once in the file. Duplicates indicate a botched append.
+3. **Line limit check** — CLAUDE.md and AGENTS.md should stay under 125 lines total. If syncing pushed a file over, warn the user: "File is [N] lines (recommended max: 125). Consider moving project-specific content to module-level CLAUDE.md files."
+4. **Section order** — Verify managed sections appear before project context sections (confirmed by Step 3).
+
+If any check fails, present the issue before the summary so the user can fix it.
 
 ### Step 5: Present Summary
 
@@ -110,8 +151,8 @@ Current agents: `layoutplan.md`, `storymap.md`
 - AGENTS.md — [added: section-name, section-name] [updated: section-name] [skipped: section-name (no markers)]
 
 **Agents:**
-- .claude/agents/layoutplan.md — [added / updated / already current]
-- .claude/agents/storymap.md — [added / updated / already current]
+- .claude/agents/<name>.md — [added / updated / already current]
+[...repeat for each agent found in templates/claude/agents/]
 
 **No changes needed:**
 - [file] — all managed sections are up to date

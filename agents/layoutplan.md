@@ -28,7 +28,7 @@ You will be given the name of an inversion analysis file (e.g., `.plans/INVERT-a
 Decompose into **2-6 main tasks** — each self-contained enough for a fresh session to execute.
 
 For each task, identify:
-- Subtasks (concrete, checkable items)
+- Subtasks (concrete, checkable items — each subtask must have a clear done condition that a reviewer can verify in under 30 seconds, e.g., "file X exists", "test Y passes", "function Z returns type T". Never use vague subtasks like "audit", "review", "update documentation" without specifying the exact deliverable.)
 - Key files that will be created or modified
 - Dependencies on other tasks (what must come first)
 - Description sufficient for a fresh session with no prior context

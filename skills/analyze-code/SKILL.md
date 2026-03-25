@@ -45,7 +45,7 @@ Before analyzing, identify the project's technology stack:
 
 1. **Language**: Look at file extensions (`.swift`, `.ts`, `.py`, `.go`, `.rs`, `.java`, `.kt`, etc.)
 2. **Framework**: Check imports/dependencies (React, SwiftUI, Django, Spring, etc.)
-3. **Architecture**: Check for `CLAUDE.md`, `.ai/patterns/`, or other project docs describing the architecture
+3. **Architecture**: Check for `CLAUDE.md`, `.claude/rules/`, `.github/instructions/`, or other project docs describing the architecture
 4. **Conventions**: Check for linter configs (`.eslintrc`, `.swiftlint.yml`, `pyproject.toml`, etc.)
 
 This context shapes which checklist items are most relevant and what patterns to validate against.
@@ -67,7 +67,7 @@ Use appropriate tools to read the code being analyzed:
 - Understand the code's purpose and responsibility
 - Identify dependencies and relationships
 - Note patterns and conventions used
-- Check `.ai/patterns/` and `.ai/landmines/` for project-specific knowledge
+- Check `.claude/rules/` and `.github/instructions/` for project-specific knowledge
 
 ### Step 4: Apply Refactoring Checklist
 
@@ -96,6 +96,8 @@ Load and apply the comprehensive refactoring checklist from `references/refactor
 - **Medium**: Code duplication, missing best practices, moderate complexity
 - **Low**: Naming inconsistencies, minor style issues, documentation gaps
 
+**False Positive Avoidance**: Only flag issues you are CERTAIN about from the visible code. If you cannot see the full context (e.g., an extension method defined in another file, the reason behind a keyword like `nonisolated`), do NOT flag it as a problem. When flagging potential issues in code you cannot fully verify (e.g., unused enum cases that may be used elsewhere), explicitly qualify with "verify before acting" language. Speculative future advice ("you could migrate to X someday") is NOT an issue — omit it. When assessing lifecycle/memory issues, consider whether the runtime already handles the scenario (e.g., a `Task` holding `self` strongly is not a "leak" if the task completes or is cancelled — it just extends lifetime). Do not flag working dependency imports as potential risks ("what if this dependency is removed someday").
+
 ### Step 5: Validate Against Architecture
 
 Load and validate against architectural principles from `references/architecture-patterns.md`.
@@ -104,24 +106,20 @@ Load and validate against architectural principles from `references/architecture
 
 1. **Read architecture guide**: Use the Read tool to load `references/architecture-patterns.md` into context
 
-2. **Understand the project's architecture**: Check `CLAUDE.md` and `.ai/patterns/` for project-specific architecture decisions
+2. **Discover the project's architecture**: Check `CLAUDE.md`, `.claude/rules/`, `.github/instructions/`, and project docs for declared boundaries, dependency rules, and conventions. Do NOT assume a specific architecture style — use whatever the project declares.
 
-3. **Identify the code's role**: Determine what architectural component this code represents:
-   - Presentation/UI layer
-   - Business/domain logic layer
-   - Data access/infrastructure layer
-   - Shared/utility code
+3. **Identify the code's role**: Determine what role this code plays within the project's own architecture. What module does it belong to? What is that module responsible for? What should it depend on?
 
-4. **Validate against principles**:
+4. **Validate against universal principles**:
    - Single Responsibility: Does each unit have one clear purpose?
-   - Dependency Direction: Do dependencies flow in the correct direction?
-   - Abstraction Boundaries: Are layer boundaries respected?
-   - Separation of Concerns: Is presentation separate from logic? Logic from data access?
+   - Dependency Direction: Do dependencies flow in the direction the project declares?
+   - Boundary Compliance: Does the code respect the boundaries between modules?
+   - Separation of Concerns: Are distinct concerns in distinct modules?
 
 5. **Document violations**: For each architectural violation, note:
-   - Expected pattern vs actual implementation
+   - What boundary or principle was violated
    - File and location
-   - Impact on maintainability/testability
+   - What the project's architecture expects instead
    - Suggested refactoring approach
 
 ### Step 6: Identify Refactoring Opportunities
@@ -175,11 +173,19 @@ Score the analyzed code against the 7 Code Virtues (see `skills/_references/virt
 - ★★★★☆ — Good, minor issues only
 - ★★★★★ — Excellent, this virtue is well-served
 
+**Evidence MUST be concrete**: Each virtue's evidence cell must cite specific line numbers, metrics, or issue references — not vague prose. Bad: "Some complexity issues." Good: "save() at line 127 is 44 lines with 3 nesting levels; setupPlayerPerformances at line 207 uses imperative loop where filter() would suffice."
+
 The scorecard highlights what to **protect** (high scores) as well as what to **improve** (low scores). This is especially valuable when prioritizing refactoring work — fix the lowest-scoring virtue that has the highest priority number first (Working before Unique before Simple, etc.).
 
 ### Step 7: Generate Report
 
-Create a comprehensive, actionable report with the following structure:
+Create a comprehensive, actionable report with the following structure.
+
+**Non-Negotiable Output Rules** (the report MUST satisfy all of these):
+1. The **Virtue Scorecard** must use exactly these 7 virtue names in this order: Working, Unique, Simple, Clear, Easy, Developed, Brief. Use ★ star ratings (1-5). Do NOT substitute other dimensions.
+2. Every issue must include a **Location** with `file_path:line_number` — never use step names or vague references instead of line numbers.
+3. Every Critical and High severity issue must include a **Suggested Fix** section with a concrete code snippet — not just a prose description of what to change.
+4. The **Architecture Validation** section is MANDATORY — never skip it. You MUST discover the project's declared architecture (from `CLAUDE.md`, `.claude/rules/`, `.github/instructions/`, or project docs) and validate the code against those specific boundaries. If no project architecture docs exist, state that explicitly and validate against universal principles only.
 
 #### Report Template
 
@@ -252,9 +258,9 @@ Create a comprehensive, actionable report with the following structure:
 
 ### Principle Compliance
 - [ ] Single Responsibility: each unit has one clear purpose
-- [ ] Dependency Direction: dependencies flow correctly
-- [ ] Abstraction Boundaries: layer boundaries respected
-- [ ] Separation of Concerns: presentation / logic / data separated
+- [ ] Dependency Direction: dependencies flow in the direction the project declares
+- [ ] Boundary Compliance: module boundaries are respected
+- [ ] Separation of Concerns: distinct concerns live in distinct modules
 - [ ] Naming Conventions: consistent naming throughout
 
 ### Violations Found
@@ -343,38 +349,30 @@ For each finding:
 ### Use References
 - Point to specific checklist items in `refactoring-checklist.md`
 - Reference principles in `architecture-patterns.md`
-- Check `.ai/patterns/` and `.ai/landmines/` for project-specific knowledge
+- Check `.claude/rules/` and `.github/instructions/` for project-specific knowledge
 - Link to relevant language/framework documentation when helpful
 
 ## Common Analysis Patterns
 
-### For Presentation/UI Code
-1. Check that business logic lives outside the view/template layer
-2. Validate component reuse (avoid reinventing existing components)
-3. Check state management patterns
-4. Review accessibility and edge case handling
-5. Check for proper separation of concerns
+### For Any Module With a Clear Responsibility
+1. Check that the module only does what its declared responsibility says
+2. Validate that dependencies flow in the direction the project expects
+3. Review error handling completeness for the module's operations
+4. Check for proper abstractions at the module's boundaries
+5. Verify no concerns from other modules leak in
 
-### For Business Logic / Domain Code
-1. Validate single responsibility
-2. Check dependency injection / inversion of control
-3. Review error handling completeness
-4. Verify no UI/presentation dependencies leak in
-5. Check for proper abstractions and interfaces
+### For Code That Coordinates Other Modules
+1. Check it delegates rather than implements (orchestration, not business logic)
+2. Validate it doesn't depend on implementation details of the modules it coordinates
+3. Review that state management is appropriate for the coordination scope
+4. Check for proper separation between coordination logic and the work being coordinated
 
-### For Data Access / Infrastructure Code
-1. Validate repository/service patterns
-2. Check error handling and retry logic
-3. Review API integration patterns
-4. Verify no business logic leaking into data layer
-5. Check for proper resource management (connections, file handles, etc.)
-
-### For Shared / Utility Code
-1. Verify no business logic (should be pure utilities)
-2. Check reusability and API design
-3. Validate proper documentation
-4. Review for unnecessary dependencies
-5. Check for proper error handling
+### For Code That Provides a Public API (library, SDK, shared module)
+1. Verify the API surface is intentional (no accidental exposure of internals)
+2. Check reusability and API design consistency
+3. Review for unnecessary dependencies that consumers would inherit
+4. Check for proper error handling and documentation
+5. Validate that internal implementation details don't leak through the API
 
 ## Limitations
 
@@ -406,13 +404,12 @@ This skill uses three reference documents:
    - Observability & Monitoring
    - Build, Configuration & Dependencies
 
-2. **architecture-patterns.md**: Universal architectural principles and common patterns
-   - Architecture detection guidance
-   - Universal design principles (SOLID, DRY, etc.)
-   - Common architectural patterns (Layered, Clean, Hexagonal, etc.)
-   - Common component patterns (MVC, MVVM, Repository, etc.)
+2. **architecture-patterns.md**: Universal architectural principles and validation methodology
+   - Universal design principles (SOLID, DRY, YAGNI, etc.)
+   - Project-specific architecture validation methodology (discover, identify role, validate boundaries)
    - Dependency management principles
-   - Universal refactoring strategies
+   - Universal refactoring strategies (Extract, Move, Replace, Simplify, Introduce)
+   - Architecture smell summary
 
 3. **`skills/_references/virtues/code-virtues.md`**: The 7 Code Virtues positive quality framework
    - Priority-ordered virtues: Working, Unique, Simple, Clear, Easy, Developed, Brief

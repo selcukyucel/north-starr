@@ -27,8 +27,15 @@ The user provides a requirement, feature description, or task. Can be a single s
 **Actions:**
 1. Restate the requirement in your own words — confirm understanding
 2. Read relevant code to understand what exists today
-3. Check root context files (`CLAUDE.md`, `AGENTS.md`, `.github/copilot-instructions.md`) for architecture, grain, and module map
+3. Check root context files (`CLAUDE.md`, `AGENTS.md`) for architecture, grain, and module map
 4. Identify which modules and layers this task touches
+5. **Surface assumptions** — what does this requirement take for granted? List every assumption the requirement makes about:
+   - Input data (format, quality, availability, freshness)
+   - User behavior (technical skill, workflow, frequency of use)
+   - External systems (uptime, API stability, version compatibility)
+   - Domain rules (regulatory stability, business logic, compliance criteria)
+   - Infrastructure (latency, storage, compute budget)
+   For each assumption, ask: "What happens if this is wrong?" Assumptions that would cause HIGH impact if wrong become risks in Step 2.
 
 ### Step 2: Inversion Analysis
 
@@ -39,26 +46,43 @@ Systematically work through each dimension:
 - What existing workflows could this break?
 - What happens if the user does something unexpected?
 - What accessibility or performance impact could users feel?
+- **Who is most harmed** if this feature produces wrong output — and how badly? (e.g., financial loss, legal liability, regulatory penalty, reputational damage, safety risk). Name the specific stakeholder roles.
+- Are there **domain-specific consequences** beyond software failure? (e.g., regulatory non-compliance, contractual breach, audit failure, licence revocation). If yes, these risks are automatically HIGH severity regardless of technical likelihood.
 
 #### B. Technical Failure Modes
 - What could crash, hang, or corrupt data?
 - What race conditions or concurrency issues are possible?
 - What happens under load, with bad input, or with no network?
-- What external dependencies could fail?
+- What external dependencies could fail? (API rate limits, model version changes, service outages, vendor lock-in)
 
-#### C. Edge Cases
+**If this feature uses AI/ML (LLMs, RAG, embeddings, classifiers, or any model inference):**
+- **Hallucination**: Could the model generate confident but factually wrong output? What are the consequences if it does?
+- **Stale retrieval**: Could the RAG pipeline return outdated or irrelevant context? What happens if the knowledge base is out of date?
+- **Prompt injection**: Could user-provided input manipulate the model to bypass business rules, leak data, or produce unintended output?
+- **Model drift**: If the underlying model is updated or swapped, could output quality degrade silently? Is there a baseline to compare against?
+- **Confidence calibration**: Does the system surface uncertainty to users, or does it present all output with equal confidence? What happens at low-confidence thresholds?
+- **Data pipeline integrity**: At each step of the pipeline (ingestion → parsing → embedding → retrieval → generation → post-processing), what could go wrong? What validation exists between steps?
+
+#### C. Data Flow & Pipeline Risks
+- **Map the data flow** — trace data from entry to final output. What are the steps? (e.g., upload → validate → transform → store → notify, or ingest → parse → embed → retrieve → generate → review)
+- At each handoff between steps: what could be lost, corrupted, or delayed?
+- What happens if a middle step fails — does the pipeline retry, roll back, or leave partial state?
+- Is there an idempotency guarantee if the same input is processed twice?
+- What validation exists between steps — and what's missing?
+
+#### D. Edge Cases & Boundary Conditions
 - What boundary conditions exist? (empty, null, max, overflow, unicode, etc.)
 - What state combinations are unusual but possible?
 - What happens on first run, last run, or after a long gap?
 - What platform or environment differences could matter?
 
-#### D. Architecture & Convention Risks
+#### E. Architecture & Convention Risks
 - Does this go against the grain? (check grain section in root context files)
 - Does this violate any path-scoped rules (`.claude/rules/`, `.github/instructions/`)?
 - Does this create coupling between modules that were independent?
 - Does this introduce a pattern inconsistent with existing code?
 
-#### F. Virtue Trade-offs
+#### F. Virtue Trade-offs (Code Quality)
 
 Check this change against the 7 Code Virtues (see `skills/_references/virtues/code-virtues.md`) in priority order:
 
@@ -76,7 +100,7 @@ When two virtues conflict, **always preserve the higher-priority one**. Name the
 **Virtue Tension:** [lower virtue] would improve, but at the cost of [higher virtue] → preserve [higher virtue]
 ```
 
-#### E. Observability & Recovery
+#### G. Observability & Recovery
 - If this fails in production, how would anyone know?
 - Can the failure be diagnosed from logs/errors alone?
 - Is the change reversible? What's the rollback path?
@@ -113,6 +137,11 @@ Present the analysis:
 
 [...repeat for each significant risk]
 
+### Assumptions (verify before implementing)
+
+- [assumption]: [what happens if wrong]
+- [assumption]: [what happens if wrong]
+
 ### Edge Cases to Handle
 
 - [case]: [what should happen]
@@ -129,9 +158,13 @@ Present the analysis:
 - [specific thing to watch for]
 - [specific validation to include]
 
+**Test strategy:**
+- [specific test approach for each HIGH/MED risk — e.g., golden file tests, integration tests against real pipeline, adversarial input tests, human review sampling, load tests, A/B comparison against manual output]
+- [what constitutes "passing" — acceptance threshold, not just "it works"]
+
 **After implementing:**
 - [what to verify]
-- [what to monitor]
+- [what to monitor — specific metrics, dashboards, alerts]
 ```
 
 ### Step 5: Persist to Disk
@@ -159,6 +192,10 @@ After presenting the analysis to the user (and incorporating any feedback), writ
 
 [...all risks]
 
+## Assumptions (verify before implementing)
+
+- <assumption>: <what happens if wrong>
+
 ## Edge Cases to Handle
 
 - <case>: <what should happen>
@@ -170,6 +207,9 @@ After presenting the analysis to the user (and incorporating any feedback), writ
 
 **During implementation:**
 - <items>
+
+**Test strategy:**
+- <specific test approaches for each HIGH/MED risk>
 
 **After implementing:**
 - <items>

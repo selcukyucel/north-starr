@@ -6,7 +6,7 @@
   },
   "metadata": {
     "description": "Agentic development workflow for Claude Code — skills, agents, and project context from your codebase",
-    "version": "4.3.0"
+    "version": "4.4.0"
   },
   "plugins": [
     {
@@ -23,7 +23,8 @@
         "./skills/analyze-code",
         "./skills/sync",
         "./skills/report-weekly",
-        "./skills/decompose"
+        "./skills/decompose",
+        "./skills/autoimprove"
       ]
     }
   ]

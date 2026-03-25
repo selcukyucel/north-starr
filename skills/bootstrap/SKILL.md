@@ -13,7 +13,7 @@ Explore an existing project and generate native configuration for the AI tools i
 
 | Artifact | Claude Code | VS Code Copilot |
 |----------|-------------|-----------------|
-| Project context | `CLAUDE.md` | `.github/copilot-instructions.md` |
+| Project context | `CLAUDE.md` | `AGENTS.md` |
 | Pattern rules | `.claude/rules/*.md` | `.github/instructions/*.instructions.md` |
 | Landmine rules | `.claude/rules/*.md` | `.github/instructions/*.instructions.md` |
 | Agents | `.claude/agents/*.md` | `.github/agents/*.agent.md` |
@@ -43,11 +43,12 @@ Before starting, read the root `CLAUDE.md` (if it exists and is not a starter te
 
 Generated rules must carry enough depth to be genuinely useful. Use two content structures from the project's knowledge base:
 
-- **Pattern structure** (`skills/_references/patterns/_TEMPLATE.md`) — for conventions and reusable approaches. Each pattern rule follows the full template: When to Use, Problem It Solves, Core Approach with step-by-step code examples, Best Practices, Common Mistakes with wrong/fix code, Variations, Related patterns and landmines.
-- **Landmine structure** (`skills/_references/landmines/_TEMPLATE.md`) — for danger zones and known traps. Each landmine rule follows the full template: Severity, Symptoms, Root Cause, The Trap (why devs fall in), Safe Approach (Don't/Do with code), Validation, Prevention, Related patterns and landmines.
+- **Pattern structure** (`skills/_references/patterns/_TEMPLATE.md`) — for conventions and reusable approaches. Each pattern rule follows the full template: Virtues, When to Use, Problem It Solves, Core Approach with step-by-step code examples, Complete Example, Best Practices, Common Mistakes with wrong/fix code, Variations, Testing This Pattern, Performance Considerations, Related patterns and landmines.
+- **Landmine structure** (`skills/_references/landmines/_TEMPLATE.md`) — for danger zones and known traps. Each landmine rule follows the full template: Severity with evidence, Threatens (virtues endangered), Symptoms, Root Cause, The Trap (why devs fall in), Safe Approach (Don't/Do with code), Validation, Real-World Impact, Prevention, Related patterns and landmines, Origin.
+- **Code Virtues** (`skills/_references/virtues/code-virtues.md`) — the 7 code virtues (Working, Unique, Simple, Clear, Easy, Developed, Brief) used to tag patterns and landmines. Higher virtues take precedence.
 
 **Line limits:**
-- **Context files** (CLAUDE.md, AGENTS.md, copilot-instructions.md): MUST stay under **100 lines** (max 125 if critical context would be lost). Split into multiple scoped files rather than exceeding.
+- **Context files** (CLAUDE.md, AGENTS.md): MUST stay under **100 lines** (max 125 if critical context would be lost). Split into multiple scoped files rather than exceeding.
 - **Pattern and landmine rules**: Should be as detailed as needed to follow the full template — typically **50-150 lines**. Depth and working code examples matter more than brevity. These are the project's knowledge base.
 
 ## Workflow
@@ -57,11 +58,23 @@ Generated rules must carry enough depth to be genuinely useful. Use two content 
 **Goal:** Understand the shape and stack of the project before reading code.
 
 **Actions:**
-1. Identify the technology stack from config files at the root (package managers, build tools, language configs, CI/CD)
-2. Map the top-level directory structure — modules, packages, feature areas
-3. Identify entry points (main files, app delegates, index files, server entry points)
-4. Check for existing documentation (README, docs/, inline doc comments)
-5. Note the build system, test runner, and deployment mechanism
+
+1. **Detect the technology stack** — Read config files at the root to identify:
+   - **Language & version**: look for `Package.swift`, `pyproject.toml`, `setup.py`, `requirements.txt`, `Cargo.toml`, `go.mod`, `package.json`, `tsconfig.json`, `Gemfile`, `build.gradle`, `pom.xml`, `*.csproj`, `Makefile`, `CMakeLists.txt`, etc.
+   - **Package manager**: SPM, pip/poetry/uv, cargo, go modules, npm/yarn/pnpm, bundler, gradle/maven, NuGet, etc.
+   - **Build system**: Xcode, webpack/vite/esbuild, cargo, go build, make, gradle, etc.
+   - **Test runner**: XCTest, pytest, cargo test, go test, jest/vitest, RSpec, JUnit, etc.
+   - **CI/CD**: `.github/workflows/`, `.gitlab-ci.yml`, `Jenkinsfile`, `.circleci/`, etc.
+   - **Containerization**: `Dockerfile`, `docker-compose.yml`, `k8s/` manifests
+   - **Linting/formatting**: `.eslintrc`, `ruff.toml`, `.swiftlint.yml`, `.rubocop.yml`, `rustfmt.toml`, etc.
+
+2. **Map the top-level directory structure** — modules, packages, feature areas. Run `ls` at root and one level deep to understand layout.
+
+3. **Identify entry points** — main files, app delegates, index files, server entry points, CLI entry points.
+
+4. **Check for existing documentation** — README, docs/, architecture decision records, inline doc comments, OpenAPI specs.
+
+5. **Note the build system, test runner, and deployment mechanism.**
 
 **Output:** Mental model of project structure. No files written yet.
 
@@ -108,15 +121,24 @@ Generated rules must carry enough depth to be genuinely useful. Use two content 
 
 3. **Look for shared utilities, base classes, protocols, or helpers** reused across modules — these often encode implicit patterns worth documenting explicitly.
 
-4. **Cross-reference patterns** — note which patterns work together and which are alternatives to each other.
+4. **Cross-reference patterns** — build a relationship map before writing any rule files:
+   - Which patterns **compose** (used together in the same flow)?
+   - Which patterns are **alternatives** (different approaches to the same problem)?
+   - Which landmines does each pattern **prevent**?
+   - Which landmines result from **misapplying** a pattern?
+   Every rule's "Related" section must reference at least one other rule. If a pattern has no relationships, it's either too generic or you missed a connection.
 
 5. **For each discovered pattern**, capture using the **full pattern structure** from `skills/_references/patterns/_TEMPLATE.md`:
+   - **Virtues** — tag with the primary virtue(s) the pattern serves (from `skills/_references/virtues/code-virtues.md`: Working, Unique, Simple, Clear, Easy, Developed, Brief)
    - **When to Use / Not Good For** — specific situations
    - **Problem It Solves** — what goes wrong without it, what improves with it
-   - **Core Approach** — step-by-step with code examples
+   - **Core Approach** — step-by-step with code examples from the actual codebase
+   - **Complete Example** — a full working example demonstrating the pattern end-to-end
    - **Best Practices** — do this, why
    - **Common Mistakes** — wrong approach with code, fix with code
    - **Variations** — alternative forms of the pattern found in the codebase
+   - **Testing This Pattern** — how to verify correct application, with test code example
+   - **Performance Considerations** — any performance implications and mitigations
    - **Related** — links to other patterns and landmines
 
 **Aim for completeness.** A thorough bootstrap should discover 15-40 patterns depending on project complexity. If you find fewer than 10, you likely stopped too early — revisit areas beyond the core feature code (build, deploy, testing, configuration, shared infrastructure).
@@ -152,16 +174,34 @@ Generated rules must carry enough depth to be genuinely useful. Use two content 
 9. **Test gaps** — modules or features with no test coverage. Untested code is a landmine waiting to detonate.
 
 10. **For each danger zone**, capture using the **full landmine structure** from `skills/_references/landmines/_TEMPLATE.md`:
-    - **Severity** — CRITICAL / HIGH / MEDIUM / LOW based on real-world impact
+    - **Severity** — CRITICAL / HIGH / MEDIUM / LOW based on real-world impact. Justify with evidence (file counts, specific instances found, blast radius).
+    - **Threatens** — tag with the virtue(s) this landmine endangers (from `skills/_references/virtues/code-virtues.md`: Working, Unique, Simple, Clear, Easy, Developed, Brief)
     - **Symptoms** — observable signs you've hit this
     - **Root Cause** — technical explanation of why this happens
     - **The Trap** — why it seems correct, what makes it non-obvious
     - **Safe Approach** — Don't (dangerous code with explanation) / Do (safe code with explanation)
     - **Validation** — how to verify you're safe, detection in existing code
+    - **Real-World Impact** — what actually happens when this goes wrong (cite specific instances found in the codebase)
     - **Prevention** — habits, code review checks, and validation steps
     - **Related** — safe patterns that avoid this, other related landmines
+    - **Origin** — how/when this was discovered during bootstrap analysis
 
 **Aim for completeness.** A thorough bootstrap should discover 5-15 landmines depending on project maturity. If you find fewer than 3, you likely stopped too early — revisit areas beyond the core feature code.
+
+### Step 4b: Quality Gate — Self-Review Before Writing
+
+**Goal:** Catch gaps and inconsistencies before generating files. This step is mental — no files written.
+
+**Checks:**
+
+1. **Coverage check** — Does every major module have at least one pattern or landmine? If a module has neither, revisit it — you may have missed something.
+2. **Template completeness** — Does every pattern have ALL required sections from the reference template (Virtues, When to Use, Problem, Pattern with code, Complete Example, Best Practices, Common Mistakes, Variations, Testing, Performance, Related)? Does every landmine have ALL required sections (Severity with evidence, Threatens, Symptoms, Root Cause, Trap, Safe Approach, Validation, Real-World Impact, Prevention, Related, Origin)?
+3. **Path glob review** — For each rule, verify the glob matches only the files where the pattern actually applies. If you used a broad glob like `**/*.ext` or `**/src/**`, narrow it.
+4. **Cross-reference integrity** — Every pattern's "Related" section should link to at least one other pattern or landmine. Every landmine's "Related" should link to the safe pattern that avoids it.
+5. **Code example audit** — Every code example must use the project's actual types, imports, and conventions. No placeholder names like `MyService` or `doSomething()` unless the project itself uses those names.
+6. **Deduplication** — No two rules should cover the same concern. If two rules overlap, merge them or clarify their distinct scopes.
+
+If any check fails, fix it before proceeding to Step 5.
 
 ### Step 5: Generate Configuration
 
@@ -174,8 +214,7 @@ Generated rules must carry enough depth to be genuinely useful. Use two content 
 Write the project context to these locations:
 
 - `CLAUDE.md` — Claude Code (auto-loaded). Uses plain text prompts for user approval gates.
-- `AGENTS.md` — Universal / VS Code Copilot. Uses `vscode_askQuestions` for user approval gates.
-- `.github/copilot-instructions.md` — VS Code Copilot (auto-loaded). Same content as AGENTS.md.
+- `AGENTS.md` — Universal / VS Code Copilot (auto-loaded). Uses `vscode_askQuestions` for user approval gates.
 
 All context files share the same project content (Tech Stack, Architecture, Grain, Module Map). The only difference is the **managed sections** — `CLAUDE.md` uses plain text prompts while `AGENTS.md` uses `vscode_askQuestions` for interactive approval gates.
 
@@ -183,7 +222,7 @@ All context files share the same project content (Tech Stack, Architecture, Grai
 
 Use the managed section content from the corresponding template file:
 - For `CLAUDE.md`: use the `how-to-approach-tasks` and `auto-learn` sections from `templates/CLAUDE.md` (plain text approval gates)
-- For `AGENTS.md` and `.github/copilot-instructions.md`: use the sections from `templates/AGENTS.md` (`vscode_askQuestions` approval gates)
+- For `AGENTS.md`: use the sections from `templates/AGENTS.md` (`vscode_askQuestions` approval gates)
 
 Project context sections are identical across all files:
 
@@ -259,14 +298,14 @@ applyTo: "glob/pattern/**"
 
 Follow the **full pattern template** from `skills/_references/patterns/_TEMPLATE.md`. Each pattern rule file must include:
 
-- **Category** and **Language/Framework**
+- **Category**, **Language/Framework**, and **Virtues** (which code virtues this pattern serves — see `skills/_references/virtues/code-virtues.md`)
 - `## When to Use` — Good For / Not Good For
 - `## Problem It Solves` — what goes wrong without it, what improves with it
-- `## The Pattern` — core idea, step-by-step with code examples, complete working example
+- `## The Pattern` — core idea, step-by-step with code examples from the actual codebase, complete working example
 - `## Best Practices` — do this, why
 - `## Common Mistakes` — wrong code with explanation, fix code with explanation
 - `## Variations` — alternative forms found in the codebase
-- `## Testing This Pattern` — how to verify correct application
+- `## Testing This Pattern` — how to verify correct application with test code example
 - `## Performance Considerations`
 - `## Related` — links to related pattern and landmine rule files
 
@@ -278,16 +317,17 @@ Follow the **full pattern template** from `skills/_references/patterns/_TEMPLATE
 
 Follow the **full landmine template** from `skills/_references/landmines/_TEMPLATE.md`. Each landmine rule file must include:
 
-- **Severity** (CRITICAL / HIGH / MEDIUM / LOW) and **Category**
+- **Severity** (CRITICAL / HIGH / MEDIUM / LOW) with evidence justification, **Category**, and **Threatens** (which code virtues this landmine endangers — see `skills/_references/virtues/code-virtues.md`)
 - `## Quick Summary` — one-line description
 - `## Symptoms` — observable signs you've hit this
 - `## Root Cause` — technical explanation of why this happens
 - `## The Trap` — why developers fall in, what makes it non-obvious
-- `## Safe Approach` — Don't (dangerous code with explanation) / Do (safe code with explanation)
-- `## Validation` — how to verify you're safe, detection patterns in existing code
-- `## Real-World Impact` — what actually happens when this goes wrong
+- `## Safe Approach` — Don't (dangerous code with explanation) / Do (safe code with explanation). Code examples must use the project's actual types and conventions.
+- `## Validation` — how to verify you're safe, detection patterns in existing code (include grep/search commands)
+- `## Real-World Impact` — what actually happens when this goes wrong. Cite specific instances found in the codebase (file names, line counts, blast radius).
 - `## Prevention` — habits, code review checks, validation steps
 - `## Related` — safe pattern rules that avoid this, other related landmine rules
+- `## Origin` — how/when this was discovered during bootstrap analysis
 
 **File naming:** `[descriptive-name].md` (e.g. `broken-exists-method.md`, `silent-auth-failure.md`)
 
@@ -299,12 +339,12 @@ Create one rule file per pattern or landmine discovered in Steps 3 and 4. Patter
 
 **Guidelines:**
 - Generate only rules that reflect real patterns or dangers found in the codebase — never invent conventions
-- Use specific path globs — broad rules waste context on irrelevant files
+- Use specific path globs — broad rules waste context on irrelevant files. Path globs must be as narrow as possible to match only files where the pattern applies. **Anti-patterns:** `**/*`, `**/Sources/**`, or `**/*.py` (matches everything). **Good examples:** `**/Sources/Feature/**/*ViewModel*`, `**/tests/integration/**`, `**/src/api/routes/**/*.ts`, `**/models/**/*repository*`. When a pattern applies to a specific file naming convention (e.g., files ending in `ViewModel`, `Service`, `_test.py`), include that in the glob. When it applies to a specific directory subtree, scope the glob to that subtree.
 - Keep each rule file focused on one concern
 - Include code examples in every rule — abstract descriptions without code are not actionable
 - Pattern and landmine rules should be as detailed as the templates require — typically 50-150 lines. Depth matters.
 - The content is the same across tools — only the frontmatter format differs
-- Include a `_TEMPLATE.md` in the rules directory for future contributions via `/learn`
+- Include a `_TEMPLATE.md` in the rules directory for future contributions via `/learn`. The generated `_TEMPLATE.md` MUST be derived from the reference templates (`skills/_references/patterns/_TEMPLATE.md` and `skills/_references/landmines/_TEMPLATE.md`). It must include ALL sections from both templates — Virtues/Threatens tags, Testing This Pattern, Performance Considerations, Complete Example, Changelog, and Origin fields. Combine both pattern and landmine structures into one unified template with comments indicating which sections apply to which type. The template's Language field and code fence language must match the project's detected language — never hardcode a specific language.
 
 ---
 
@@ -362,20 +402,56 @@ tools: codebase
 
 The storymap agent is spawned by `/decompose` to break down PRDs into prioritized, dependency-mapped user stories on a separate thread.
 
+Generate the chief-ai-po agent for the current tool:
+
+**Claude Code** — `.claude/agents/chief-ai-po.md`:
+
+```yaml
+---
+name: chief-ai-po
+description: AI Product Owner agent. Reads AI project PRDs and produces user stories with inverted failure modes, AI safety stories, graceful degradation criteria, and human oversight checkpoints. Runs on a separate thread.
+model: opus
+tools: Read, Write, Glob, Grep, Edit
+memory: project
+---
+```
+
+**VS Code Copilot** — `.github/agents/chief-ai-po.agent.md`:
+
+```yaml
+---
+name: chief-ai-po
+description: AI Product Owner agent. Reads AI project PRDs and produces user stories with inverted failure modes, AI safety stories, graceful degradation criteria, and human oversight checkpoints. Runs on a separate thread.
+tools: search/codebase
+---
+```
+
+The chief-ai-po agent is spawned by `/decompose` when it detects an AI project. It produces story maps enriched with AI-specific failure modes, pre-mortem analysis, inverted user stories, graceful degradation criteria, and human oversight checkpoints.
+
 Generate additional project-specific agents only if the project clearly warrants them (e.g., an explorer agent for very large codebases).
 
 ## Post-Bootstrap Checklist
 
+**Files:**
 - [ ] `AGENTS.md` at root (always)
 - [ ] `CLAUDE.md` at root (if running in Claude Code)
-- [ ] `.github/copilot-instructions.md` (if running in VS Code Copilot)
 - [ ] Module-level `CLAUDE.md` for each identified danger zone (if running in Claude Code)
 - [ ] Pattern rules in the current tool's format — aim for 15-40 depending on project complexity
 - [ ] Landmine rules in the current tool's format — aim for 5-15 depending on project maturity
-- [ ] `_TEMPLATE.md` in the rules directory for future contributions
+- [ ] `_TEMPLATE.md` in the rules directory — must include ALL sections from reference templates
 - [ ] `layoutplan` agent in the current tool's agent directory
 - [ ] `storymap` agent in the current tool's agent directory
+- [ ] `chief-ai-po` agent in the current tool's agent directory
 - [ ] At least one project-tuned explorer agent (optional, for large codebases)
+
+**Quality:**
+- [ ] Context files (CLAUDE.md, AGENTS.md) are under 100 lines (max 125)
+- [ ] Every pattern rule has: Virtues, When to Use, Problem, Pattern with code, Complete Example, Best Practices, Common Mistakes, Variations, Testing, Performance, Related
+- [ ] Every landmine rule has: Severity with evidence, Threatens, Symptoms, Root Cause, Trap, Safe Approach, Validation, Real-World Impact, Prevention, Related, Origin
+- [ ] No path glob matches the entire codebase (e.g., `**/*` or `**/*.ext`)
+- [ ] Every rule's "Related" section links to at least one other rule
+- [ ] All code examples use the project's actual types, imports, and conventions — no generic placeholders
+- [ ] `_TEMPLATE.md` Language field matches the detected project language
 
 ## Output Summary
 
@@ -397,7 +473,7 @@ Universal:
 Tool-specific:
 - [context file] — [sections included]
 - [N] rule files — [N] patterns, [N] landmines — [list names]
-- [N] agent files — [list names]
+- [N] agent files — layoutplan, storymap, chief-ai-po [+ any project-specific]
 
 Module-level:
 - [N] CLAUDE.md files — [list directories]

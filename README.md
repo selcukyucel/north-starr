@@ -82,8 +82,17 @@ For full product specs, `/decompose` breaks the work into manageable pieces befo
 PRD received
     │
     ▼
-/decompose → storymap agent → .plans/STORIES-<name>.md
-    │                              (+ optional GitHub Issues)
+/decompose → Scan & detect AI project
+    │
+    ├─ Non-AI project ──► storymap agent → .plans/STORIES-<name>.md
+    │
+    ├─ AI project ──────► chief-ai-po agent → .plans/STORIES-AI-<name>.md
+    │                      (inverted stories, safety stories SA.1-SA.6,
+    │                       human oversight checkpoints, graceful degradation)
+    │
+    ▼
+Optional: GitHub Issues script
+    │
     ▼
 Pick a story → /invert → layoutplan → Implement
 ```
@@ -115,11 +124,11 @@ All output is **tool-native** — the exact files each tool already reads:
 
 | Artifact | Claude Code | VS Code Copilot |
 |----------|-------------|-----------------|
-| Project context | `CLAUDE.md` | `.github/copilot-instructions.md` |
+| Project context | `CLAUDE.md` | `AGENTS.md` |
 | Universal context | `AGENTS.md` | `AGENTS.md` |
 | Pattern rules | `.claude/rules/*.md` | `.github/instructions/*.instructions.md` |
 | Landmine rules | `.claude/rules/*.md` | `.github/instructions/*.instructions.md` |
-| Agents | `.claude/agents/layoutplan.md`, `storymap.md` | `.github/agents/layoutplan.agent.md`, `storymap.agent.md` |
+| Agents | `.claude/agents/layoutplan.md`, `storymap.md`, `chief-ai-po.md` | `.github/agents/layoutplan.agent.md`, `storymap.agent.md`, `chief-ai-po.agent.md` |
 | Module context | `CLAUDE.md` per module | — |
 
 Pattern rules document **how things are done** in your codebase. Landmine rules document **what to watch out for**. Both are scoped by file path — they fire only when the AI touches matching files.
@@ -144,30 +153,31 @@ Mistakes happen once, not twice.
 
 | Skill | What it does |
 |-------|--------------|
-| `/invert` | Risk analysis — systematically identifies what could go wrong before implementation |
-| `/decompose` | Decomposes a PRD into prioritized, dependency-mapped epics and user stories. Optionally creates GitHub Issues. |
-| `/learn` | Captures patterns and landmines from experience into native rules |
+| `/invert` | Risk analysis — identifies failure modes, AI-specific risks, data flow issues, assumptions, and domain consequences before implementation |
+| `/decompose` | Decomposes a PRD into prioritized, dependency-mapped epics and user stories. Detects AI projects, filters non-dev content, respects hard deadlines. Optionally creates GitHub Issues. |
+| `/learn` | Captures patterns and landmines from experience into native rules. Validates globs, cross-references, and line limits. |
 
 | Agent | What it does |
 |-------|--------------|
 | `layoutplan` | Builds multi-session implementation plans from `/invert` analysis. Runs on a separate thread. |
 | `storymap` | Decomposes PRDs into epics and user stories with dependencies and priorities. Spawned by `/decompose`. |
+| `chief-ai-po` | AI Product Owner — decomposes AI project PRDs with inverted failure modes, 6 mandatory safety stories (SA.1-SA.6), human oversight checkpoints, graceful degradation criteria, and AI cost signals. Spawned by `/decompose` for AI projects. |
 
 ### Project setup
 
 | Skill | What it does |
 |-------|--------------|
-| `/bootstrap` | Generates rules, agents, and context from your existing codebase |
-| `/sync` | Updates managed sections after a plugin update (Claude Code only) |
+| `/bootstrap` | Generates rules, agents, and context from your existing codebase. Includes quality gate, virtues integration, and stack detection for any language. |
+| `/sync` | Updates managed sections after a plugin update. Supports dry-run preview, version tracking, and post-sync validation. |
 
 ### Productivity
 
 | Skill | What it does |
 |-------|--------------|
-| `/generate-commit` | Analyzes staged changes and generates commit messages |
-| `/generate-pr` | Generates PR descriptions from git diffs |
+| `/generate-commit` | Analyzes staged changes and generates commit messages. Detects conventional commits, suggests splitting multi-concern changes, flags breaking changes. |
+| `/generate-pr` | Generates PR descriptions from git diffs. Detects project PR templates, flags breaking changes, assesses risk, suggests reviewers. |
 | `/analyze-code` | Finds refactoring opportunities, code smells, and architecture violations |
-| `/report-weekly` | Generates weekly commit reports as markdown and styled HTML |
+| `/report-weekly` | Generates weekly commit reports as markdown and styled HTML. Supports custom date ranges, PR activity via gh CLI, and trend comparison. |
 
 ---
 

@@ -1,5 +1,47 @@
 # Changelog
 
+## v4.4.0 (2026-03-25)
+
+### Autoimprove — Systematic Skill Optimization
+
+Every skill in this release was improved using the `autoimprove` methodology — inspired by [Andrej Karpathy's autoresearch](https://github.com/karpathy/autoresearch). The same hill-climbing loop used for ML training, applied to skill prompt optimization: define a scoring checklist, make one small change per round, measure, keep improvements, revert regressions. 8 skills and 1 agent went through this process, producing 45 total rounds with 0 reverts.
+
+### Skill Improvements
+
+- **`/bootstrap`** — added quality gate (Step 4b) for self-review before writing files, Virtues integration for all generated rules, path glob specificity guidance with anti-patterns, concrete stack detection matrix for all major ecosystems, stronger cross-referencing requirements (4 relationship types), chief-ai-po agent added to generated agents, full reference template alignment
+- **`/decompose`** — added non-development content filtering (GTM, pricing, marketing sections skipped), hard deadline awareness (deadlines drive story priority), AI component listing (not just yes/no), out-of-scope blocklist from PRD, Won't Have detection, PDF chunking strategy for large documents, enriched PRD normalization header with scan metadata
+- **`/invert`** — added AI-specific failure modes (hallucination, stale retrieval, prompt injection, model drift, confidence calibration), domain/regulatory risk dimension with auto-escalation to HIGH, assumptions surfacing (5 categories), data flow & pipeline analysis (new Section C), specific test strategies per risk, fixed dimension lettering (was D, D, F, E → now A-G)
+- **`/generate-commit`** — added commit convention detection (config files + git log inference), multi-concern split suggestion, breaking change handling (BREAKING CHANGE footer), scope detection from changed files, unstaged change warning, convention precedence order (config > inferred > defaults)
+- **`/generate-pr`** — added project PR template detection (.github/PULL_REQUEST_TEMPLATE.md), breaking change flagging, large PR warning (500-line threshold with split suggestion), dependency/migration callouts, 5-factor risk assessment matrix, reviewer suggestion via git blame
+- **`/learn`** — aligned Content Depth and Step 3 with updated reference templates (Virtues, Complete Example, Testing, Performance, Origin), added Step 3.7 validation (glob verification, line limit check, bidirectional cross-references, template completeness, code example audit), clear skill suggestion criteria (2+ times, consistent shape)
+- **`/report-weekly`** — added cross-platform date command (macOS/Linux fallback), custom date ranges ("last week", "last 7 days", "this sprint", custom), accurate conventional commit prefix parsing (not arbitrary first words), configurable output directory (auto-detects docs/, reports/, Documentation/), optional PR/merge activity via gh CLI, trend comparison with previous period (arrows + percentage)
+- **`/sync`** — added dynamic agent discovery (no hardcoded list), skip-if-identical content comparison, post-sync validation (marker integrity, duplicate headings, line limits), Copilot agent syncing, dry-run preview before writing, version tags in markers
+
+### Agent Improvements
+
+- **`chief-ai-po`** — added SA.6 "Observability & Cost Control" as 6th mandatory safety story (LLM logging, pipeline tracing, cost alerts, usage analytics), non-development content filtering, hard deadline awareness with auto-MUST priority, out-of-scope blocklist, AI cost signals in technical notes (LLM calls per action, embedding volume, batch/realtime, caching), story map header now includes deadlines and exclusions
+- All agent templates synced across `agents/`, `templates/claude/agents/`, and `templates/github/agents/`
+
+### Reference Template Updates
+
+- **Pattern template** (`skills/_references/patterns/_TEMPLATE.md`) — added HTML guidance comments for code example sourcing, Complete Example section, structured Related section with 4 relationship types (composes, alternative, prevents, misapplication), Path Glob Guidance section, language-adaptive field
+- **Landmine template** (`skills/_references/landmines/_TEMPLATE.md`) — severity now requires evidence justification, Real-World Impact requires specific file/module citations, Detection section requires concrete grep commands, structured Related with 3 relationship types, Path Glob Guidance, Prevention expanded to include automated checks
+- **Code Virtues** (`skills/_references/virtues/code-virtues.md`) — added "Where Virtues Are Used" section linking back to all consuming skills and templates
+- **GitHub instructions template** (`templates/github/instructions/_TEMPLATE.instructions.md`) — complete rewrite to include all pattern and landmine sections from updated references
+
+### Breaking Changes
+
+- `.github/copilot-instructions.md` references removed from all skills — `AGENTS.md` is now the single source for VS Code Copilot context
+- AI safety stories increased from 5 (SA.1-SA.5) to 6 (SA.1-SA.6) — SA.6 is Observability & Cost Control
+- macOS-incompatible `grep -oP` replaced with portable `grep -o '[0-9]*$'` in `/decompose` GitHub Issues script
+
+### README
+
+- Updated bootstrap output table (AGENTS.md replaces copilot-instructions.md, chief-ai-po added)
+- Updated decompose flow diagram showing AI project detection branching
+- Added chief-ai-po to agents table
+- Updated all skill descriptions to reflect improvements
+
 ## v4.3.0 (2026-03-23)
 
 ### Added

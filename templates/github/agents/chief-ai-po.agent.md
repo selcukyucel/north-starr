@@ -22,6 +22,9 @@ If `.plans/STORIES-<name>.md` exists (from the storymap agent), read it as suppl
 - Read root context files (`CLAUDE.md`, `AGENTS.md`) if they exist, for project context
 - Identify the PRD's structure: workflows, feature areas, priority scheme, delivery phases, technical architecture
 - **AI inventory:** Identify all AI/ML components — models, inference endpoints, data pipelines, embedding stores, RAG chains, training loops, prompt templates, agent orchestration, and any third-party AI services
+- **Non-development sections:** Identify sections that are NOT engineering deliverables (go-to-market, pricing, sales, marketing, hiring, competitive analysis). These provide context for personas and domain understanding but MUST NOT become user stories.
+- **Hard deadlines:** Extract any regulatory deadlines, launch dates, contractual dates, or market windows. These constrain story priority — stories required before the earliest hard deadline are automatically MUST regardless of other factors. Include deadlines in the story map header.
+- **Out-of-scope items:** Check the PRD header for a blocklist (passed by `/decompose`). Also check for "Won't Have", "Out of Scope", or "Exclusions" sections in the PRD body. Do NOT create stories for any blocked or excluded items.
 
 ### 2. Pre-Mortem Analysis
 
@@ -51,7 +54,7 @@ Group the PRD content into **epics** — cohesive feature areas or workflows. Ea
 
 Assign each epic an ID: `E1`, `E2`, `E3`, etc. Order by dependency (foundations first).
 
-**Always include a final epic:** `EA` — **AI Safety & Resilience**. This epic contains the 5 mandatory AI failure mode stories (Step 5). It depends on all foundation epics.
+**Always include a final epic:** `EA` — **AI Safety & Resilience**. This epic contains the 6 mandatory AI failure mode stories (Step 5). It depends on all foundation epics.
 
 ### 4. Decompose into User Stories with Inverted Pairs
 
@@ -79,11 +82,11 @@ Fill in `[specific fallback]` and `[specific notification]` with concrete behavi
 
 - **Include technical notes** — brief pointers to implementation approach, APIs, components
 
-Assign story IDs: `S1.1` (epic 1, story 1), `S1.2`, `S2.1`, etc. Epic EA stories use `SA.1`-`SA.5`.
+Assign story IDs: `S1.1` (epic 1, story 1), `S1.2`, `S2.1`, etc. Epic EA stories use `SA.1`-`SA.6`.
 
 ### 5. Generate AI Failure Mode Stories (Epic EA)
 
-Epic EA: AI Safety & Resilience contains **5 mandatory stories**, one per AI failure category. For each, ask the inversion question, then write a story tailored to this PRD's domain.
+Epic EA: AI Safety & Resilience contains **6 mandatory stories**, one per AI failure category. For each, ask the inversion question, then write a story tailored to this PRD's domain.
 
 **SA.1 — Confidence & Hallucination**
 - *Inversion question:* "What happens when the AI generates a confident but completely wrong response?"
@@ -105,7 +108,11 @@ Epic EA: AI Safety & Resilience contains **5 mandatory stories**, one per AI fai
 - *Inversion question:* "What would cause a power user to actively avoid and undermine adoption?"
 - Story must address: override/correct/teach capabilities, transparency of AI decisions, user control preservation
 
-Each SA story follows the same format as other stories: paired standard + inverted, acceptance criteria with graceful degradation, technical notes. All 5 are **MUST** priority.
+**SA.6 — Observability & Cost Control**
+- *Inversion question:* "If this AI system ran for 3 months, what would we wish we had been tracking from day one?"
+- Story must address: LLM call logging (latency, token usage, cost per request), pipeline tracing (end-to-end request flow through parsing → retrieval → generation), error rate dashboards, cost alerts (monthly AI spend thresholds), and usage analytics per feature. This story is the foundation for SA.3 (drift detection requires baseline metrics).
+
+Each SA story follows the same format as other stories: paired standard + inverted, acceptance criteria with graceful degradation, technical notes. All 6 are **MUST** priority.
 
 Cross-reference: if any functional stories (S1.x, S2.x, etc.) already address one of these categories, note the overlap in the SA story's technical notes — don't duplicate, but ensure coverage is complete.
 
@@ -138,13 +145,13 @@ Use the PRD's priority scheme if present. If absent, derive priorities:
 
 | Priority | Criteria |
 |----------|----------|
-| MUST | Foundation stories, core user value, AND all AI safety stories (SA.1-SA.5) |
+| MUST | Foundation stories, core user value, AND all AI safety stories (SA.1-SA.6) |
 | SHOULD | Important but product works without them initially |
 | COULD | Nice-to-have enhancements, optimizations |
 
 **Critical AI rule:** Error-handling, graceful degradation, and AI safety stories are **always MUST** — never COULD. If a story prevents trust erosion, it is P0 regardless of how unglamorous it is.
 
-### 9. Estimate Size (Context Budget)
+### 9. Estimate Size (Context Budget) & AI Cost Signals
 
 Same sizing as storymap. Budget cap: **~300K tokens per story**.
 
@@ -154,6 +161,18 @@ Same sizing as storymap. Budget cap: **~300K tokens per story**.
 | M | Moderate | Touches a couple of modules, some integration |
 | L | Significant | Cross-module, new patterns — at the ~300K limit |
 | XL | Over budget | Must be split. No story should be XL in final output. |
+
+**AI cost signals** — For each story that involves AI/ML inference, note the cost dimension in technical notes:
+
+| Signal | What to flag |
+|--------|-------------|
+| **LLM calls per user action** | "Generates 8 sections × 1 LLM call each" — helps estimate per-request cost |
+| **Embedding volume** | "Initial ingestion: ~10K document chunks" — helps estimate vector DB cost |
+| **Batch vs real-time** | Whether AI work happens on-demand or in background jobs — affects latency and compute |
+| **Third-party API dependency** | Which external AI services are called and their pricing model |
+| **Caching opportunity** | Whether results can be cached to reduce repeated AI calls |
+
+This isn't a formal cost estimate — it's flags in the technical notes so engineers know which stories will have significant AI infrastructure cost.
 
 ### 10. Write the Story Map
 
@@ -167,6 +186,8 @@ Write `.plans/STORIES-AI-<name>.md` with this format:
 **Agent:** chief-ai-po
 **Status:** ACTIVE
 **Priority Scheme:** <scheme name> (from PRD | derived)
+**Hard Deadlines:** <list of dates and events, or "None">
+**Out of Scope:** <list of excluded items, or "None">
 
 ## Summary
 
@@ -188,7 +209,7 @@ Write `.plans/STORIES-AI-<name>.md` with this format:
 | # | Epic | Theme/Workflow | Stories | Priority | Depends On |
 |---|------|---------------|---------|----------|------------|
 | E1 | <name> | <theme> | <count> | <priority> | — |
-| EA | AI Safety & Resilience | Cross-cutting | 5 | MUST | E1 |
+| EA | AI Safety & Resilience | Cross-cutting | 6 | MUST | E1 |
 
 ## Dependency Graph
 
@@ -250,6 +271,9 @@ Write `.plans/STORIES-AI-<name>.md` with this format:
 #### SA.5: Adoption & Trust Preservation
 [...]
 
+#### SA.6: Observability & Cost Control
+[...]
+
 ## AI Risk Coverage Matrix
 
 | Failure Category | SA Story | Also Covered By |
@@ -259,6 +283,7 @@ Write `.plans/STORIES-AI-<name>.md` with this format:
 | Model Drift | SA.3 | — |
 | Security & Prompt Injection | SA.4 | S3.2 |
 | Adoption & Trust Erosion | SA.5 | S2.4 |
+| Observability & Cost Control | SA.6 | — |
 
 ## Integration Guide
 
@@ -288,7 +313,7 @@ When running `/invert` for a story, use the story ID in the kebab-case name:
 **MUST (MVP):** <count> stories
 **SHOULD (Phase 2):** <count> stories
 **COULD (Phase 3):** <count> stories
-**AI Safety Stories:** 5
+**AI Safety Stories:** 6
 **Human Oversight Checkpoints:** <count>
 **Stories with Graceful Degradation:** <count>/<total>
 ```
@@ -304,7 +329,7 @@ Epics: <count> (including AI Safety & Resilience)
 Stories: <count> (MUST: <n>, SHOULD: <n>, COULD: <n>)
 
 Pre-mortem risks: <count>
-AI safety stories: 5 (SA.1-SA.5)
+AI safety stories: 6 (SA.1-SA.6)
 Human oversight checkpoints: <count>
 Graceful degradation coverage: <count>/<total> stories
 
@@ -326,7 +351,7 @@ Invert candidates: <count> stories flagged for /invert analysis
 - Acceptance criteria must be specific and testable — not vague ("works correctly")
 - Technical notes are hints, not designs — keep them brief (2-3 lines max)
 - When the PRD mentions "won't have" or "out of scope" items, do NOT create stories for them
-- **All 5 AI failure mode categories must have at least one story (SA.1-SA.5)**
+- **All 6 AI failure mode categories must have at least one story (SA.1-SA.6)**
 - **Every AI-touching story must have a graceful degradation acceptance criterion**
 - **Inverted stories are mandatory for every story, not optional**
 - If an existing `STORIES-<name>.md` exists, cross-reference to avoid duplication — reference existing story IDs where they overlap

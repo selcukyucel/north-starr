@@ -24,7 +24,7 @@ The user provides PRD content in one of three forms:
 ### Step 1: Read & Validate Input
 
 **Actions:**
-1. If a file/PDF path is provided, read the content (for PDFs over 20 pages, read in chunks)
+1. If a file/PDF path is provided, read the content. For PDFs over 20 pages, read in sequential 20-page chunks (pages 1-20, 21-40, etc.) — the Read tool supports a `pages` parameter. Read ALL chunks before proceeding; do not start scanning until the full document is loaded. For very large PDFs (60+ pages), note the page count in the scope summary so the user knows the full document was read.
 2. If text is pasted, use it directly
 3. Verify the content looks like a PRD (has features, requirements, or workflows described)
 4. If the content is ambiguous, ask the user what they want decomposed
@@ -38,7 +38,11 @@ Do a lightweight scan of the PRD to identify:
 - **Delivery phases** — timelines or release milestones if present
 - **Technical architecture** — stack, components, integrations mentioned
 - **Scope indicators** — count of distinct features, workflows, user types
-- **AI project indicators** — scan for keywords: AI, ML, model, LLM, GPT, inference, training, embeddings, RAG, vector, prompt, hallucination, confidence, fine-tuning, NLP, neural, agent, orchestration. If 3+ distinct indicators found, flag as AI project.
+- **AI project indicators** — scan for keywords: AI, ML, model, LLM, GPT, inference, training, embeddings, RAG, vector, prompt, hallucination, confidence, fine-tuning, NLP, neural, agent, orchestration. If 3+ distinct indicators found, flag as AI project. List the specific AI components detected (e.g., "RAG pipeline, LLM generation, document parsing, embeddings, compliance mapping engine").
+- **User personas** — identify named personas or user roles with their key workflows
+- **Hard deadlines** — regulatory deadlines, contractual dates, market windows, launch dates that constrain story priority and sequencing
+- **Non-development sections** — identify sections that are NOT engineering deliverables: go-to-market strategy, pricing, sales channels, marketing campaigns, team hiring, competitive analysis, business metrics. These sections provide context but MUST NOT become user stories. Flag them so the agent skips them during decomposition.
+- **Out of scope / Won't Have** — if the PRD has an explicit "Won't Have", "Out of Scope", or "Exclusions" section, extract the items. Pass these to the agent as a blocklist: "Do NOT create stories for: [items]. These are explicitly out of scope per the PRD."
 
 ### Step 3: Present Scope Summary & Confirm
 
@@ -54,11 +58,28 @@ Estimated epics:       [range]
 Estimated stories:     [range]
 Delivery phases:       [list if present]
 Technical stack:       [brief summary if present]
+User personas:         [count] ([names and roles])
 AI Project:           [Yes / No]
 
 [If AI Project = Yes:]
+AI components:         [list specific components: RAG pipeline, LLM generation, embeddings, etc.]
+
 This PRD describes an AI project. The chief-ai-po agent will produce AI-augmented stories
 with inverted failure modes, safety stories, and graceful degradation criteria.
+
+[If hard deadlines detected:]
+Hard deadlines:
+  • [date] — [what happens] (e.g., "Nov 2026 — IFR opens applications")
+  • [date] — [what happens] (e.g., "Feb 2027 — final submission deadline")
+These deadlines will be used to sequence story priority.
+
+[If non-development sections detected:]
+Skipping non-dev sections: [list — e.g., "Go-to-Market (§5.1-5.4), Pricing (§5.2), Sales Channels (§5.3)"]
+These provide context but will NOT become user stories.
+
+[If out-of-scope items detected:]
+Out of scope (per PRD): [list — e.g., "Financial fair play, UEFA licensing, player transfers"]
+No stories will be created for these items.
 
 Options:
   1. chief-ai-po only — AI-augmented stories (recommended for AI-native projects)
@@ -86,6 +107,11 @@ Wait for user approval before continuing.
 **Ingested:** <date>
 **Source:** <file path or "pasted text">
 **Scope:** <one-line summary>
+**Priority Scheme:** <MoSCoW / Phases / P0-P3 / Derived>
+**AI Project:** <Yes (components: ...) / No>
+**Personas:** <list of names and roles>
+**Hard Deadlines:** <list of dates and events, or "None detected">
+**Non-Dev Sections:** <list of sections skipped, or "None">
 
 ---
 
@@ -98,17 +124,24 @@ This serves as the input file for the `storymap` agent and as a permanent record
 
 Choose the agent based on AI project detection and the user's selection from Step 3.
 
+**Context to pass to every agent prompt** (append to the decomposition instruction):
+
+- If the PRD has an existing priority scheme, name it: "The PRD uses MoSCoW prioritization — respect it."
+- If hard deadlines were detected, list them: "Hard deadlines: [date — event]. Use these to sequence story priority — stories required before the earliest deadline are MUST."
+- If non-development sections were identified, list them: "Skip these sections — they are business/GTM context, not engineering deliverables: [section list]. Do NOT create stories for go-to-market, pricing, sales, marketing, or hiring activities."
+- If personas were identified, list them: "User personas: [names and roles]. Reference these in user stories."
+
 **Option 1 — chief-ai-po only (AI projects):**
 Spawn the `chief-ai-po` agent on a separate thread:
 
-> "Decompose `.plans/PRD-<name>.md` into AI-augmented epics and user stories. Write output to `.plans/STORIES-AI-<name>.md`."
+> "Decompose `.plans/PRD-<name>.md` into AI-augmented epics and user stories. Write output to `.plans/STORIES-AI-<name>.md`. [Append context above.]"
 
-The agent will produce stories with inverted failure modes, 5 mandatory AI safety stories (SA.1-SA.5), human oversight checkpoints, and graceful degradation criteria on every AI-touching story.
+The agent will produce stories with inverted failure modes, 6 mandatory AI safety stories (SA.1-SA.6), human oversight checkpoints, and graceful degradation criteria on every AI-touching story.
 
 **Option 2 — storymap only (non-AI projects, or user choice):**
 Spawn the `storymap` agent on a separate thread:
 
-> "Decompose `.plans/PRD-<name>.md` into epics and user stories. Write output to `.plans/STORIES-<name>.md`."
+> "Decompose `.plans/PRD-<name>.md` into epics and user stories. Write output to `.plans/STORIES-<name>.md`. [Append context above.]"
 
 The agent will identify epics, decompose into user stories with acceptance criteria, map dependencies, assign priorities, estimate sizes, and flag invert candidates.
 
@@ -151,7 +184,7 @@ If chief-ai-po was used, add these lines to the summary:
 ```
 AI Analysis:
   Pre-mortem risks:              [count]
-  AI safety stories (SA.1-SA.5): 5
+  AI safety stories (SA.1-SA.6): 6
   Human oversight checkpoints:   [count]
   Graceful degradation coverage: [count]/[total] stories
 
@@ -264,7 +297,7 @@ S1_1=$(gh issue create \
 - **Invert Candidate:** Yes
 - **Story Map:** `.plans/STORIES-<name>.md`
 ISSUE_EOF
-)" | grep -oP '\d+$')
+)" | grep -o '[0-9]*$')
 echo "  Created #$S1_1 — [S1.1] <title>"
 
 # --- S1.2: <title> (depends on S1.1) ---
@@ -291,7 +324,7 @@ Depends on #$S1_1 (S1.1 — <title>)
 - **Invert Candidate:** No
 - **Story Map:** \`.plans/STORIES-<name>.md\`
 ISSUE_EOF
-)" | grep -oP '\d+$')
+)" | grep -o '[0-9]*$')
 echo "  Created #$S1_2 — [S1.2] <title>"
 
 # ...repeat for ALL stories in dependency order
@@ -307,7 +340,7 @@ echo "View: gh issue list --label 'epic:<epic-slug>'"
 - **Heredoc for bodies**: Use `cat <<'ISSUE_EOF'` (single-quoted delimiter) for stories with no dependencies. Use `cat <<ISSUE_EOF` (unquoted delimiter) for stories that need variable expansion (`#$S1_1`).
 - **Idempotent labels/milestones**: Use `--force` and `|| true` so the script can be re-run safely.
 - **Every story gets an issue**: Do not skip any stories — the full story map becomes the full backlog.
-- **Extract issue number**: Use `grep -oP '\d+$'` on `gh issue create` output to capture the issue number into a variable.
+- **Extract issue number**: Use `grep -o '[0-9]*$'` on `gh issue create` output to capture the issue number into a variable.
 
 After generating the script, tell the user:
 
