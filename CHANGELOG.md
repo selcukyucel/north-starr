@@ -1,5 +1,11 @@
 # Changelog
 
+## v4.4.2 (2026-03-26)
+
+### Fixed
+
+- **`/bootstrap` managed sections** — bootstrap now copies the "How to Approach Tasks" and "When to Learn Automatically" sections verbatim from templates instead of generating simplified paraphrases. Previously, the instruction to "use the managed section content" was too vague, causing the LLM to rewrite the assessment table, decision rules, and workflow steps.
+
 ## v4.4.1 (2026-03-25)
 
 ### Plugin Cache Staleness Fix

@@ -220,9 +220,10 @@ All context files share the same project content (Tech Stack, Architecture, Grai
 
 **Section order matters** — instructional sections (How to Approach Tasks, When to Learn) come FIRST so the AI tool sees them before project context.
 
-Use the managed section content from the corresponding template file:
-- For `CLAUDE.md`: use the `how-to-approach-tasks` and `auto-learn` sections from `templates/CLAUDE.md` (plain text approval gates)
-- For `AGENTS.md`: use the sections from `templates/AGENTS.md` (`vscode_askQuestions` approval gates)
+**Managed sections must be copied verbatim.** Read the template file first, then copy the managed sections (everything between `<!-- [NORTH-STARR:*] -->` and `<!-- [/NORTH-STARR:*] -->` markers, including the markers themselves) character-for-character into the generated file. Do NOT paraphrase, simplify, summarize, or rewrite these sections — they contain precise instructions (assessment tables, decision rules, workflow steps) that must be preserved exactly.
+
+- For `CLAUDE.md`: read `templates/CLAUDE.md` and copy the `how-to-approach-tasks` and `auto-learn` managed sections verbatim
+- For `AGENTS.md`: read `templates/AGENTS.md` and copy the managed sections verbatim
 
 Project context sections are identical across all files:
 
