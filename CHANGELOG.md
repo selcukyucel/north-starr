@@ -4,6 +4,7 @@
 
 ### Fixed
 
+- **`/sync` auto-updates stale plugin cache** — `/sync` no longer stops and asks you to manually reset the cache. It now auto-updates the marketplace clone and clears the install cache, then continues with the sync. No restart required.
 - **`/bootstrap` managed sections** — bootstrap now copies the "How to Approach Tasks" and "When to Learn Automatically" sections verbatim from templates instead of generating simplified paraphrases. Previously, the instruction to "use the managed section content" was too vague, causing the LLM to rewrite the assessment table, decision rules, and workflow steps.
 
 ## v4.4.1 (2026-03-25)

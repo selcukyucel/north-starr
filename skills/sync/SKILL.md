@@ -56,22 +56,18 @@ Before syncing, check whether the installed plugin is stale. This prevents synci
    - If `HEAD` equals `origin/main` → plugin is current, proceed to Step 1
    - If `HEAD` is behind `origin/main` → the plugin cache is stale
 
-4. **If stale**, present this warning and stop:
-   ```
-   ⚠ Your North Starr plugin cache is stale.
-   The installed version is behind the latest release. Syncing now would
-   use outdated templates — your agents and managed sections would not
-   actually update.
-
-   Run these commands to update, then re-run /sync:
-
-     cd ~/.claude/plugins/marketplaces/north-starr && git reset --hard origin/main && cd -
-     rm -rf ~/.claude/plugins/cache/north-starr
-
-   Then reload plugins (restart Claude Code or run /plugin install north-starr).
+4. **If stale**, auto-update the cache and continue:
+   ```bash
+   cd ~/.claude/plugins/marketplaces/north-starr && git reset --hard origin/main && cd -
+   rm -rf ~/.claude/plugins/cache/north-starr
    ```
 
-   Do NOT proceed with the sync. The user must update the cache first, otherwise `/sync` silently syncs stale content and reports "already current."
+   Then present a brief notice (not a blocker):
+   ```
+   ⚠ Plugin cache was stale (HEAD: <old> → <new>). Auto-updated. Continuing sync with latest templates.
+   ```
+
+   Proceed to Step 1 — do NOT stop or ask the user to restart. The sync will now read from the updated marketplace directory, which has the latest templates. A full Claude Code restart is not required for `/sync` to work correctly since it reads templates directly from the filesystem.
 
 5. **Version cross-check (optional):** If `.claude-plugin/marketplace.json` is readable, compare its `metadata.version` with the version in the marketplace cache's `marketplace.json`. Log the versions in the sync preview for transparency:
    ```
