@@ -1,5 +1,13 @@
 # Changelog
 
+## v4.5.0 (2026-03-30)
+
+### `/decompose` skill — Sub-issues, Project Boards, Direct Execution
+
+- **Sub-issues via GraphQL** — Stories are now linked as sub-issues of their epic parent issue using the `addSubIssue` GraphQL mutation. Epics become parent issues with stories nested underneath, giving a natural hierarchy in GitHub's issue view.
+- **GitHub Project board integration** — After creating issues, the skill offers to create a GitHub Project (or add to an existing one) with a custom "Priority Order" field. Issues are ordered by implementation sequence, solving the problem of GitHub's default newest-first display inverting the dependency chain.
+- **Direct issue creation** — Issues are now created directly via `gh` commands during the conversation instead of generating a shell script file. This provides real-time feedback and eliminates the extra review-and-execute step.
+
 ## v4.4.2 (2026-03-26)
 
 ### Fixed
