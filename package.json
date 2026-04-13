@@ -1,0 +1,78 @@
+{
+  "name": "north-starr",
+  "displayName": "north-starr",
+  "description": "Agentic development workflow skills for GitHub Copilot — /invert, /decompose, /learn, /generate-commit, /generate-pr, /analyze-code, /bootstrap, /report-weekly, /sync",
+  "version": "4.5.0",
+  "publisher": "selcukyucel",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/selcukyucel/north-starr.git"
+  },
+  "bugs": {
+    "url": "https://github.com/selcukyucel/north-starr/issues"
+  },
+  "homepage": "https://github.com/selcukyucel/north-starr#readme",
+  "engines": {
+    "vscode": "^1.115.0"
+  },
+  "categories": [
+    "AI"
+  ],
+  "keywords": [
+    "copilot",
+    "ai",
+    "workflow",
+    "planning",
+    "testing",
+    "code-quality",
+    "git",
+    "agile",
+    "invert",
+    "decompose"
+  ],
+  "contributes": {
+    "chatSkills": [
+      {
+        "path": "./skills/invert/SKILL.md",
+        "when": "chatSessionType == local"
+      },
+      {
+        "path": "./skills/decompose/SKILL.md",
+        "when": "chatSessionType == local"
+      },
+      {
+        "path": "./skills/learn/SKILL.md",
+        "when": "chatSessionType == local"
+      },
+      {
+        "path": "./skills/bootstrap/SKILL.md",
+        "when": "chatSessionType == local"
+      },
+      {
+        "path": "./skills/generate-commit/SKILL.md",
+        "when": "chatSessionType == local"
+      },
+      {
+        "path": "./skills/generate-pr/SKILL.md",
+        "when": "chatSessionType == local"
+      },
+      {
+        "path": "./skills/analyze-code/SKILL.md",
+        "when": "chatSessionType == local"
+      },
+      {
+        "path": "./skills/sync/SKILL.md",
+        "when": "chatSessionType == local"
+      },
+      {
+        "path": "./skills/report-weekly/SKILL.md",
+        "when": "chatSessionType == local"
+      },
+      {
+        "path": "./skills/autoimprove/SKILL.md",
+        "when": "chatSessionType == local"
+      }
+    ]
+  }
+}

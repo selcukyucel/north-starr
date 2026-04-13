@@ -1,0 +1,14 @@
+# Exclude Homebrew, Claude Code, and dev files from the VS Code extension package
+# Skills (./skills/) and LICENSE/CHANGELOG/README are included automatically
+
+.git/
+.github/
+.claude/
+.claude-plugin/
+agents/
+bin/
+Formula/
+templates/
+assets/
+*.vsix
+.gitignore
