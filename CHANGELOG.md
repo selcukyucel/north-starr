@@ -1,5 +1,16 @@
 # Changelog
 
+## v4.6.0 (2026-04-15)
+
+### VS Code Marketplace distribution
+
+- **Direct install from the VS Code Marketplace** — north-starr now ships as a VS Code extension (`selcukyucel.north-starr`), exposing all 10 skills to GitHub Copilot Chat without requiring Homebrew. Install via `ext install selcukyucel.north-starr` or the Extensions panel. Homebrew remains supported for the CLI + project init workflow.
+- **Release workflow publishes to three channels** — tagging a version now updates the Homebrew formula, bumps the Claude Code marketplace manifest, and packages + publishes the `.vsix` to the VS Code Marketplace. The `.vsix` is also attached to the GitHub release as a manual-install fallback.
+- **`package.json` + `.vscodeignore`** — extension manifest declares each skill as a `chatSkills` contribution scoped to `chatSessionType == local`; `.vscodeignore` keeps Homebrew, Claude Code, and dev files out of the packaged extension.
+- **`release.md`** — documents the tag-driven release process across all three distributions.
+
+Thanks to @superdem (Erdem Altintas) for the contribution (#8).
+
 ## v4.5.0 (2026-03-30)
 
 ### `/decompose` skill — Sub-issues, Project Boards, Direct Execution

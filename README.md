@@ -6,7 +6,7 @@
 
 <p align="center">
   <a href="https://docs.anthropic.com/en/docs/claude-code">Claude Code</a> (marketplace) &middot;
-  <a href="https://code.visualstudio.com/docs/copilot/overview">VS Code Copilot</a> (Homebrew)
+  <a href="https://code.visualstudio.com/docs/copilot/overview">VS Code Copilot</a> (Marketplace or Homebrew)
 </p>
 
 <p align="center">
@@ -107,7 +107,13 @@ Pick a story → /invert → layoutplan → Implement
 /plugin install north-starr
 ```
 
-**VS Code Copilot** (Homebrew):
+**VS Code Copilot** (Marketplace):
+```
+ext install selcukyucel.north-starr
+```
+Or: Extensions panel → search "north-starr" → Install.
+
+**VS Code Copilot** (Homebrew — CLI + skills in the project):
 ```bash
 brew tap selcukyucel/north-starr https://github.com/selcukyucel/north-starr.git
 brew install north-starr
